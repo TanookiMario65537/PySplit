@@ -1,6 +1,7 @@
 from Widgets import WidgetBase
 import datetime
 import requests
+import threading
 
 
 class TheRun(WidgetBase.WidgetBase):
@@ -20,13 +21,17 @@ class TheRun(WidgetBase.WidgetBase):
             'Accept': "*/*",
         }
 
-    def post_run_status(self):
-        if not self.enabled:
-            return
+    def _post_run_status(self):
         postSplits = requests.post(self.splitWebhook, json=self.jsonify(), headers=self.headers)
         print("Live status posted to therun.gg"
               if postSplits.status_code == 200
               else "Live status post failed")
+
+    def post_run_status(self):
+        if not self.enabled:
+            return
+        thread = threading.Thread(target=self._post_run_status)
+        thread.start()
 
     def clean_time_to_therun_api(self, time):
         return int(1000 * time) if type(time) in [float, int] else None
