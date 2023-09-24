@@ -10,7 +10,7 @@ class SplitEditor(Popup.Popup):
         self.state = state
         self.splits = AllSplitNames.Splits()
 
-        self.editor = MainEditor.Editor(self.window,state.comparesCsv)
+        self.editor = MainEditor.Editor(self.window, state.saveData)
         self.editor.pack()
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave

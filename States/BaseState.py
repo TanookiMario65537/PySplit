@@ -17,8 +17,7 @@ class State:
     # game = ""
     # category = ""
 
-    # completeCsv = None
-    # comparesCsv = None
+    # saveData = SplitJson
 
     # config = None
 
@@ -31,9 +30,7 @@ class State:
         self.splitnames = session.splitNames
         self.numSplits = len(self.splitnames)
 
-        splitArrs = fileio.csvReadStart(self.config["baseDir"],self.game,self.category,self.splitnames)
-        self.completeCsv = splitArrs[0]
-        self.comparesCsv = splitArrs[1]
+        self.saveData = fileio.readSplitFile(self.config["baseDir"],self.game,self.category,self.splitnames)
 
     def _cleanState(self):
         self.started = False

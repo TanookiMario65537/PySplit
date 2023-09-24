@@ -53,58 +53,38 @@ def insertRun(run,data_ref):
     insertCols(lastRun,1,data_ref)
 
 ##############################################################
-## Inserts a SumList object into the data_ref table as two 
-## columns, starting with startIndex.
-##
-## Parameters: sumList: the SumList object to insert into the 
-##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
-##             options - the options for converting the times
-##                       into strings
-##
-## Returns: None
-##############################################################
-def insertSumList(sumList,startRow,startCol,data_ref,options={}):
-    for i in range(len(sumList.bests)):
-        data_ref[startRow+i].insert(startCol,timeh.timeToString(sumList.totalBests[i],options))
-        data_ref[startRow+i].insert(startCol,timeh.timeToString(sumList.bests[i],options))
-
-##############################################################
 ## Inserts a SumList object into the data_ref table as two
 ## columns, starting with startIndex.
 ##
 ## Parameters: sumList: the SumList object to insert into the
 ##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
+##             key - the default comparison to replace
+##             data_ref - the overall splits
 ##             options - the options for converting the times
 ##                       into strings
 ##
 ## Returns: None
 ##############################################################
-def replaceSumList(sumList,startRow,startCol,data_ref,options={}):
-    for i in range(len(sumList.bests)):
-        data_ref[i+startRow][startCol] = timeh.timeToString(sumList.bests[i],options)
-        data_ref[i+startRow][startCol+1] = timeh.timeToString(sumList.totalBests[i],options)
+def replaceSumList(sumList,key,data_ref,options={}):
+    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time,options) for time in sumList.bests]
+    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time,options) for time in sumList.totalBests]
 
 ##############################################################
 ## Inserts a SumList object into the data_ref table as two
 ## columns, starting with startIndex.
 ##
-## Parameters: sumList: the SumList object to insert into the
-##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
+## Parameters: comparison: the Comparison object to insert into the
+##                         table
+##             key - the default comparison to replace
+##             data_ref - the overall splits
 ##             options - the options for converting the times
 ##                       into strings
 ##
 ## Returns: None
 ##############################################################
-def replaceComparison(comparison,startRow,startCol,data_ref,options={}):
-    for i in range(len(comparison.segments)):
-        data_ref[i+startRow][startCol] = timeh.timeToString(comparison.segments[i],options)
-        data_ref[i+startRow][startCol+1] = timeh.timeToString(comparison.totals[i],options)
+def replaceComparison(comparison,key,data_ref,options={}):
+    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time,options) for time in comparison.segments]
+    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time,options) for time in comparison.totals]
 
 ##############################################################
 ## Changes the names in the first column of the table in
@@ -127,6 +107,33 @@ def adjustNames(names,data_ref):
         else:
             new_data[i][0] = names[i-1]
     return new_data[:len(names)+1]
+
+##############################################################
+## Changes the names in the first column of the table in
+## data_ref, adding and removing rows from the table if the
+## lists of names do not have the same length.
+##
+## Parameters: names - a list of the new names
+##             data - the JSON data to update
+##
+## Returns: None, updates are done in place.
+##############################################################
+def adjustNamesJson(names, data):
+    for key in ["defaultComparisons"]:
+        for ckey in data[key]:
+            for t in ["segments", "totals"]:
+                if len(data[key][ckey][t]) < len(names):
+                    data[key][ckey][t].extend(['-' for _ in range(len(data[key][ckey][t])-1)])
+                else:
+                    data[key][ckey][t] = data[key][ckey][t][:len(names)]
+
+    for key in ["customComparisons", "runs"]:
+        for i in range(len(data[key])):
+            for t in ["segments", "totals"]:
+                if len(data[key][i][t]) < len(names):
+                    data[key][i][t].extend(['-' for _ in range(len(data[key][i][t])-1)])
+                else:
+                    data[key][i][t] = data[key][i][t][:len(names)]
 
 ##############################################################
 ## Changes the names in the first column of the table in

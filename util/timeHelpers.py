@@ -111,6 +111,12 @@ def stringToTime(timestring):
         secs = int(parts2[0])
     return 3600*hours + 60*mins + secs + fracsecs
 
+def stringListToTimes(arr):
+    times = []
+    for string in arr:
+        times.append(stringToTime(string))
+    return times
+
 def isBlank(time):
     return time == blank()
 
