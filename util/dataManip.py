@@ -162,19 +162,35 @@ def newCompleteCsv(names=[]):
     return data
 
 def newComparisons(names=[]):
-    data = [[ \
-        'Split Names', \
-        'Best Split', \
-        'Sum of Bests', \
-        'Average Split', \
-        'Average', \
-        'PB Split', \
-        'Personal Best',\
-        'To Best Exit',\
-        'Best Exit',\
-        'Blank Split',\
-        'Blank'\
-    ]]
-    for name in names:
-        data.append([name] + ['-' for _ in range(10)])
+    data = {
+        "splitNames": names,
+        "defaultComparisons": {
+            "bestSegments": {
+                "name": "Best Segments",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "bestRun": {
+                "name": "Personal Best",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "average": {
+                "name": "Average",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "bestExits": {
+                "name": "Best Exits",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "blank": {
+                "name": "Blank",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            }
+        },
+        "customComparisons": []
+    }
     return data
