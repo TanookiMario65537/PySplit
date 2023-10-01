@@ -19,7 +19,7 @@ class SplitEditor(tk.Frame):
         self.oldGame = ""
         self.oldCategory = ""
 
-        self.editor = MainEditor.Editor(self,dataManip.newComparisons())
+        self.editor = MainEditor.Editor(self, dataManip.newComparisons())
         self.editor.pack(side="bottom")
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave
