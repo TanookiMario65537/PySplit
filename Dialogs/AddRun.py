@@ -35,7 +35,7 @@ class SplitEditorD(BaseDialog.Dialog):
 
     def preSave(self,*_):
         self.saved = True
-        self.editFrame.save(True)
+        self.editFrame.save()
         if not self.note:
             self.note = tk.Label(self.root,text="To start the run, close this window.",fg="green")
             self.note.pack()
