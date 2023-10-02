@@ -36,7 +36,7 @@ def parseOptions(options):
     newOptions = {\
         "showSign": False, \
         "blankToDash": True, \
-        "precision": 0,\
+        "precision": 5,\
         "noPrecisionOnMinute": False\
     }
 

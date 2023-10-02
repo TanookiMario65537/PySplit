@@ -58,9 +58,7 @@ class State(BaseState.State):
     ##########################################################
     def saveTimes(self):
         self.saveData["defaultComparisons"]["bestSegments"]["segments"][self.splitnum] =\
-            timeh.timeToString(
-                self.bestTime,
-                {"precision": 5})
+            timeh.timeToString(self.bestTime)
 
         fileio.writeSplitFile(
             self.config["baseDir"],

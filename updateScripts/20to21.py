@@ -45,7 +45,7 @@ def main():
             newCompares = [['To Best Exit','Best Exit']]
             bestExits = DifferenceList.DifferenceList([findBestExit(i,splitArrs[0]) for i in range(len(comparesCsv)-1)])
             for i in range(len(comparesCsv)-1):
-                newCompares.append([timeh.timeToString(bestExits.segments[i],{"precision":5}),timeh.timeToString(bestExits.totals[i],{"precision":5})])
+                newCompares.append([timeh.timeToString(bestExits.segments[i]),timeh.timeToString(bestExits.totals[i])])
             insertCsvLines(newCompares,7,comparesCsv)
 
             newCompares = [['Blank Split','Blank']]

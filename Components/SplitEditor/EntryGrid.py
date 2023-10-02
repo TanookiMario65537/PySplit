@@ -99,9 +99,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
             comparison.insertNewSegment(index)
             newComparisons.extend([
                 '-',
-                timeh.timeToString(
-                    comparison.totalBests[index],
-                    {"precision": 5})
+                timeh.timeToString(comparison.totalBests[index])
             ])
         self.rows.insert(
             index,
@@ -168,11 +166,9 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         return {
             "name": self.headerRow.headers()[comparison],
             "segments": timeh.timesToStringList(
-                self.comparisons[comparison].bests,
-                {"precision": 5}),
+                self.comparisons[comparison].bests),
             "totals": timeh.timesToStringList(
-                self.comparisons[comparison].totalBests,
-                {"precision": 5})
+                self.comparisons[comparison].totalBests)
         }
 
     def generateGrid(self):

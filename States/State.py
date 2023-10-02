@@ -273,33 +273,25 @@ class State(BaseState.State):
         dataManip.replaceSumList(
             self.currentBests,
             "bestSegments",
-            self.saveData,
-            {"precision": 5})
+            self.saveData)
         dataManip.replaceSumList(
             self.getAverages(),
             "average",
-            self.saveData,
-            {"precision": 5})
+            self.saveData)
         if self.isPB():
             dataManip.replaceComparison(
                 self.currentRun,
                 "bestRun",
-                self.saveData,
-                {"precision": 5})
+                self.saveData)
         dataManip.replaceComparison(
             self.bestExits,
             "bestExit",
-            self.saveData,
-            {"precision": 5})
+            self.saveData)
 
         if not self.currentRun.empty:
             self.saveData["runs"].append({
-                "segments": timeh.timesToStringList(
-                    self.currentRun.segments,
-                    {"precision": 5}),
-                "totals": timeh.timesToStringList(
-                    self.currentRun.totals,
-                    {"precision": 5})
+                "segments": timeh.timesToStringList(self.currentRun.segments),
+                "totals": timeh.timesToStringList(self.currentRun.totals)
             })
         self.unSaved = True
 

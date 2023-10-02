@@ -47,7 +47,7 @@ def insertCols(lines,startIndex,data_ref):
 ##   data_ref - the data table to insert the run into
 ##########################################################
 def insertRun(run,data_ref):
-    lastRun = [timeh.timesToStringList(run.segments,{"precision":5}),timeh.timesToStringList(run.totals,{"precision":5})]
+    lastRun = [timeh.timesToStringList(run.segments),timeh.timesToStringList(run.totals)]
     data_ref[0].insert(1,"Run #"+str(int((len(data_ref[1])+1)/2)))
     data_ref[0].insert(2,"Totals")
     insertCols(lastRun,1,data_ref)
@@ -60,14 +60,12 @@ def insertRun(run,data_ref):
 ##                      table
 ##             key - the default comparison to replace
 ##             data_ref - the overall splits
-##             options - the options for converting the times
-##                       into strings
 ##
 ## Returns: None
 ##############################################################
-def replaceSumList(sumList,key,data_ref,options={}):
-    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time,options) for time in sumList.bests]
-    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time,options) for time in sumList.totalBests]
+def replaceSumList(sumList,key,data_ref):
+    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in sumList.bests]
+    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in sumList.totalBests]
 
 ##############################################################
 ## Inserts a SumList object into the data_ref table as two
@@ -77,14 +75,12 @@ def replaceSumList(sumList,key,data_ref,options={}):
 ##                         table
 ##             key - the default comparison to replace
 ##             data_ref - the overall splits
-##             options - the options for converting the times
-##                       into strings
 ##
 ## Returns: None
 ##############################################################
-def replaceComparison(comparison,key,data_ref,options={}):
-    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time,options) for time in comparison.segments]
-    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time,options) for time in comparison.totals]
+def replaceComparison(comparison,key,data_ref):
+    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in comparison.segments]
+    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in comparison.totals]
 
 ##############################################################
 ## Changes the names in the first column of the table in
