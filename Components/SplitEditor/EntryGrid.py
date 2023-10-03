@@ -14,6 +14,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         self.defaultComparisonOrder = list(
             saveData["defaultComparisons"].keys())
         self.splitNames = saveData["splitNames"]
+        self.oldSplitLocations = list(range(len(saveData["splitNames"])))
 
         self.rightFrame = tk.Frame(self.main())
         self.rightFrame.pack(side="left", fill="y")
@@ -93,6 +94,13 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         index = self.leftFrame.currentSplit
         if index < 0:
             index = len(self.rows)
+
+        for i in range(len(self.oldSplitLocations)):
+            if self.oldSplitLocations[i] is None:
+                continue
+            if self.oldSplitLocations[i] >= index:
+                self.oldSplitLocations[i] += 1
+
         self.leftFrame.addSplit(index)
         newComparisons = []
         for comparison in self.comparisons:
@@ -117,6 +125,15 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         currentSplit = self.leftFrame.currentSplit
         if currentSplit < 0:
             return
+
+        for i in range(len(self.oldSplitLocations)):
+            if self.oldSplitLocations[i] is None:
+                continue
+            if self.oldSplitLocations[i] > currentSplit:
+                self.oldSplitLocations[i] += -1
+            elif self.oldSplitLocations[i] == currentSplit:
+                self.oldSplitLocations[i] = None
+
         self.leftFrame.removeSplit()
         self.rows[currentSplit].pack_forget()
         del self.rows[currentSplit]

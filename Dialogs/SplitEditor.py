@@ -34,6 +34,19 @@ class SplitEditor(Popup.Popup):
     def save(self):
         saveData = copy.deepcopy(self.state.saveData)
         saveData.update(self.editor.entries.generateGrid())
+        old = self.editor.entries.oldSplitLocations
+        for i, run in enumerate(saveData["runs"]):
+            segments = []
+            totals = []
+            for j in range(len(saveData["splitNames"])):
+                if j in old:
+                    segments.append(run["segments"][old.index(j)])
+                    totals.append(run["totals"][old.index(j)])
+                else:
+                    segments.append("-")
+                    totals.append("-")
+            saveData["runs"][i]["segments"] = segments
+            saveData["runs"][i]["totals"] = totals
         fileio.writeSplitFile(
             self.state.config["baseDir"],
             self.state.game,
