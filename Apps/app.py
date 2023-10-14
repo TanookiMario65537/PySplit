@@ -469,12 +469,10 @@ class App(threading.Thread):
     ##########################################################
     ## Reload the current splits after editing.
     ##########################################################
-    def newEditedState(self,_):
-        compareNum = self.state.compareNum
+    def newEditedState(self, newSaveData):
         session = Session.Session(AllSplitNames.Splits())
         session.setRun(self.state.game,self.state.category)
-        self.state = State.State(session)
-        self.state.setComparison(compareNum)
+        self.state.loadSplits(newSaveData)
         self.updateWidgets("runChanged",state=self.state)
 
     ##########################################################

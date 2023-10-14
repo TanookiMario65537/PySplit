@@ -47,6 +47,7 @@ class SplitEditor(Popup.Popup):
                     totals.append("-")
             saveData["runs"][i]["segments"] = segments
             saveData["runs"][i]["totals"] = totals
+        self.retVal = saveData
         fileio.writeSplitFile(
             self.state.config["baseDir"],
             self.state.game,
@@ -56,3 +57,4 @@ class SplitEditor(Popup.Popup):
             self.state.game,
             self.state.category,
             saveData["splitNames"])
+        self.callbacks["accepted"](self.retVal)
