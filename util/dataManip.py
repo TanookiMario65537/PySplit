@@ -151,12 +151,6 @@ def adjustNamesMismatch(names,data_ref,originals):
             new_data.append([names[i]]+['-' for _ in range(len(new_data[0])-1)])
     return new_data
 
-def newCompleteCsv(names=[]):
-    data = [['Split Names']]
-    for name in names:
-        data.append([name])
-    return data
-
 def newComparisons(names=[]):
     data = {
         "splitNames": names,
