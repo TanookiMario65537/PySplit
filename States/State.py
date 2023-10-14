@@ -26,6 +26,10 @@ class State(BaseState.State):
 
     def __init__(self,session):
         super().__init__(session)
+        self.loadSplits(self.saveData)
+
+    def loadSplits(self, saveData):
+        super().loadSplits(saveData)
         self.currentBests = SumList.SumList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
         self.bestExits = DifferenceList.DifferenceList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestExits"]["totals"]))
         self.comparisons = []

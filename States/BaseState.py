@@ -25,12 +25,13 @@ class State:
 
     def __init__(self,session):
         self.config = rc.getUserConfig()
-        self.game = session.game
-        self.category = session.category
-        self.splitnames = session.splitNames
-        self.numSplits = len(self.splitnames)
+        self.saveData = fileio.readSplitFile(self.config["baseDir"],session.game,session.category,session.splitNames)
 
-        self.saveData = fileio.readSplitFile(self.config["baseDir"],self.game,self.category,self.splitnames)
+    def loadSplits(self, saveData):
+        self.game = saveData["game"]
+        self.category = saveData["category"]
+        self.splitnames = saveData["splitNames"]
+        self.numSplits = len(self.splitnames)
 
     def _cleanState(self):
         self.started = False
