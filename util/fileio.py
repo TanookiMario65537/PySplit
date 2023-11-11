@@ -15,14 +15,14 @@ def readSplitFile(baseDir,name,category,splitList):
         splits = {
             "game": name,
             "category": category,
-            "splitnames": splitList,
+            "splitNames": splitList,
             "defaultComparisons": {
-                "golds": {
+                "bestSegments": {
                     "name": "Best Splits",
                     "segments": ["-" for _ in range(len(splitList))],
                     "totals": ["-" for _ in range(len(splitList))],
                 },
-                "pb": {
+                "bestRun": {
                     "name": "Personal Best",
                     "segments": ["-" for _ in range(len(splitList))],
                     "totals": ["-" for _ in range(len(splitList))],
@@ -32,7 +32,7 @@ def readSplitFile(baseDir,name,category,splitList):
                     "segments": ["-" for _ in range(len(splitList))],
                     "totals": ["-" for _ in range(len(splitList))],
                 },
-                "bestExit": {
+                "bestExits": {
                     "name": "Best Exit",
                     "segments": ["-" for _ in range(len(splitList))],
                     "totals": ["-" for _ in range(len(splitList))],

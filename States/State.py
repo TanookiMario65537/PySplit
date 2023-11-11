@@ -26,7 +26,8 @@ class State(BaseState.State):
 
     def __init__(self,session):
         super().__init__(session)
-        self.loadSplits(self.saveData)
+        if (self.saveData):
+            self.loadSplits(self.saveData)
 
     def loadSplits(self, saveData):
         super().loadSplits(saveData)

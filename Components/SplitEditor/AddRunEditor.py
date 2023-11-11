@@ -1,8 +1,10 @@
 import tkinter as tk
 from DataClasses import AllSplitNames
+from DataClasses import Session
 from Components.SplitEditor import EntryGrid
 from Components.SplitEditor import MainEditor
 from Components import GameSelector
+from States import State
 from util import fileio
 from util import dataManip
 from util import readConfig as rc
@@ -19,7 +21,9 @@ class SplitEditor(tk.Frame):
         self.oldGame = ""
         self.oldCategory = ""
 
-        self.editor = MainEditor.Editor(self, dataManip.newComparisons())
+        self.editor = MainEditor.Editor(
+            self,
+            State.State(Session.Session(None)))
         self.editor.pack(side="bottom")
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave
