@@ -74,6 +74,7 @@ class SplitEditor(tk.Frame):
         saveData["game"] = game
         saveData["category"] = category
         saveData["runs"] = []
+        self.retVal = saveData
         fileio.writeSplitFile(
             self.config["baseDir"],
             game,
@@ -85,3 +86,4 @@ class SplitEditor(tk.Frame):
             saveData["splitNames"])
         self.savedGame = game
         self.savedCategory = category
+        self.callbacks["accepted"](self.retVal)
