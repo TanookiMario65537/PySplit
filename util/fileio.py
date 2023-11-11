@@ -46,7 +46,8 @@ def readSplitFile(baseDir,name,category,splitList):
             "customComparisons": [],
             "runs": []
         }
-        writeJson(splitFileName, splits)
+        if name and category:
+            writeJson(splitFileName, splits)
 
     else:
         splits = readJson(splitFileName)
