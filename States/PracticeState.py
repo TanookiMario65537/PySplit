@@ -11,6 +11,7 @@ class State(BaseState.State):
 
     def __init__(self, session):
         super().__init__(session)
+        super().loadSplits(self.saveData)
         self.splitName = session.split
         self.splitnum = self.splitnames.index(session.split)
         self.bestTime = timeh.stringToTime(

@@ -148,7 +148,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
                 self.originals[i] = -1
 
     def addComparison(self):
-        self.headerRow.addHeaders(["New Split", "New Comparison"])
+        self.headerRow.addHeaders(["New Comparison", "New Comparison Totals"])
         for row in self.rows:
             row.addComparison()
         self.comparisons.append(
@@ -181,7 +181,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
 
     def createComparisonSave(self, comparison):
         return {
-            "name": self.headerRow.headers()[comparison],
+            "name": self.headerRow.headers()[2*comparison],
             "segments": timeh.timesToStringList(
                 self.comparisons[comparison].bests),
             "totals": timeh.timesToStringList(

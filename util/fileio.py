@@ -15,37 +15,8 @@ def readSplitFile(baseDir,name,category,splitList):
         splits = {
             "game": name,
             "category": category,
-            "splitNames": splitList,
-            "defaultComparisons": {
-                "bestSegments": {
-                    "name": "Best Splits",
-                    "segments": ["-" for _ in range(len(splitList))],
-                    "totals": ["-" for _ in range(len(splitList))],
-                },
-                "bestRun": {
-                    "name": "Personal Best",
-                    "segments": ["-" for _ in range(len(splitList))],
-                    "totals": ["-" for _ in range(len(splitList))],
-                },
-                "average": {
-                    "name": "Average",
-                    "segments": ["-" for _ in range(len(splitList))],
-                    "totals": ["-" for _ in range(len(splitList))],
-                },
-                "bestExits": {
-                    "name": "Best Exit",
-                    "segments": ["-" for _ in range(len(splitList))],
-                    "totals": ["-" for _ in range(len(splitList))],
-                },
-                "blank": {
-                    "name": "Blank",
-                    "segments": ["-" for _ in range(len(splitList))],
-                    "totals": ["-" for _ in range(len(splitList))],
-                }
-            },
-            "customComparisons": [],
             "runs": []
-        }
+        }.update(dataManip.newComparisons(splitList))
         if name and category:
             writeJson(splitFileName, splits)
 
@@ -95,9 +66,7 @@ def writeJson(filepath,data):
 
 def writeSplitFile(baseDir, name, category ,data):
     filepath = resolveFilename([baseDir,name,category + ".pysplit"])
-    jsonData = json.dumps(data, indent=4)
-    with open(filepath,'w') as writer:
-        writer.write(jsonData)
+    writeJson(filepath, data)
 
 def readCsv(filepath):
     if not os.path.exists(filepath):

@@ -53,34 +53,34 @@ def insertRun(run,data_ref):
     insertCols(lastRun,1,data_ref)
 
 ##############################################################
-## Inserts a SumList object into the data_ref table as two
-## columns, starting with startIndex.
+## Inserts a SumList object into the defaultComparisons
+## portion of the save data matching the specified key.
 ##
 ## Parameters: sumList: the SumList object to insert into the
 ##                      table
 ##             key - the default comparison to replace
-##             data_ref - the overall splits
+##             saveData - the complete save data
 ##
 ## Returns: None
 ##############################################################
-def replaceSumList(sumList,key,data_ref):
-    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in sumList.bests]
-    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in sumList.totalBests]
+def replaceSumList(sumList,key,saveData):
+    saveData["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in sumList.bests]
+    saveData["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in sumList.totalBests]
 
 ##############################################################
-## Inserts a SumList object into the data_ref table as two
-## columns, starting with startIndex.
+## Inserts a Comparison object into the defaultComparisons
+## portion of the save data matching the specified key
 ##
 ## Parameters: comparison: the Comparison object to insert into the
 ##                         table
 ##             key - the default comparison to replace
-##             data_ref - the overall splits
+##             saveData - the overall splits
 ##
 ## Returns: None
 ##############################################################
-def replaceComparison(comparison,key,data_ref):
-    data_ref["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in comparison.segments]
-    data_ref["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in comparison.totals]
+def replaceComparison(comparison,key,saveData):
+    saveData["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in comparison.segments]
+    saveData["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in comparison.totals]
 
 ##############################################################
 ## Changes the names in the first column of the table in
@@ -132,25 +132,21 @@ def adjustNamesJson(names, data):
                     data[key][i][t] = data[key][i][t][:len(names)]
 
 ##############################################################
-## Changes the names in the first column of the table in
-## data_ref, adding and removing rows from the table if the
-## lists of names do not have the same length.
+## Creates a dictionary with a new collection of comparisons
+## based on a spcified list of split names.
 ##
-## Parameters: names - a list of the new names
-##             data_ref - the data table to update
+## Parameters: names - a list of the desired split names
 ##
-## Returns: A deep copy of the original data, with the names
-##          updated.
+## Returns: A dictionary containing splitNames,
+##          defaultComparisons, and customComparisons.
+##          defaultComparisons will be poplated automatically
+##          with the default comparison list, and each
+##          comparison will have the default name and segment
+##          and total lists with the number of blank splits
+##          matching the number of specified splits. Should
+##          be used with saveData.update(newComparisons()) or
+##          something similar.
 ##############################################################
-def adjustNamesMismatch(names,data_ref,originals):
-    new_data = [copy.deepcopy(data_ref[0])]
-    for i in range(len(names)):
-        if i in originals:
-            new_data.append(copy.deepcopy(data_ref[originals.index(i)+1]))
-        else:
-            new_data.append([names[i]]+['-' for _ in range(len(new_data[0])-1)])
-    return new_data
-
 def newComparisons(names=[]):
     data = {
         "splitNames": names,
