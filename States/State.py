@@ -295,7 +295,7 @@ class State(BaseState.State):
                 self.saveData)
         dataManip.replaceComparison(
             self.bestExits,
-            "bestExit",
+            "bestExits",
             self.saveData)
 
         if not self.currentRun.empty:
