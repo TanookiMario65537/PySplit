@@ -1,5 +1,7 @@
 import os, csv, json
 from util import dataManip
+from util import validation
+from pydantic import ValidationError
 
 def resolveFilename(arr):
     return "/".join(arr)
@@ -66,7 +68,15 @@ def writeJson(filepath,data):
 
 def writeSplitFile(baseDir, name, category ,data):
     filepath = resolveFilename([baseDir,name,category + ".pysplit"])
-    writeJson(filepath, data)
+    try:
+        validation.validateSave(data)
+        writeJson(filepath, data)
+    except ValidationError as err:
+        filepath = filepath + ".error"
+        print(err)
+        print()
+        print("Saving data under " + filepath)
+        writeJson(filepath, data)
 
 def readCsv(filepath):
     if not os.path.exists(filepath):
