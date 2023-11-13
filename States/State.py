@@ -1,4 +1,5 @@
 import os
+import datetime
 from util import dataManip
 from util import fileio
 from util import timeHelpers as timeh
@@ -111,6 +112,7 @@ class State(BaseState.State):
         self.splitnum = self.splitnum + 1
         self.splitstarttime = splitstart
         if self.splitnum >= len(self.splitnames):
+            self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
             self.runEnded = True
             self.localSave()
 
@@ -133,6 +135,7 @@ class State(BaseState.State):
         self.splitnum = self.splitnum + 1
         self.splitstarttime = splitstart
         if self.splitnum >= len(self.splitnames):
+            self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
             self.runEnded = True
             self.localSave()
 
@@ -212,6 +215,7 @@ class State(BaseState.State):
     def onStarted(self,time):
         if self.started:
             return 1
+        self.staticStartTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
         self.starttime = time
         self.splitstarttime = time
         self.started = True
@@ -257,6 +261,7 @@ class State(BaseState.State):
     def onReset(self):
         if not self.started or self.runEnded:
             return 1
+        self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
         self.runEnded = True
         self.localSave()
 
@@ -295,6 +300,8 @@ class State(BaseState.State):
 
         if not self.currentRun.empty:
             self.saveData["runs"].append({
+                "startTime": self.staticStartTime.isoformat(),
+                "endTime": self.staticEndTime.isoformat(),
                 "segments": timeh.timesToStringList(self.currentRun.segments),
                 "totals": timeh.timesToStringList(self.currentRun.totals)
             })

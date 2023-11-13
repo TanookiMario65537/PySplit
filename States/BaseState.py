@@ -3,6 +3,7 @@ from util import readConfig as rc
 
 class State:
     started = False
+    staticStartTime = None
     paused = False
     runEnded = False
 
