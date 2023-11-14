@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import threading
+import datetime
 from timeit import default_timer as timer
 from Components import MainMenu
 from DataClasses import AllSplitNames
@@ -398,6 +399,7 @@ class App(threading.Thread):
         # Pause the timer
         self.togglePause({})
         # Update the total and segment timers so they are accurate
+        self.state.staticStartTime = datetime.datetime.fromisoformat(partialState["startTime"])
         self.state.starttime = self.state.pauseTime - partialState["times"]["total"]
         self.state.splitstarttime = self.state.pauseTime - partialState["times"]["segment"]
         self.confirmDeletePartialSave()

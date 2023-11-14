@@ -364,6 +364,7 @@ class State(BaseState.State):
     ########################################################## 
     def dataMap(self):
         dataMap = {}
+        dataMap["startTime"] = self.staticStartTime.isoformat()
         dataMap["times"] = {"segment": self.segmentTime, "total": self.totalTime}
         dataMap["splits"] = {"segments": self.currentRun.segments,
 "totals": self.currentRun.totals}
