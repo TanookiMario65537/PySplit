@@ -49,3 +49,5 @@ class Session:
         self.category = category
         self.split = split
         self.splitNames = self.splits.getSplitNames(self.game,self.category)
+        if self.split not in self.splitNames:
+            self.getSession()

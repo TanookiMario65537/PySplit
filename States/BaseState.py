@@ -3,6 +3,7 @@ from util import readConfig as rc
 
 class State:
     started = False
+    staticStartTime = None
     paused = False
     runEnded = False
 
@@ -17,8 +18,7 @@ class State:
     # game = ""
     # category = ""
 
-    # completeCsv = None
-    # comparesCsv = None
+    # saveData = SplitJson
 
     # config = None
 
@@ -26,14 +26,13 @@ class State:
 
     def __init__(self,session):
         self.config = rc.getUserConfig()
-        self.game = session.game
-        self.category = session.category
-        self.splitnames = session.splitNames
-        self.numSplits = len(self.splitnames)
+        self.saveData = fileio.readSplitFile(self.config["baseDir"],session.game,session.category,session.splitNames)
 
-        splitArrs = fileio.csvReadStart(self.config["baseDir"],self.game,self.category,self.splitnames)
-        self.completeCsv = splitArrs[0]
-        self.comparesCsv = splitArrs[1]
+    def loadSplits(self, saveData):
+        self.game = saveData["game"]
+        self.category = saveData["category"]
+        self.splitnames = saveData["splitNames"]
+        self.numSplits = len(self.splitnames)
 
     def _cleanState(self):
         self.started = False

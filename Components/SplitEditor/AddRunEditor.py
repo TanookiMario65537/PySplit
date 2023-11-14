@@ -1,8 +1,10 @@
 import tkinter as tk
 from DataClasses import AllSplitNames
+from DataClasses import Session
 from Components.SplitEditor import EntryGrid
 from Components.SplitEditor import MainEditor
 from Components import GameSelector
+from States import State
 from util import fileio
 from util import dataManip
 from util import readConfig as rc
@@ -19,7 +21,9 @@ class SplitEditor(tk.Frame):
         self.oldGame = ""
         self.oldCategory = ""
 
-        self.editor = MainEditor.Editor(self,dataManip.newComparisons())
+        self.editor = MainEditor.Editor(
+            self,
+            State.State(Session.Session(None)))
         self.editor.pack(side="bottom")
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave
@@ -38,7 +42,7 @@ class SplitEditor(tk.Frame):
         else:
             if not self.splits.validPair(self.oldGame,self.oldCategory):
                 self.localEntries = self.editor.entries
-            self.editor.entries = EntryGrid.EntryGrid(self.editor,fileio.csvReadStart(self.config["baseDir"],self.selection.game,self.selection.category,self.splits.getSplitNames(self.selection.game,self.selection.category))[1],self.editor)
+            self.editor.entries = EntryGrid.EntryGrid(self.editor,fileio.readSplitFile(self.config["baseDir"],self.selection.game,self.selection.category,self.splits.getSplitNames(self.selection.game,self.selection.category))[1],self.editor)
         self.editor.entries.pack(side="left")
         self.oldGame = self.selection.game
         self.oldCategory = self.selection.category
@@ -70,9 +74,18 @@ class SplitEditor(tk.Frame):
         if self.splits.validPair(self.savedGame,self.savedCategory):
             self.splits.removePair(self.savedGame,self.savedCategory)
             fileio.removeCategory(self.config["baseDir"],self.savedGame,self.savedCategory)
-        csvs = self.editor.entries.generateGrid()
-        csvs["complete"] = dataManip.newCompleteCsv(csvs["names"])
-        fileio.writeCSVs(self.config["baseDir"],game,category,csvs["complete"],csvs["comparisons"])
-        self.splits.updateNames(game,category,csvs["names"])
+        saveData = self.editor.entries.generateGrid()
+        saveData["game"] = game
+        saveData["category"] = category
+        saveData["runs"] = []
+        fileio.writeSplitFile(
+            self.config["baseDir"],
+            game,
+            category,
+            saveData)
+        self.splits.updateNames(
+            game,
+            category,
+            saveData["splitNames"])
         self.savedGame = game
         self.savedCategory = category

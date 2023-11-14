@@ -2,13 +2,20 @@ import tkinter as tk
 from Dialogs import BaseDialog
 from Dialogs import Popup
 from Components.SplitEditor import AddRunEditor
+from util import dataManip
 
 class SplitEditorP(Popup.Popup):
     def __init__(self,master,callback):
         super().__init__(master,{"accepted": callback})
         self.editFrame = AddRunEditor.SplitEditor(self.window)
         self.editFrame.pack(fill="both")
-        self.retVal = {"game": "", "category": ""}
+        self.retVal = {
+            "game": "",
+            "category": "",
+            "defaultComparisons": dataManip.newComparisons(),
+            "customComparisons": [],
+            "runs": [],
+            "splitNames": []}
 
 class SplitEditorD(BaseDialog.Dialog):
     def __init__(self):
@@ -35,7 +42,7 @@ class SplitEditorD(BaseDialog.Dialog):
 
     def preSave(self,*_):
         self.saved = True
-        self.editFrame.save(True)
+        self.editFrame.save()
         if not self.note:
             self.note = tk.Label(self.root,text="To start the run, close this window.",fg="green")
             self.note.pack()

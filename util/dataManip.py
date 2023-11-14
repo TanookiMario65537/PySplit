@@ -47,64 +47,40 @@ def insertCols(lines,startIndex,data_ref):
 ##   data_ref - the data table to insert the run into
 ##########################################################
 def insertRun(run,data_ref):
-    lastRun = [timeh.timesToStringList(run.segments,{"precision":5}),timeh.timesToStringList(run.totals,{"precision":5})]
+    lastRun = [timeh.timesToStringList(run.segments),timeh.timesToStringList(run.totals)]
     data_ref[0].insert(1,"Run #"+str(int((len(data_ref[1])+1)/2)))
     data_ref[0].insert(2,"Totals")
     insertCols(lastRun,1,data_ref)
 
 ##############################################################
-## Inserts a SumList object into the data_ref table as two 
-## columns, starting with startIndex.
-##
-## Parameters: sumList: the SumList object to insert into the 
-##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
-##             options - the options for converting the times
-##                       into strings
-##
-## Returns: None
-##############################################################
-def insertSumList(sumList,startRow,startCol,data_ref,options={}):
-    for i in range(len(sumList.bests)):
-        data_ref[startRow+i].insert(startCol,timeh.timeToString(sumList.totalBests[i],options))
-        data_ref[startRow+i].insert(startCol,timeh.timeToString(sumList.bests[i],options))
-
-##############################################################
-## Inserts a SumList object into the data_ref table as two
-## columns, starting with startIndex.
+## Inserts a SumList object into the defaultComparisons
+## portion of the save data matching the specified key.
 ##
 ## Parameters: sumList: the SumList object to insert into the
 ##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
-##             options - the options for converting the times
-##                       into strings
+##             key - the default comparison to replace
+##             saveData - the complete save data
 ##
 ## Returns: None
 ##############################################################
-def replaceSumList(sumList,startRow,startCol,data_ref,options={}):
-    for i in range(len(sumList.bests)):
-        data_ref[i+startRow][startCol] = timeh.timeToString(sumList.bests[i],options)
-        data_ref[i+startRow][startCol+1] = timeh.timeToString(sumList.totalBests[i],options)
+def replaceSumList(sumList,key,saveData):
+    saveData["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in sumList.bests]
+    saveData["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in sumList.totalBests]
 
 ##############################################################
-## Inserts a SumList object into the data_ref table as two
-## columns, starting with startIndex.
+## Inserts a Comparison object into the defaultComparisons
+## portion of the save data matching the specified key
 ##
-## Parameters: sumList: the SumList object to insert into the
-##                      table
-##             startIndex - the column to start inserting at
-##             data_ref - the table to insert the SumList into
-##             options - the options for converting the times
-##                       into strings
+## Parameters: comparison: the Comparison object to insert into the
+##                         table
+##             key - the default comparison to replace
+##             saveData - the overall splits
 ##
 ## Returns: None
 ##############################################################
-def replaceComparison(comparison,startRow,startCol,data_ref,options={}):
-    for i in range(len(comparison.segments)):
-        data_ref[i+startRow][startCol] = timeh.timeToString(comparison.segments[i],options)
-        data_ref[i+startRow][startCol+1] = timeh.timeToString(comparison.totals[i],options)
+def replaceComparison(comparison,key,saveData):
+    saveData["defaultComparisons"][key]["segments"] = [timeh.timeToString(time) for time in comparison.segments]
+    saveData["defaultComparisons"][key]["totals"] = [timeh.timeToString(time) for time in comparison.totals]
 
 ##############################################################
 ## Changes the names in the first column of the table in
@@ -134,40 +110,73 @@ def adjustNames(names,data_ref):
 ## lists of names do not have the same length.
 ##
 ## Parameters: names - a list of the new names
-##             data_ref - the data table to update
+##             data - the JSON data to update
 ##
-## Returns: A deep copy of the original data, with the names
-##          updated.
+## Returns: None, updates are done in place.
 ##############################################################
-def adjustNamesMismatch(names,data_ref,originals):
-    new_data = [copy.deepcopy(data_ref[0])]
-    for i in range(len(names)):
-        if i in originals:
-            new_data.append(copy.deepcopy(data_ref[originals.index(i)+1]))
-        else:
-            new_data.append([names[i]]+['-' for _ in range(len(new_data[0])-1)])
-    return new_data
+def adjustNamesJson(names, data):
+    for key in ["defaultComparisons"]:
+        for ckey in data[key]:
+            for t in ["segments", "totals"]:
+                if len(data[key][ckey][t]) < len(names):
+                    data[key][ckey][t].extend(['-' for _ in range(len(data[key][ckey][t])-1)])
+                else:
+                    data[key][ckey][t] = data[key][ckey][t][:len(names)]
 
-def newCompleteCsv(names=[]):
-    data = [['Split Names']]
-    for name in names:
-        data.append([name])
-    return data
+    for key in ["customComparisons", "runs"]:
+        for i in range(len(data[key])):
+            for t in ["segments", "totals"]:
+                if len(data[key][i][t]) < len(names):
+                    data[key][i][t].extend(['-' for _ in range(len(data[key][i][t])-1)])
+                else:
+                    data[key][i][t] = data[key][i][t][:len(names)]
 
+##############################################################
+## Creates a dictionary with a new collection of comparisons
+## based on a spcified list of split names.
+##
+## Parameters: names - a list of the desired split names
+##
+## Returns: A dictionary containing splitNames,
+##          defaultComparisons, and customComparisons.
+##          defaultComparisons will be poplated automatically
+##          with the default comparison list, and each
+##          comparison will have the default name and segment
+##          and total lists with the number of blank splits
+##          matching the number of specified splits. Should
+##          be used with saveData.update(newComparisons()) or
+##          something similar.
+##############################################################
 def newComparisons(names=[]):
-    data = [[ \
-        'Split Names', \
-        'Best Split', \
-        'Sum of Bests', \
-        'Average Split', \
-        'Average', \
-        'PB Split', \
-        'Personal Best',\
-        'To Best Exit',\
-        'Best Exit',\
-        'Blank Split',\
-        'Blank'\
-    ]]
-    for name in names:
-        data.append([name] + ['-' for _ in range(10)])
+    data = {
+        "splitNames": names,
+        "defaultComparisons": {
+            "bestSegments": {
+                "name": "Best Segments",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "bestRun": {
+                "name": "Personal Best",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "average": {
+                "name": "Average",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "bestExits": {
+                "name": "Best Exits",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            },
+            "blank": {
+                "name": "Blank",
+                "segments": ['-' for _ in range(len(names))],
+                "totals": ['-' for _ in range(len(names))]
+            }
+        },
+        "customComparisons": []
+    }
     return data

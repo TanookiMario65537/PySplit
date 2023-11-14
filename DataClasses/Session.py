@@ -16,6 +16,8 @@ class Session:
     saveFile = ""
 
     def __init__(self,splits):
+        if not splits:
+            return
         self.splits = splits
         self.config = rc.getUserConfig()
         self.saveFile = self.config["baseDir"] + "/.save"

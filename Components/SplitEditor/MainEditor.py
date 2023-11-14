@@ -5,15 +5,15 @@ from Components.SplitEditor import EntryGrid
 from Components import SaveButton
 
 class Editor(tk.Frame):
-    def __init__(self,master,comparisons):
+    def __init__(self,master,state):
         super().__init__(master)
-        self.localComparisons = copy.deepcopy(comparisons)
+        self.saveData = copy.deepcopy(state.saveData)
         self.splits = AllSplitNames.Splits()
 
         self.buttonFrame = tk.Frame(self)
         self.buttonFrame.pack(side="right",fill="y")
 
-        self.entries = EntryGrid.EntryGrid(self,self.localComparisons,self)
+        self.entries = EntryGrid.EntryGrid(self,self.saveData,self)
         self.entries.pack(side="left")
 
         self.addSplitButton = tk.Button(self.buttonFrame, text="Add Split", command=self.addSplit)

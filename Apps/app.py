@@ -2,6 +2,7 @@
 
 import tkinter as tk
 import threading
+import datetime
 from timeit import default_timer as timer
 from Components import MainMenu
 from DataClasses import AllSplitNames
@@ -398,6 +399,7 @@ class App(threading.Thread):
         # Pause the timer
         self.togglePause({})
         # Update the total and segment timers so they are accurate
+        self.state.staticStartTime = datetime.datetime.fromisoformat(partialState["startTime"])
         self.state.starttime = self.state.pauseTime - partialState["times"]["total"]
         self.state.splitstarttime = self.state.pauseTime - partialState["times"]["segment"]
         self.confirmDeletePartialSave()
@@ -469,12 +471,10 @@ class App(threading.Thread):
     ##########################################################
     ## Reload the current splits after editing.
     ##########################################################
-    def newEditedState(self,_):
-        compareNum = self.state.compareNum
+    def newEditedState(self, newSaveData):
         session = Session.Session(AllSplitNames.Splits())
         session.setRun(self.state.game,self.state.category)
-        self.state = State.State(session)
-        self.state.setComparison(compareNum)
+        self.state.loadSplits(newSaveData)
         self.updateWidgets("runChanged",state=self.state)
 
     ##########################################################

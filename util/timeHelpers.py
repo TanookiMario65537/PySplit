@@ -36,7 +36,7 @@ def parseOptions(options):
     newOptions = {\
         "showSign": False, \
         "blankToDash": True, \
-        "precision": 0,\
+        "precision": 5,\
         "noPrecisionOnMinute": False\
     }
 
@@ -110,6 +110,12 @@ def stringToTime(timestring):
     else:
         secs = int(parts2[0])
     return 3600*hours + 60*mins + secs + fracsecs
+
+def stringListToTimes(arr):
+    times = []
+    for string in arr:
+        times.append(stringToTime(string))
+    return times
 
 def isBlank(time):
     return time == blank()
