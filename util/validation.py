@@ -50,27 +50,3 @@ def validateSave(saveData):
     Raises: ValidationError if the validation doesn't pass.
     """
     SaveData.model_validate(saveData)
-
-
-# saveData = {
-#     "game": "Test",
-#     "category": "Test",
-#     "splitNames": ["1", "2", "3"],
-#     "defaultComparisons": "asdf",
-#     "customComparisons": [
-#         {
-#             "name": "asdf",
-#             "segments": ["12:12:12.12345", "12.12345", "12:12.12345"],
-#             "totals": ["12.12345", "12.12345", "12.12345"]
-#         }
-#     ],
-#     "runs": [
-#         {
-#             "startTime": "2023-11-13T14:55:44.581426-05:00",
-#             "endTime": "2023-11-13T15:02:44.581426-05:00",
-#             "segments": ["12.12345", "12.12345", "12.12345"],
-#             "totals": ["12.12345", "12.12345", "-"]
-#         }
-#     ]
-# }
-# validateSave(saveData)
