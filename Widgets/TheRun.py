@@ -2,6 +2,8 @@ from Widgets import WidgetBase
 import datetime
 import requests
 import threading
+import json
+from util import pysplitToLss as convert
 
 
 class TheRun(WidgetBase.WidgetBase):
@@ -10,8 +12,9 @@ class TheRun(WidgetBase.WidgetBase):
         self.configure(bg="black")
 
         self.splitWebhook = "https://dspc6ekj2gjkfp44cjaffhjeue0fbswr.lambda-url.eu-west-1.on.aws/"
+        self.fileUploadBaseUrl = "https://2uxp372ks6nwrjnk6t7lqov4zu0solno.lambda-url.eu-west-1.on.aws/"
         self.uploadKey = config["uploadKey"]
-        if not self.uploadKey and self.enabled:
+        if not self.uploadKey and config["enabled"]:
             print("therun.gg plugin is enabled, but no upload key is provided.")
         self.enabled = config["enabled"] and self.uploadKey != ""
         self.wasJustResumed = False
@@ -31,6 +34,26 @@ class TheRun(WidgetBase.WidgetBase):
         if not self.enabled:
             return
         thread = threading.Thread(target=self._post_run_status)
+        thread.start()
+
+    def _post_splits(self):
+        if not self.uploadKey:
+            return
+        fileUploadUrl = f"{self.fileUploadBaseUrl}?filename={self.state.game}%20-%20{self.state.category}.lss&uploadKey={self.uploadKey}"
+
+        print("Converted XML:")
+        print(convert.pysplitToLss(self.state.saveData))
+        urlGetRequest = requests.get(fileUploadUrl, headers=self.headers)
+        lssPut = requests.put(
+            json.loads(urlGetRequest.content.decode("utf8"))["url"],
+            convert.pysplitToLss(self.state.saveData),
+            headers=self.headers)
+        print("Splits uploaded to therun.gg"
+              if lssPut.status_code == 200
+              else "Split upload failed")
+
+    def post_splits(self):
+        thread = threading.Thread(target=self._post_splits)
         thread.start()
 
     def clean_time_to_therun_api(self, time):
@@ -74,6 +97,8 @@ class TheRun(WidgetBase.WidgetBase):
 
     def onSplit(self):
         self.post_run_status()
+        if self.state.splitnum == self.state.numSplits:
+            self.post_splits()
         self.wasJustResumed = False
 
     def onPaused(self):
@@ -83,7 +108,10 @@ class TheRun(WidgetBase.WidgetBase):
 
     def onSplitSkipped(self):
         self.post_run_status()
+        if self.state.splitnum == self.state.numSplits:
+            self.post_splits()
         self.wasJustResumed = False
 
     def onReset(self):
         self.post_run_status()
+        self.post_splits()
