@@ -5,6 +5,7 @@ import json
 import os
 import csv
 import datetime
+import re
 
 
 def stripEmptyStringsReturn(stringList: list[str]) -> list[str]:
@@ -51,6 +52,37 @@ def getUserConfig() -> dict:
     return defaultConfig
 
 
+def stringToTime(timestring):
+    parts1 = re.split("\.", timestring)
+    parts2 = re.split(":", parts1[0])
+    hours = 0
+    mins = 0
+    secs = 0
+    fracsecs = 0
+    if len(parts1) > 1:
+        fracsecs = float("0."+parts1[1])
+    if len(parts2) == 3:
+        hours = int(parts2[0])
+        mins = int(parts2[1])
+        secs = int(parts2[2])
+    elif len(parts2) == 2:
+        mins = int(parts2[0])
+        secs = int(parts2[1])
+    else:
+        secs = int(parts2[0])
+    return 3600*hours + 60*mins + secs + fracsecs
+
+
+def findFinalTime(runTotals: list[str]):
+    finalIndex = len(runTotals) - 1
+    while finalIndex >= 0 and runTotals[finalIndex] == "-":
+        finalIndex -= 1
+    if finalIndex == -1:
+        return datetime.timedelta(seconds=1)
+    else:
+        return datetime.timedelta(seconds=stringToTime(runTotals[finalIndex]))
+
+
 def convertSave(baseDir: str, game: str, category: str) -> None:
     runFilename = os.path.join(baseDir, game, category + ".csv")
     runFile = readCsv(runFilename)
@@ -60,6 +92,7 @@ def convertSave(baseDir: str, game: str, category: str) -> None:
         os.path.getmtime(runFilename)
     ).date()
     newSave = {
+        "version": "1.0",
         "game": game,
         "category": category,
         "splitNames": [row[0] for row in runFile[1:]],
@@ -110,13 +143,13 @@ def convertSave(baseDir: str, game: str, category: str) -> None:
                         modifyDate,
                         datetime.datetime.min.time()
                     ) - datetime.timedelta(days=int((i-1)/2))
-                ).isoformat() + ".000000",
+                    + findFinalTime([runFile[j][i+1] for j in range(1, len(runFile))])
+                ).isoformat(),
                 "segments": [runFile[j][i] for j in range(1, len(runFile))],
                 "totals": [runFile[j][i+1] for j in range(1, len(runFile))],
             } for i in range(1, len(runFile[0]), 2)
         ]
     }
-    # print(newSave)
     pysplitFilename = os.path.join(baseDir, game, category + ".pysplit")
     writeJson(pysplitFilename, newSave)
 

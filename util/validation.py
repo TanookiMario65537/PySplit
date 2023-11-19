@@ -30,6 +30,7 @@ class DefaultComparisons(BaseModel):
 
 
 class SaveData(BaseModel):
+    version: str
     game: str
     category: str
     splitNames: List[str]
