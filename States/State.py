@@ -25,8 +25,8 @@ class State(BaseState.State):
     compareNum = 1
     numComparisons = 0
 
-    def __init__(self,session):
-        super().__init__(session)
+    def __init__(self, splitFile):
+        super().__init__(splitFile)
         if (self.saveData):
             self.loadSplits(self.saveData)
 
@@ -313,12 +313,9 @@ class State(BaseState.State):
     ##########################################################
     def saveTimes(self):
         fileio.writeSplitFile(
-            self.config["baseDir"],
-            self.game,
-            self.category,
+            self.splitFile,
             self.saveData)
         self.unSaved = False
-        print("Saved data successfully.")
 
     ##########################################################
     ## Determines if a partial save exists for the current

@@ -10,8 +10,7 @@ def resolveFilename(arr):
 def getDir(string):
     return resolveFilename(string.split("/")[:-1])
 
-def readSplitFile(baseDir,name,category,splitList):
-    splitFileName = resolveFilename([baseDir,name,category + ".pysplit"])
+def readSplitFile(splitFileName):
     saveData = readJson(splitFileName)
     if saveData:
         return saveData
@@ -56,17 +55,17 @@ def writeJson(filepath,data):
     with open(filepath,'w') as writer:
         writer.write(jsonData)
 
-def writeSplitFile(baseDir, name, category ,data):
-    filepath = resolveFilename([baseDir,name,category + ".pysplit"])
+def writeSplitFile(filepath, data):
     try:
         validation.validateSave(data)
         writeJson(filepath, data)
+        print("Saved data to " + filepath)
     except ValidationError as err:
         filepath = filepath + ".error"
         print(err)
         print()
-        print("Saving data under " + filepath)
         writeJson(filepath, data)
+        print("Saved data to " + filepath)
 
 def readCsv(filepath):
     if not os.path.exists(filepath):
@@ -91,3 +90,10 @@ def removeCategory(baseDir,game,category):
     compareCsvName = resolveFilename([baseDir,game,category + "_comparisons.csv"])
     os.remove(csvName)
     os.remove(compareCsvName)
+
+def hasSplitFile(baseDir):
+    for root, dirs, files in os.walk(baseDir):
+        for file in files:
+            if file.endswith(".pysplit"):
+                return True
+    return False

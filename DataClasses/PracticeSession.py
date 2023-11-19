@@ -1,23 +1,24 @@
 import os
 from Dialogs import PracticeRunSelector
+from Dialogs import AddRun
+from Dialogs import fileDialogs
 from util import fileio
 from util import readConfig as rc
 
+
 class Session:
-    game = ""
-    category = ""
-    split = ""
-    layoutName = ""
-    layout = []
+    split: str
+    config: dict
+    saveFile: str
+    splitFile: str
 
-    # splits = []
-    # config = None
-    # saveFile = ""
-
-    def __init__(self,splits):
-        self.splits = splits
+    def __init__(self):
         self.config = rc.getUserConfig()
+        if not fileio.hasSplitFile(self.config["baseDir"]):
+            AddRun.SplitEditorD().show()
         self.saveFile = self.config["baseDir"] + "/.practiceSave"
+        self.splitFile = ""
+        self.split = ""
         self.exit = False
         if os.path.exists(self.saveFile):
             self.loadSave()
@@ -26,28 +27,30 @@ class Session:
 
     def loadSave(self):
         saved = fileio.readJson(self.saveFile)
-        self.setRun(saved["game"],saved["category"],saved["split"])
+        self.setRun(saved["splitFile"])
+        self.setSplit(saved["split"])
 
     def save(self):
-        fileio.writeJson(self.saveFile,{\
-            "game": self.game,\
-            "category": self.category,\
-            "split": self.split,\
+        fileio.writeJson(self.saveFile, {
+            "splitFile": self.splitFile,
+            "split": self.split
         })
 
     def getSession(self):
-        session = PracticeRunSelector.RunSelector().show()
-        if not session["exitCode"]:
+        splitFile = fileDialogs.chooseRun(self.config)
+        if not splitFile:
             self.exit = True
             return
-        self.setRun(session["game"],session["category"],session["split"])
+        self.setRun(splitFile)
+        PracticeRunSelector.RunSelector(self.splitFile, self._setSplit).show()
 
-    def setRun(self,game,category,split):
-        if not game or not category or not split:
+    def setRun(self, splitFile):
+        if not os.path.exists(splitFile):
             return
-        self.game = game
-        self.category = category
-        self.split = split
-        self.splitNames = self.splits.getSplitNames(self.game,self.category)
-        if self.split not in self.splitNames:
-            self.getSession()
+        self.splitFile = splitFile
+
+    def _setSplit(self, retVal):
+        self.setSplit(retVal["split"])
+
+    def setSplit(self, splitName):
+        self.split = splitName

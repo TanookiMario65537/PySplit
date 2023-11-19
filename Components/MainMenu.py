@@ -155,6 +155,13 @@ class PracticeMenu(tk.Menu):
 
         self.entries = [\
             {\
+                "name": "Choose Run", \
+                "command": app.choosePracticeRun, \
+                "before": "normal", \
+                "during": "disabled", \
+                "after": "disabled"\
+            },\
+            {\
                 "name": "Choose Split", \
                 "command": app.chooseSplit, \
                 "before": "normal", \

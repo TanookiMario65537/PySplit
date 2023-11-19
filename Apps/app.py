@@ -5,11 +5,9 @@ import threading
 import datetime
 from timeit import default_timer as timer
 from Components import MainMenu
-from DataClasses import AllSplitNames
-from DataClasses import Session
 from Dialogs import AddRun
 from Dialogs import ConfirmPopup
-from Dialogs import RunPopup
+from Dialogs import fileDialogs
 from Dialogs import LayoutPopup
 from Dialogs import PracticeRunSelector
 from Dialogs import SplitEditor
@@ -249,12 +247,26 @@ class App(threading.Thread):
         LayoutPopup.LayoutPopup(self.root,self.setLayout,self.session).show()
 
     ##########################################################
+    ## Opens a window to change the current run (practice
+    ## timer)
+    ##########################################################
+    def choosePracticeRun(self, _=None):
+        if self.state.started:
+            return
+        splitFile = fileDialogs.chooseRun(self.state.config)
+        if not splitFile:
+            return
+        self.session.setRun(splitFile)
+        self.session.setSplit("")
+        self.chooseSplit()
+
+    ##########################################################
     ## Opens a window to change the current run
     ##########################################################
     def chooseRun(self,_=None):
         if self.state.started:
             return
-        RunPopup.RunPopup(self.root,self.setRun,self.session).show()
+        self.setRun(fileDialogs.chooseRun(self.state.config))
 
     ##########################################################
     ## Opens a window to change the current split (practice
@@ -417,14 +429,13 @@ class App(threading.Thread):
     ##########################################################
     ## Set the run if necessary.
     ##########################################################
-    def setRun(self,newSession):
-        if newSession["game"] == self.state.game\
-            and newSession["category"] == self.state.category:
+    def setRun(self, splitFile):
+        if splitFile == self.state.splitFile:
             return
         self.confirmSave(self.saveFullOrPartial)
         compareNum = self.state.compareNum
-        self.session.setRun(newSession["game"],newSession["category"])
-        self.state = State.State(self.session)
+        self.session.setRun(splitFile)
+        self.state = State.State(self.session.splitFile)
         self.state.setComparison(compareNum)
         self.updateWidgets("runChanged",state=self.state)
         self.updateWeights()
@@ -434,11 +445,8 @@ class App(threading.Thread):
     ## Set the split if necessary (practice only).
     ##########################################################
     def setSplit(self,newSession):
-        if newSession["game"] == self.state.game\
-            and newSession["category"] == self.state.category:
-            return
         self.confirmSave(self.saveFullOrPartial)
-        self.session.setRun(newSession["game"],newSession["category"],newSession["split"])
+        self.session.setSplit(newSession["split"])
         self.state = PracticeState.State(self.session)
         self.updateWidgets("runChanged",state=self.state)
 
@@ -472,8 +480,6 @@ class App(threading.Thread):
     ## Reload the current splits after editing.
     ##########################################################
     def newEditedState(self, newSaveData):
-        session = Session.Session(AllSplitNames.Splits())
-        session.setRun(self.state.game,self.state.category)
         self.state.loadSplits(newSaveData)
         self.updateWidgets("runChanged",state=self.state)
 
@@ -482,11 +488,10 @@ class App(threading.Thread):
     ##########################################################
     def addRunState(self,retVal):
         compareNum = self.state.compareNum
-        session = Session.Session(AllSplitNames.Splits())
-        if retVal["game"] and retVal["category"]:
-            session.setRun(retVal["game"],retVal["category"])
+        if retVal["splitFile"]:
+            self.session.setRun(retVal["splitFile"])
         else:
-            session.setRun(self.state.game,self.state.category)
-        self.state = State.State(session)
+            self.session.setRun(self.state.splitFile)
+        self.state = State.State(self.session.splitFile)
         self.state.setComparison(compareNum)
         self.updateWidgets("runChanged",state=self.state)

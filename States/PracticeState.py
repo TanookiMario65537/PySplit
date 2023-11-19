@@ -10,7 +10,7 @@ class State(BaseState.State):
     # splitnum = 0
 
     def __init__(self, session):
-        super().__init__(session)
+        super().__init__(session.splitFile)
         super().loadSplits(self.saveData)
         self.splitName = session.split
         self.splitnum = self.splitnames.index(session.split)
@@ -62,12 +62,9 @@ class State(BaseState.State):
             timeh.timeToString(self.bestTime)
 
         fileio.writeSplitFile(
-            self.config["baseDir"],
-            self.game,
-            self.category,
+            self.splitFile,
             self.saveData)
         self.unSaved = False
-        print("Saved data successfully.")
 
     def hasPartialSave(self):
         return False
