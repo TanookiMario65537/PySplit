@@ -75,6 +75,7 @@ class SplitEditor(tk.Frame):
             self.splits.removePair(self.savedGame,self.savedCategory)
             fileio.removeCategory(self.config["baseDir"],self.savedGame,self.savedCategory)
         saveData = self.editor.entries.generateGrid()
+        saveData["version"] = "1.0"
         saveData["game"] = game
         saveData["category"] = category
         saveData["runs"] = []
