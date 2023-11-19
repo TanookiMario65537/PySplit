@@ -2,6 +2,7 @@ import os, csv, json
 from util import dataManip
 from util import validation
 from pydantic import ValidationError
+from pathlib import Path
 
 def resolveFilename(arr):
     return "/".join(arr)
@@ -11,22 +12,10 @@ def getDir(string):
 
 def readSplitFile(baseDir,name,category,splitList):
     splitFileName = resolveFilename([baseDir,name,category + ".pysplit"])
-    if not os.path.exists(splitFileName):
-        if not os.path.isdir(resolveFilename([baseDir,name])):
-            os.mkdir(resolveFilename([baseDir,name]))
-        splits = {
-            "game": name,
-            "category": category,
-            "runs": []
-        }.update(dataManip.newComparisons(splitList))
-        if name and category:
-            writeJson(splitFileName, splits)
-
-    else:
-        splits = readJson(splitFileName)
-        dataManip.adjustNamesJson(splitList, splits)
-
-    return splits
+    saveData = readJson(splitFileName)
+    if saveData:
+        return saveData
+    return dataManip.newComparisons()
 
 def writeCSVs(baseDir,name,category,splitWrite,comparesWrite):
     if splitWrite:
@@ -63,6 +52,7 @@ def readJson(filepath):
 
 def writeJson(filepath,data):
     jsonData = json.dumps(data, indent=4)
+    Path(os.path.dirname(filepath)).mkdir(parents=True, exist_ok=True)
     with open(filepath,'w') as writer:
         writer.write(jsonData)
 
