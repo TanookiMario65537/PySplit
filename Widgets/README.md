@@ -45,6 +45,9 @@
  
  - `spacer`: Just adds extra space between components. The height of
    this spacer can be adjusted.
+
+ - `therun`: Adds integration with therun.gg in the form of live updates
+   and sending `.lss` files on run completion.
  
  - `timeSaveInfo`: Shows the difference between this comparison's
    current split and the best time for the current split.
