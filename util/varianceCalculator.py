@@ -1,6 +1,5 @@
 from util import fileio
 from util import timeHelpers as timeh
-from util import readConfig as rc
 global varianceList
 
 
@@ -27,15 +26,9 @@ def createTable(names, variances, sort):
     return table
 
 
-def computeVariances(game, category, splits):
+def computeVariances(filename):
     global varianceList
-    config = rc.getUserConfig()
-    splitNames = splits.getSplitNames(game, category)
-    saveData = fileio.readSplitFile(
-        config["baseDir"],
-        game,
-        category,
-        splitNames)
+    saveData = fileio.readSplitFile(filename)
     timeRows = getRows(saveData)
     varianceList = []
     for row in timeRows:
@@ -52,11 +45,11 @@ def computeVariances(game, category, splits):
 
     return {
         "order": createTable(
-            splitNames,
+            saveData["splitNames"],
             varianceList,
             range(len(varianceList))),
         "sorted": createTable(
-            splitNames,
+            saveData["splitNames"],
             varianceList,
             sortedRange)
     }
