@@ -1,7 +1,7 @@
 import tkinter as tk
 from Widgets import WidgetBase
 
-class Buttons(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     buttons = []
     rootWindow = None
 

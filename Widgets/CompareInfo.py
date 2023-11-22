@@ -1,6 +1,6 @@
 from Widgets import InfoBase
 
-class CompareInfo(InfoBase.InfoBase):
+class Widget(InfoBase.InfoBase):
     def __init__(self,parent,state,config):
         super().__init__(parent,state,config)
         self.resetUI()

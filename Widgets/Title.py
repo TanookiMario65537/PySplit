@@ -1,7 +1,7 @@
 import tkinter as tk
 from Widgets import WidgetBase
 
-class Title(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     # game = None
     # category = None
 
