@@ -24,9 +24,10 @@ class State:
 
     unSaved = False
 
-    def __init__(self,session):
+    def __init__(self, splitFile):
         self.config = rc.getUserConfig()
-        self.saveData = fileio.readSplitFile(self.config["baseDir"],session.game,session.category,session.splitNames)
+        self.splitFile = splitFile
+        self.saveData = fileio.readSplitFile(splitFile)
 
     def loadSplits(self, saveData):
         self.game = saveData["game"]

@@ -1,26 +1,26 @@
 import os
-from Dialogs import RunSelector
 from util import fileio
 from util import layoutHelper as lh
 from util import readConfig as rc
+from Dialogs import AddRun
+from Dialogs import fileDialogs
+from Dialogs import LayoutPopup
+
 
 class Session:
-    game = ""
-    category = ""
-    splitNames = []
-    layoutName = ""
-    layout = []
+    config: dict
+    layout: list
+    layoutName: str
+    saveFile: str
+    splitFile: str
 
-    # splits = []
-    config = None
-    saveFile = ""
-
-    def __init__(self,splits):
-        if not splits:
-            return
-        self.splits = splits
+    def __init__(self):
         self.config = rc.getUserConfig()
+        if not fileio.hasSplitFile(self.config["baseDir"]):
+            AddRun.SplitEditorD().show()
         self.saveFile = self.config["baseDir"] + "/.save"
+        self.layoutName = "System Default"
+        self.splitFile = ""
         self.exit = False
         if os.path.exists(self.saveFile):
             self.loadSave()
@@ -29,29 +29,29 @@ class Session:
 
     def loadSave(self):
         saved = fileio.readJson(self.saveFile)
-        self.setRun(saved["game"],saved["category"])
+        self.setRun(saved["splitFile"])
         self.setLayout(saved["layoutName"])
 
     def save(self):
-        fileio.writeJson(self.saveFile,{\
-            "game": self.game,\
-            "category": self.category,\
-            "layoutName": self.layoutName\
+        fileio.writeJson(self.saveFile, {
+            "splitFile": self.splitFile,
+            "layoutName": self.layoutName
         })
 
     def getSession(self):
-        session = RunSelector.RunSelector(self.splits).show()
-        if not session["exitCode"]:
+        splitFile = fileDialogs.chooseRun(self.config)
+        if not splitFile:
             self.exit = True
-        self.setRun(session["game"],session["category"])
-        self.setLayout(session["layoutName"])
+        self.setRun(splitFile)
+        LayoutPopup.LayoutDialog(self._setLayout, self).show()
 
-    def setRun(self,game,category):
-        if not game or not category:
+    def setRun(self, splitFile):
+        if not os.path.exists(splitFile):
             return
-        self.game = game
-        self.category = category
-        self.splitNames = self.splits.getSplitNames(self.game,self.category)
+        self.splitFile = splitFile
+
+    def _setLayout(self, retVal):
+        self.setLayout(retVal["layoutName"])
 
     def setLayout(self,layoutName):
         if not layoutName:

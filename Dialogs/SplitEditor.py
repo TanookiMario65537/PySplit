@@ -1,4 +1,3 @@
-from DataClasses import AllSplitNames
 from Dialogs import Popup
 from Components.SplitEditor import MainEditor
 from util import fileio
@@ -9,7 +8,6 @@ class SplitEditor(Popup.Popup):
     def __init__(self, master, callback, state):
         super().__init__(master, {"accepted": callback})
         self.state = state
-        self.splits = AllSplitNames.Splits()
 
         self.editor = MainEditor.Editor(self.window, state)
         self.editor.pack()
@@ -49,12 +47,6 @@ class SplitEditor(Popup.Popup):
             saveData["runs"][i]["totals"] = totals
         self.retVal = saveData
         fileio.writeSplitFile(
-            self.state.config["baseDir"],
-            self.state.game,
-            self.state.category,
+            self.state.splitFile,
             saveData)
-        self.splits.updateNames(
-            self.state.game,
-            self.state.category,
-            saveData["splitNames"])
         self.callbacks["accepted"](self.retVal)

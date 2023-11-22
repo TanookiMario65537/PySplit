@@ -1,3 +1,10 @@
+# Dependencies
+
+1. `tkinter`
+2. `pydantic`
+
+These can be installed using `pip3 install tk` and `pip3 install pydantic`.
+
 # Setup
 
 __Note__: Examples for much of the setup/configuration files can be
@@ -5,19 +12,21 @@ found in the `examples` directory, along with a description of each
 of the files.
 
 ## Category/Segment Names
-The first time you run the timer, the "Add Split" Editor will pop up
-automatically, which will allow you to create a run before starting
-without having to manually edit any .csv files. You will be forced
-to save a run before the timer will become visible. In the future,
-you can add runs using the `Add Run` command in the menu, and
-you can edit the run that is currently open using the `Edit Splits`
-command.
+If there are no `.pysplit` files in your base data directory (see
+[General Configuration Notes](#general-configuration-notes)),
+or any of its children, the "Add Run" Editor will pop up automatically,
+which will allow you to create a run before starting. You will be forced
+to save a run before the timer will become visible.
 
-If you want to create splits manually, you can do the following:
-In the parent directory, create a file called *splitNames.csv*. This 
-file stores the list of games and categories, along with the list
-of segments for each game/category pair.  More explanation and an 
-example are given in the *examples/* directory.
+In the future, you can add runs from within PySplit using the `Add Run`
+command in the menu, and you can edit the run that is currently open
+using the `Edit Splits` command.
+
+If you want to create splits manually, you have two options:
+1. You can create the appropriate `.pysplit` file and place it somewhere
+in your base data directory.
+2. You can copy a `.pysplit` file and place it in your base data
+directory.
 
 ## Configuring the layout
 
@@ -62,7 +71,7 @@ defined in the `defaults` directory.
 As noted before, each component has the option to have custom
 configuration, and the components used and their relative positions
 are also customizable. However, there is also a global
-configuration at `defaults/global.json`. There are only three
+configuration at `defaults/global.json`. There are only four
 attributes defined in this file:
 
 1. `baseDir`: The base directory where all the data is stored
@@ -76,18 +85,13 @@ shown if an invalid hotkey is defined
 
 ## Manual Comparisons
 
-Comparisons can be added manually using a comparisons file. This
-file is automatically created the first time the timer is started
-with a particular game/category pair at
-`<baseDir>/<game>/<category>_comparisons.csv`. New comparisons can
-be added to the right side of this file (the first three
-comparisons in the file are expected to be in the positions they
-are put in when the file is created). 
+Comparisons can be added manually using the "customComparisons" list
+in a `.pysplit` file. This list is initially empty when a new run is
+added, and the format of each new comparison should be the same as
+the comparisons under "defaultComparisons".
 
-Each comparison should have two columns. The left column should be
-the time for the given segment, and the right column should be the
-total time up the end of the given segment. The title (first entry)
-of the second column is used as the name of the comparison.
+Alternatively, comparisons can be edited from within PySplit using
+the `Edit Splits` command in the menu.
 
 # Included Programs
 
@@ -102,16 +106,15 @@ locally from this directory.
 Usage: `python3 runTimer.py` (`runTimer` with installation)
 
 This is a segmented timer which keeps track of segments and stores
-them in a CSV file when the program is completed (either when the
+them in a `.pysplit` file when the program is completed (either when the
 final segment is completed or when the user terminates the
 program).
 
 ### How it works
 
-The program starts by prompting the user to choose a game from
-those in the first column of *splitNames.csv*. Once the user has
-chosen a game, they are prompted to select a category for the game.
-When the user selects a category, a GUI pops up which is used for
+The program starts by prompting the user to choose a run from
+a `.pysplit` file in the base data directory.
+Once the user selects a run, a GUI pops up which is used for
 the rest of the program. By default, there is a menu with a number
 of control options, and all the options have an associated hotkey.
 Below is a description of each of the options and their default hotkey.
@@ -126,9 +129,10 @@ Below is a description of each of the options and their default hotkey.
 |`Pause`|Toggles whether the timer is paused|`p`|
 |`Restart`|After the run has ended, resets the timer|`R`|
 |`Finish`|Closes the window, prompting to save if there is unsaved data|`f`|
-|`Save`|Saves any unsaved local data|`S`|
-|`Choose Run`|Opens a dialog to choose the game and category|`q`|
-|`Choose Layout`|Opens a dialog to choose the layout|`l`|
+|`Save`|Saves any unsaved local data|`<C-s>`|
+|`Choose Run`|Opens a dialog to choose the game and category|`<C-r>`|
+|`Choose Layout`|Opens a dialog to choose the layout|`<C-l>`|
+|`Partial Save`|Saves data about the current run which can be restored at a later time|`<C-S>`|
 
 A couple notes about the key bindings:
 
@@ -136,22 +140,20 @@ A couple notes about the key bindings:
 during the run. This is a list of when the control options are
 enabled:
 
-|Option|Before Start|During Run|After End|
-|:----:|:----------:|:--------:|:-------:|
-|`Start Run`|enabled|disabled|disabled|
-|`Split`|disabled|enabled|disabled|
-|`Reset`|disabled|enabled|disabled|
-|`Skip Split`|disabled|enabled|disabled|
-|`Change Compare`|enabled|enabled|enabled|
-|`Pause`|disabled|enabled|disabled|
-|`Restart`|disabled|disabled|enabled|
-|`Finish`|enabled|disabled|enabled|
-|`Save`|enabled|enabled|enabled|
-|`Choose Run`|enabled|disabled|disabled|
-|`Choose Layout`|enabled|disabled|disabled|
-
-`Split` and `Skip Split` are also disabled when the timer is
-paused.
+|Option|Before Start|Timer Running|Timer Paused|After End|
+|:----:|:----------:|:-----------:|:----------:|:-------:|
+|`Start Run`|enabled|disabled|disabled|disabled|
+|`Split`|disabled|enabled|disabled|disabled|
+|`Reset`|disabled|enabled|enabled|disabled|
+|`Skip Split`|disabled|enabled|disabled|disabled|
+|`Change Compare`|enabled|enabled|enabled|enabled|
+|`Pause`|disabled|enabled|enabled|disabled|
+|`Restart`|disabled|disabled|disabled|enabled|
+|`Finish`|enabled|disabled|enabled|enabled|
+|`Save`|enabled|enabled|enabled|enabled|
+|`Choose Run`|enabled|disabled|disabled|disabled|
+|`Choose Layout`|enabled|disabled|disabled|disabled|
+|`Partial Save`|disabled|disabled|enabled|disabled|
 
 2. These key bindings are configurable using the `hotkeys`
 section of the configuration.
@@ -166,7 +168,7 @@ and has mostly the same buttons and key bindings. To choose the
 segment, the game and category are chosen in the same way as in
 `runTimer.py`, and once the category is chosen the list of segments
 is given from which one should be chosen. Hitting `Finish`
-will close the window and write the results to the `.csv` file for
+will close the window and write the results to the `.pysplit` file for
 that run. Only the best time for the practiced segment will be
 written - the sum of best times will be updated with the next run
 of `runTimer.py`.
@@ -181,8 +183,8 @@ as a percentage of the average length of the corresponding segment,
 and the segments are printed in descending order by this percent
 variance.
 
-The game and category are chosen in the same way as in the other
-two programs, and the base directory is read (as usual) from the
+The run is chosen in the same way as in the other
+two programs, and the base data directory is read (as usual) from the
 user configuration.
 
 # Installation (Linux-only)
@@ -193,6 +195,6 @@ use. To install the program, run `./install` in the home directory,
 and choose where to install the program. The three executables
 created in this case are `runTimer`, `practiceTimer`, and
 `timeVariance`. Note that this won't work with the default
-configuration, since the default base directory is a relative path.
-Instead, set the base directory in the user config to a static
+configuration, since the default base data directory is a relative path.
+Instead, set the base data directory in the user config to a static
 path.

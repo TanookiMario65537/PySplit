@@ -3,9 +3,7 @@ from Apps import app
 from States import PracticeState
 from Widgets import PracticeButtons, PracticeTimer, PracticeSegment
 from util import readConfig as rc
-from DataClasses import AllSplitNames
 from DataClasses import PracticeSession
-from Dialogs import AddRun
 
 def setHotkeys(app,state):
     app.root.bind(state.config["hotkeys"]["split"], app.onSplitEnd)
@@ -13,13 +11,11 @@ def setHotkeys(app,state):
     app.root.bind(state.config["hotkeys"]["restart"], app.restart)
     app.root.bind(state.config["hotkeys"]["finish"], app.finish)
     app.root.bind(state.config["hotkeys"]["save"], app.save)
+    app.root.bind(state.config["hotkeys"]["chooseRun"], app.choosePracticeRun)
     app.root.bind(state.config["hotkeys"]["chooseSplit"], app.chooseSplit)
 
-splits = AllSplitNames.Splits()
-if not len(splits.getGames()):
-    AddRun.SplitEditorD().show()
-    splits.update()
-session = PracticeSession.Session(splits)
+
+session = PracticeSession.Session()
 if session.exit:
     sys.exit()
 

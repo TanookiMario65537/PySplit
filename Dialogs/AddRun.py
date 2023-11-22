@@ -2,20 +2,18 @@ import tkinter as tk
 from Dialogs import BaseDialog
 from Dialogs import Popup
 from Components.SplitEditor import AddRunEditor
-from util import dataManip
 
 class SplitEditorP(Popup.Popup):
     def __init__(self,master,callback):
-        super().__init__(master,{"accepted": callback})
+        super().__init__(master, {"accepted": callback}, closeAction="accepted")
         self.editFrame = AddRunEditor.SplitEditor(self.window)
         self.editFrame.pack(fill="both")
+
+    def setReturn(self):
         self.retVal = {
-            "game": "",
-            "category": "",
-            "defaultComparisons": dataManip.newComparisons(),
-            "customComparisons": [],
-            "runs": [],
-            "splitNames": []}
+            "splitFile": self.editFrame.splitFile,
+            "exitCode": self.retVal["exitCode"]
+        }
 
 class SplitEditorD(BaseDialog.Dialog):
     def __init__(self):
@@ -29,8 +27,7 @@ class SplitEditorD(BaseDialog.Dialog):
         self.saved = False
 
     def setReturn(self):
-        self.retVal["game"] = self.editFrame.selection.game
-        self.retVal["category"] = self.editFrame.selection.category
+        self.retVal["splitFile"] = self.editFrame.splitFile
 
     def preFinish(self):
         if not self.saved:

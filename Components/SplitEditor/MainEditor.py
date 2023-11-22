@@ -1,6 +1,5 @@
 import tkinter as tk
 import copy
-from DataClasses import AllSplitNames
 from Components.SplitEditor import EntryGrid
 from Components import SaveButton
 
@@ -8,7 +7,6 @@ class Editor(tk.Frame):
     def __init__(self,master,state):
         super().__init__(master)
         self.saveData = copy.deepcopy(state.saveData)
-        self.splits = AllSplitNames.Splits()
 
         self.buttonFrame = tk.Frame(self)
         self.buttonFrame.pack(side="right",fill="y")

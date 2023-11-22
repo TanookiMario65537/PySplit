@@ -2,6 +2,7 @@ import os, csv, json
 from util import dataManip
 from util import validation
 from pydantic import ValidationError
+from pathlib import Path
 
 def resolveFilename(arr):
     return "/".join(arr)
@@ -9,24 +10,11 @@ def resolveFilename(arr):
 def getDir(string):
     return resolveFilename(string.split("/")[:-1])
 
-def readSplitFile(baseDir,name,category,splitList):
-    splitFileName = resolveFilename([baseDir,name,category + ".pysplit"])
-    if not os.path.exists(splitFileName):
-        if not os.path.isdir(resolveFilename([baseDir,name])):
-            os.mkdir(resolveFilename([baseDir,name]))
-        splits = {
-            "game": name,
-            "category": category,
-            "runs": []
-        }.update(dataManip.newComparisons(splitList))
-        if name and category:
-            writeJson(splitFileName, splits)
-
-    else:
-        splits = readJson(splitFileName)
-        dataManip.adjustNamesJson(splitList, splits)
-
-    return splits
+def readSplitFile(splitFileName):
+    saveData = readJson(splitFileName)
+    if saveData:
+        return saveData
+    return dataManip.newComparisons()
 
 def writeCSVs(baseDir,name,category,splitWrite,comparesWrite):
     if splitWrite:
@@ -63,20 +51,21 @@ def readJson(filepath):
 
 def writeJson(filepath,data):
     jsonData = json.dumps(data, indent=4)
+    Path(os.path.dirname(filepath)).mkdir(parents=True, exist_ok=True)
     with open(filepath,'w') as writer:
         writer.write(jsonData)
 
-def writeSplitFile(baseDir, name, category ,data):
-    filepath = resolveFilename([baseDir,name,category + ".pysplit"])
+def writeSplitFile(filepath, data):
     try:
         validation.validateSave(data)
         writeJson(filepath, data)
+        print("Saved data to " + filepath)
     except ValidationError as err:
         filepath = filepath + ".error"
         print(err)
         print()
-        print("Saving data under " + filepath)
         writeJson(filepath, data)
+        print("Saved data to " + filepath)
 
 def readCsv(filepath):
     if not os.path.exists(filepath):
@@ -101,3 +90,10 @@ def removeCategory(baseDir,game,category):
     compareCsvName = resolveFilename([baseDir,game,category + "_comparisons.csv"])
     os.remove(csvName)
     os.remove(compareCsvName)
+
+def hasSplitFile(baseDir):
+    for root, dirs, files in os.walk(baseDir):
+        for file in files:
+            if file.endswith(".pysplit"):
+                return True
+    return False

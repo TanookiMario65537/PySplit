@@ -2,9 +2,7 @@ import sys
 from Apps import app as App
 import WidgetLoader
 import errors as Errors
-from DataClasses import AllSplitNames
 from DataClasses import Session
-from Dialogs import AddRun
 from States import State
 from util import readConfig as rc
 
@@ -24,11 +22,8 @@ def setHotkeys(app,state):
     app.root.bind(state.config["hotkeys"]["chooseLayout"], app.chooseLayout)
     app.root.bind(state.config["hotkeys"]["chooseRun"], app.chooseRun)
 
-splits = AllSplitNames.Splits()
-if not len(splits.getGames()):
-    AddRun.SplitEditorD().show()
-    splits.update()
-session = Session.Session(splits)
+
+session = Session.Session()
 if session.exit:
     sys.exit()
 
@@ -38,7 +33,7 @@ exitCode = None
 while not app or exitCode:
     rootWindow = None
 
-    state = State.State(session)
+    state = State.State(session.splitFile)
     rc.validateHotkeys(state.config)
 
     app = App.App(state,session)
