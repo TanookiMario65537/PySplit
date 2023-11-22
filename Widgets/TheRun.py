@@ -6,7 +6,7 @@ import json
 from util import pysplitToLss as convert
 
 
-class TheRun(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     def __init__(self, parent, state, config):
         super().__init__(parent, state, config)
         self.configure(bg="black")

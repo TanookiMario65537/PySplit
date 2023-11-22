@@ -1,7 +1,7 @@
 from Widgets import InfoBase
 from util import timeHelpers as timeh
 
-class BestExitComparisonInfo(InfoBase.InfoBase):
+class Widget(InfoBase.InfoBase):
     def __init__(self,parent,state,config):
         super().__init__(parent,state,config)
         self.resetUI()

@@ -1,6 +1,6 @@
 from Widgets import WidgetBase
 
-class Spacer(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     def __init__(self,parent,state,config):
         super().__init__(parent,state,config)
         self.configure(\

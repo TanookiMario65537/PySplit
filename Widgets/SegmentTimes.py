@@ -1,7 +1,7 @@
 import tkinter as tk
 from Widgets import WidgetBase
 
-class SegmentTimes(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     # segmentHeader = None
     # segmentTime = None
     # goldHeader = None

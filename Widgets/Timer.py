@@ -2,7 +2,7 @@ import tkinter as tk
 from Widgets import WidgetBase
 from util import timeHelpers as timeh
 
-class Timer(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     # main = None
 
     def __init__(self,parent,state,config):

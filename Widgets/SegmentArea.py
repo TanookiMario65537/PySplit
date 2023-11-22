@@ -3,7 +3,7 @@ from Components import SegmentRow
 from DataClasses import Splits
 from util import timeHelpers as timeh
 
-class SegmentArea(WidgetBase.WidgetBase):
+class Widget(WidgetBase.WidgetBase):
     rows = []
     numRows = 0
     activeIndex = 0
