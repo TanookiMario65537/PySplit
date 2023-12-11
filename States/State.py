@@ -44,6 +44,8 @@ class State(BaseState.State):
         self.bptList = BptList.BptList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
 
         for key in self.saveData["defaultComparisons"].keys():
+            if key == "bestRun":
+                self.pb_index = len(self.comparisons)
             self.comparisons.append(Comparison.Comparison(
                 self.saveData["defaultComparisons"][key]["name"],
                 self.saveData["defaultComparisons"][key]["name"],
@@ -186,11 +188,11 @@ class State(BaseState.State):
     ## Returns: True if the current run is a PB, False if not
     ##########################################################
     def isPB(self):
-        if self.currentRun.lastNonBlank() > self.comparisons[2].lastNonBlank():
+        if self.currentRun.lastNonBlank() > self.comparisons[self.pb_index].lastNonBlank():
             return True
-        if self.currentRun.lastNonBlank() < self.comparisons[2].lastNonBlank():
+        if self.currentRun.lastNonBlank() < self.comparisons[self.pb_index].lastNonBlank():
             return False
-        if timeh.greater(0,self.comparisons[2].totalDiffs[-1]):
+        if timeh.greater(0,self.comparisons[self.pb_index].totalDiffs[-1]):
             return True
         return False
 
