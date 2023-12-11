@@ -34,13 +34,14 @@ class Widget(InfoBase.InfoBase):
         self.setInfo()
 
     def setInfo(self):
-        self.info.configure(text=timeh.timeToString(\
-            timeh.difference(\
-                self.state.currentComparison.segments[self.state.splitnum],\
-                self.state.comparisons[0].segments[self.state.splitnum]\
-            ),\
-            {\
-                "precision": self.config["precision"],\
-                "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]\
-            }\
-        ))
+        self.info.configure(
+            text=timeh.timeToString(
+                timeh.difference(
+                    self.state.currentComparison.segments[self.state.splitnum],
+                    self.state.getComparison("default", "bestSegments").segments[self.state.splitnum]
+                ),
+                {
+                    "precision": self.config["precision"],
+                    "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]
+                }
+            ))

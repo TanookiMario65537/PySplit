@@ -74,7 +74,7 @@ class SplitEditor(tk.Frame):
         game = self.game
         category = self.category
         saveData = self.editor.entries.generateGrid()
-        saveData["version"] = "1.0"
+        saveData["version"] = "1.1"
         saveData["game"] = game
         saveData["category"] = category
         saveData["runs"] = []

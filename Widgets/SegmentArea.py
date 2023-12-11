@@ -59,7 +59,7 @@ class Widget(WidgetBase.WidgetBase):
     def frameUpdate(self):
         if not self.state.runEnded\
             and (not timeh.greater(self.state.currentComparison.totals[self.state.splitnum],self.state.totalTime)\
-            or not timeh.greater(self.state.comparisons[0].segments[self.state.splitnum],self.state.segmentTime)):
+            or not timeh.greater(self.state.getComparison("default", "bestSegments").segments[self.state.splitnum],self.state.segmentTime)):
 
             self.showCurrentSplitDiff()
         if not self.state.runEnded:
@@ -304,13 +304,14 @@ class Widget(WidgetBase.WidgetBase):
     def findDiffColour(self,splitIndex):
         # Either the split in this run is blank, or we're comparing
         # to something that's blank
+        bestSegments = self.state.getComparison("default", "bestSegments")
         if \
             timeh.isBlank(self.state.currentRun.totals[splitIndex]) \
             or timeh.isBlank(self.state.currentComparison.totals[splitIndex]):
             return self.config["diff"]["colours"]["skipped"]
         # This split is the best ever. Mark it with the gold colour
-        elif not timeh.isBlank(self.state.comparisons[0].segmentDiffs[splitIndex]) \
-            and timeh.greater(0,self.state.comparisons[0].segmentDiffs[splitIndex]):
+        elif not timeh.isBlank(bestSegments.segmentDiffs[splitIndex]) \
+            and timeh.greater(0, bestSegments.segmentDiffs[splitIndex]):
             return self.config["diff"]["colours"]["gold"]
         else:
             return self.getCurrentDiffColour(\

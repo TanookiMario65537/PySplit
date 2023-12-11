@@ -15,19 +15,16 @@ class Widget(InfoBase.InfoBase):
         if self.shouldHide():
             self.hide()
             return
-        if not timeh.greater(self.state.comparisons[0].segments[self.state.splitnum],self.state.segmentTime):
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        if not timeh.greater(bestSegments.segments[self.state.splitnum],self.state.segmentTime):
             self.info.configure(
-                text=\
-                    timeh.timeToString(\
-                        timeh.add(\
-                            timeh.difference(self.state.segmentTime,self.state.comparisons[0].segments[self.state.splitnum]),\
-                            self.state.bptList.total
-                        ), \
-                        {\
-                            "precision": self.config["precision"]\
-                        }\
-                    )\
-            )
+                text=timeh.timeToString(
+                    timeh.add(
+                        timeh.difference(self.state.segmentTime, bestSegments.segments[self.state.splitnum]),
+                        self.state.bptList.total
+                    ),
+                    {"precision": self.config["precision"]}
+                ))
 
     def onSplit(self):
         self.updateTime()

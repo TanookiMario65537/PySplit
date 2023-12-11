@@ -15,8 +15,9 @@ class Widget(InfoBase.InfoBase):
         if self.state.splitnum and self.shouldHide():
             self.hide()
             return
-        if not timeh.greater(self.state.comparisons[0].segments[self.state.splitnum],self.state.segmentTime)\
-            and not timeh.isBlank(self.state.comparisons[0].segments[self.state.splitnum])\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        if not timeh.greater(bestSegments.segments[self.state.splitnum], self.state.segmentTime)\
+            and not timeh.isBlank(bestSegments.segments[self.state.splitnum])\
             and not (self.state.splitnum and timeh.isBlank(self.state.currentRun.segments[self.state.splitnum-1])):
 
             if self.state.splitnum and self.shouldHide():
@@ -60,12 +61,13 @@ class Widget(InfoBase.InfoBase):
             splitnum = self.state.splitnum - 1
         else:
             splitnum = self.state.splitnum
-        self.info.configure(text=\
-            timeh.timeToString(\
-                timeh.difference(\
-                    time,\
-                    self.state.comparisons[0].segments[splitnum]\
-                ),\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        self.info.configure(
+            text=timeh.timeToString(
+                timeh.difference(
+                    time,
+                    bestSegments.segments[splitnum]
+                ),
                 {\
                     "showSign": True,\
                     "precision": self.config["precision"],\
@@ -90,12 +92,13 @@ class Widget(InfoBase.InfoBase):
 
     def setPreviousColour(self):
         split = self.state.splitnum-1
-        if timeh.isBlank(self.state.comparisons[0].segments[split])\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        if timeh.isBlank(bestSegments.segments[split])\
             or timeh.isBlank(self.state.currentRun.segments[split])\
             or timeh.isBlank(self.state.currentComparison.segments[split]):
             return self.config["colours"]["skipped"]
 
-        if timeh.greater(self.state.comparisons[0].segments[split],self.state.currentRun.segments[split]):
+        if timeh.greater(bestSegments.segments[split],self.state.currentRun.segments[split]):
             return self.config["colours"]["gold"]
 
         elif timeh.greater(self.state.currentComparison.segments[split],self.state.currentRun.segments[split]):

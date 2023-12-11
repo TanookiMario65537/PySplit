@@ -155,7 +155,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
             SumList.SumList([timeh.blank() for _ in self.rows]))
 
     def removeComparison(self):
-        if len(self.comparisons) <= 5:
+        if len(self.comparisons) <= len(self.defaultComparisonOrder):
             return
         del self.comparisons[-1]
         self.headerRow.removeHeaders(2)

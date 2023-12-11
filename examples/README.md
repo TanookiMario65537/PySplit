@@ -11,9 +11,6 @@ The form of a `.pysplit` file defined by the following:
     defaultComparisons: {
         bestSegments: Comparison
         bestRun: Comparison
-        average: Comparison
-        bestExits: Comparison
-        blank: Comparison
     }
     customComparisons: list[Comparison]
     runs: list[Run]

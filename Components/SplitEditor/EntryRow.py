@@ -4,7 +4,6 @@ from util import timeHelpers as timeh
 
 class EntryRow(tk.Frame):
     cellWidth = 10
-    blankIndex = 4
     def __init__(self,parent,parentObj,comparisonsRow):
         super().__init__(parent)
         self.parent = parentObj
@@ -13,10 +12,7 @@ class EntryRow(tk.Frame):
 
         self.pairs = []
         for i in range(0,len(comparisonsRow),2):
-            if not self.comparisonIndex(i) == self.blankIndex:
-                pair = self.generalPair(i,comparisonsRow[i:i+2])
-            else:
-                pair = self.blankPair(comparisonsRow[i:i+2])
+            pair = self.generalPair(int(i/2),comparisonsRow[i:i+2])
             pair[0].grid(row=0,column=i)
             pair[1].grid(row=0,column=i+1)
             self.pairs.append(pair)
@@ -41,11 +37,10 @@ class EntryRow(tk.Frame):
         ]
 
     def shouldWarn(self):
-        return not all([self.pairs[i][0].isValid() for i in filter(lambda x: not x == self.blankIndex, range(len(self.pairs)))])
+        return not all([pair[0].isValid() for pair in self.pairs])
 
     def updateEntry(self,index,time):
-        if not index == self.blankIndex:
-            self.pairs[index][0].setText(timeh.timeToString(time,{"precision":2}))
+        self.pairs[index][0].setText(timeh.timeToString(time,{"precision":2}))
 
     def addComparison(self):
         pair = self.generalPair(len(self.pairs),['-','-'])

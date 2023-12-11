@@ -13,7 +13,7 @@ def getDir(string):
 def readSplitFile(splitFileName):
     saveData = readJson(splitFileName)
     if saveData:
-        return saveData
+        return validation.updateSave(saveData)
     return dataManip.newComparisons()
 
 def writeCSVs(baseDir,name,category,splitWrite,comparesWrite):

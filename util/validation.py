@@ -1,7 +1,9 @@
 from typing import List, Annotated
 from pydantic import BaseModel, Field
+import copy
 
 
+versionList = ["1.0", "1.1"]
 Time = Annotated[str, Field(pattern=r'^(((\d+:)?(\d?\d:))?\d)?\d.\d{5}$|^-$')]
 DateTime = Annotated[
     str,
@@ -24,9 +26,6 @@ class Run(BaseModel):
 class DefaultComparisons(BaseModel):
     bestSegments: Comparison
     bestRun: Comparison
-    average: Comparison
-    bestExits: Comparison
-    blank: Comparison
 
 
 class SaveData(BaseModel):
@@ -51,3 +50,19 @@ def validateSave(saveData):
     Raises: ValidationError if the validation doesn't pass.
     """
     SaveData.model_validate(saveData)
+
+
+def updateVersion(saveData, version):
+    newSave = copy.deepcopy(saveData)
+    newSave["version"] = version
+    if version == "1.1":
+        del newSave["defaultComparisons"]["average"]
+        del newSave["defaultComparisons"]["bestExits"]
+        del newSave["defaultComparisons"]["blank"]
+    return newSave
+
+
+def updateSave(saveData):
+    for version in versionList[versionList.index(saveData["version"])+1:]:
+        saveData = updateVersion(saveData, version)
+    return saveData

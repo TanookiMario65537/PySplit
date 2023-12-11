@@ -95,13 +95,9 @@ class Widget(WidgetBase.WidgetBase):
         self.goldHeader.configure(text="Best Split:")
 
     def updateGoldTime(self):
-        self.goldTime.configure(\
-            text=\
-                self.state.comparisons[0].getString(\
-                    "segments",\
-                    self.state.splitnum,\
-                    {\
-                        "precision": self.config["precision"]\
-                    }\
-                )\
-        )
+        self.goldTime.configure(
+            text=self.state.getComparison("default", "bestSegments").getString(
+                "segments",
+                self.state.splitnum,
+                {"precision": self.config["precision"]}
+            ))

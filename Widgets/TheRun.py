@@ -64,12 +64,14 @@ class Widget(WidgetBase.WidgetBase):
         starttime = int(self.state.staticStartTime.timestamp() * 1000)
         endtime = int(datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo).timestamp() * 1000)
         runData = []
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        bestRun = self.state.getComparison("default", "bestRun")
         for i, name in enumerate(self.state.splitnames):
             runData.append({
                 "name": name,
                 "splitTime": self.clean_time_to_therun_api(self.state.currentRun.totals[i]) if len(self.state.currentRun.totals) > i and not is_reset else None,
-                "pbSplitTime": self.clean_time_to_therun_api(self.state.comparisons[2].totals[i]),
-                "bestPossible": self.clean_time_to_therun_api(self.state.comparisons[0].segments[i]),
+                "pbSplitTime": self.clean_time_to_therun_api(bestRun.totals[i]),
+                "bestPossible": self.clean_time_to_therun_api(bestSegments.segments[i]),
                 "comparisons": [{
                     "name": comparison.totalHeader,
                     "time": self.clean_time_to_therun_api(comparison.totals[i])

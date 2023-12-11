@@ -150,3 +150,8 @@ def equal(time1,time2):
     if isBlank(time1) or isBlank(time2):
         return blank()
     return time1 == time2
+
+
+def listMin(arr):
+    filtered = list(filter(lambda x: not isBlank(x), arr))
+    return min(filtered) if len(filtered) else blank()

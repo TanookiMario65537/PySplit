@@ -149,7 +149,7 @@ def adjustNamesJson(names, data):
 ##############################################################
 def newComparisons(names=[]):
     data = {
-        "version": "1.0",
+        "version": "1.1",
         "game": "",
         "category": "",
         "splitNames": names,
@@ -161,21 +161,6 @@ def newComparisons(names=[]):
             },
             "bestRun": {
                 "name": "Personal Best",
-                "segments": ['-' for _ in range(len(names))],
-                "totals": ['-' for _ in range(len(names))]
-            },
-            "average": {
-                "name": "Average",
-                "segments": ['-' for _ in range(len(names))],
-                "totals": ['-' for _ in range(len(names))]
-            },
-            "bestExits": {
-                "name": "Best Exits",
-                "segments": ['-' for _ in range(len(names))],
-                "totals": ['-' for _ in range(len(names))]
-            },
-            "blank": {
-                "name": "Blank",
                 "segments": ['-' for _ in range(len(names))],
                 "totals": ['-' for _ in range(len(names))]
             }

@@ -7,14 +7,18 @@ class Comparison:
     totals = []
     segmentDiffs = []
     totalDiffs = []
+    ctype: str
+    name: str
 
-    def __init__(self,shead,thead,segments,totals):
+    def __init__(self, shead, thead, segments, totals, ctype, name=None):
         self.segmentHeader = shead
         self.totalHeader = thead
         self.segments = segments
         self.totals = totals
         self.segmentDiffs = []
         self.totalDiffs = []
+        self.ctype = ctype
+        self.name = name if name else self.segmentHeader
 
     def getString(self,name,index,options={}):
         if (name == "segments"):

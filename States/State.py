@@ -33,7 +33,9 @@ class State(BaseState.State):
     def loadSplits(self, saveData):
         super().loadSplits(saveData)
         self.currentBests = SumList.SumList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
-        self.bestExits = DifferenceList.DifferenceList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestExits"]["totals"]))
+        self.bestExits = DifferenceList.DifferenceList(
+            [timeh.listMin([timeh.stringToTime(run["totals"][i]) for run in self.saveData["runs"]]) for i in range(len(self.splitnames))]
+        )
         self.comparisons = []
         self.setComparisons()
 
@@ -51,7 +53,11 @@ class State(BaseState.State):
                 self.saveData["defaultComparisons"][key]["name"],
                 timeh.stringListToTimes(self.saveData["defaultComparisons"][key]["segments"]),
                 timeh.stringListToTimes(self.saveData["defaultComparisons"][key]["totals"]),
+                "default",
+                name=key
              ))
+
+        self.comparisons.extend(self.generateComparisons())
 
         for i in range(len(self.saveData["customComparisons"])):
             self.comparisons.append(Comparison.Comparison(
@@ -59,15 +65,8 @@ class State(BaseState.State):
                 self.saveData["customComparisons"][i]["name"],
                 timeh.stringListToTimes(self.saveData["customComparisons"][i]["segments"]),
                 timeh.stringListToTimes(self.saveData["customComparisons"][i]["totals"]),
+                "custom"
              ))
-
-        if len(self.saveData["runs"]) > 1:
-            self.comparisons.append(Comparison.Comparison(
-                "Last Run",
-                "Last Run",
-                timeh.stringListToTimes(self.saveData["runs"][-1]["segments"]),
-                timeh.stringListToTimes(self.saveData["runs"][-1]["totals"]),
-            ))
 
         self.numComparisons = len(self.comparisons)
         if self.compareNum >= self.numComparisons:
@@ -75,6 +74,95 @@ class State(BaseState.State):
         self.currentComparison = self.comparisons[self.compareNum]
         
         self.currentRun = CurrentRun.CurrentRun()
+
+    def generateComparisons(self):
+        """
+        Generates the following comparisons:
+          Balanced
+          Last Run
+          Average
+          Best Exit
+          Blank
+        """
+        comparison_list = []
+
+        # Balanced
+        if len(self.splitnames) and not timeh.isBlank(self.bestExits.totals[-1]) and not timeh.isBlank(timeh.stringToTime(self.saveData["defaultComparisons"]["bestSegments"]["totals"][-1])):
+            pbTime = timeh.stringToTime(self.saveData["defaultComparisons"]["bestRun"]["totals"][-1])
+            sobTime = timeh.stringToTime(self.saveData["defaultComparisons"]["bestSegments"]["totals"][-1])
+            balancedDiffList = DifferenceList.DifferenceList(
+                [timeh.blank() if timeh.isBlank(time) else time*pbTime/sobTime for time in self.currentBests.totalBests]
+            )
+            comparison_list.append(Comparison.Comparison(
+                "Balanced",
+                "Balanced",
+                balancedDiffList.segments,
+                balancedDiffList.totals,
+                "generated"
+            ))
+
+        # Last Run
+        if len(self.saveData["runs"]):
+            comparison_list.append(Comparison.Comparison(
+                "Last Run",
+                "Last Run",
+                timeh.stringListToTimes(self.saveData["runs"][-1]["segments"]),
+                timeh.stringListToTimes(self.saveData["runs"][-1]["totals"]),
+                "run"
+            ))
+
+        # Compute averages
+        computedAverage = []
+        for i in range(len(self.splitnames)):
+            average = []
+            for j in range(len(self.saveData["runs"])):
+                time = timeh.stringToTime(
+                    self.saveData["runs"][j]["segments"][i])
+                if not timeh.isBlank(time):
+                    average.append(time)
+            averageTime = timeh.sumTimeList(average)
+            computedAverage.append(
+                timeh.blank() if timeh.isBlank(averageTime)
+                else averageTime/len(average))
+        averageSumlist = SumList.SumList(computedAverage)
+
+        comparison_list.append(Comparison.Comparison(
+            "Average",
+            "Average",
+            averageSumlist.bests,
+            averageSumlist.totalBests,
+            "generated"
+        ))
+
+        # Add best exits
+        comparison_list.append(Comparison.Comparison(
+            "Best Exit",
+            "Best Exit",
+            self.bestExits.segments,
+            self.bestExits.totals,
+            "generated"
+        ))
+
+        # Add blanks
+        comparison_list.append(Comparison.Comparison(
+            "Blank",
+            "Blank",
+            [timeh.blank() for _ in self.splitnames],
+            [timeh.blank() for _ in self.splitnames],
+            "generated"
+        ))
+
+        return comparison_list
+
+    def getComparison(self, ctype: str, name: str) -> Comparison.Comparison | None:
+        """
+        Returns a comparison by type and name. Returns None if there is no
+        match.
+        """
+        for comparison in self.comparisons:
+            if comparison.ctype == ctype and comparison.name == name:
+                return comparison
+        return None
 
     ##########################################################
     ## Sets the segment and total times. Should be used only
@@ -161,26 +249,6 @@ class State(BaseState.State):
     def startPause(self,time):
         self.paused = True
         self.pauseTime = time
-
-    ##########################################################
-    ## Compute the average for each split
-    ##########################################################
-    def getAverages(self):
-        averages = []
-        for i in range(len(self.splitnames)):
-            average = []
-            for j in range(len(self.saveData["runs"])):
-                time = timeh.stringToTime(self.saveData["runs"][j]["segments"][i])
-                if not timeh.isBlank(time):
-                    average.append(time)
-            if not timeh.isBlank(self.currentRun.segments[i]):
-                average.append(self.currentRun.segments[i])
-            averageTime = timeh.sumTimeList(average)
-            if timeh.isBlank(averageTime):
-                averages.append(timeh.blank())
-            else:
-                averages.append(averageTime/len(average))
-        return SumList.SumList(averages)
 
     ##########################################################
     ## Determines whether the current run is a PB or not
@@ -286,19 +354,11 @@ class State(BaseState.State):
             self.currentBests,
             "bestSegments",
             self.saveData)
-        dataManip.replaceSumList(
-            self.getAverages(),
-            "average",
-            self.saveData)
         if self.isPB():
             dataManip.replaceComparison(
                 self.currentRun,
                 "bestRun",
                 self.saveData)
-        dataManip.replaceComparison(
-            self.bestExits,
-            "bestExits",
-            self.saveData)
 
         if not self.currentRun.empty:
             self.saveData["runs"].append({

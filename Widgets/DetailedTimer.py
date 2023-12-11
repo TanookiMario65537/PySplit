@@ -80,7 +80,7 @@ class Widget(WidgetBase.WidgetBase):
         splitnum = self.state.splitnum
         comparisonTime = self.state.currentComparison.totals[splitnum]
         comparisonSegment = self.state.currentComparison.segments[splitnum]
-        goldSegment = self.state.comparisons[0].segments[splitnum]
+        goldSegment = self.state.getComparison("default", "bestSegments").segments[splitnum]
 
         # last split skipped
         if self.state.splitnum \
