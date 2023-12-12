@@ -32,6 +32,17 @@ def validTime(time):
     hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
     return secs.match(time) or mins.match(time) or hours.match(time)
 
+
+def isStringTime(time):
+    if type(time) is not str:
+        return False
+    if time == "-":
+        return True
+    secs = re.compile(r'^[1-5]?\d{1}\.\d{1,5}$')
+    mins = re.compile(r'^[1-5]?\d{1}:[0-5]\d{1}\.\d{1,5}$')
+    hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
+    return (secs.match(time) or mins.match(time) or hours.match(time)) is not None
+
 def parseOptions(options):
     newOptions = {\
         "showSign": False, \

@@ -1,4 +1,9 @@
 import datetime
+import sys
+import os
+sys.path.insert(0, os.getcwd())
+from DataClasses import SyncedTimeList as STL
+from util import timeHelpers as timeh
 
 
 def isoToLss(isostring):
@@ -19,9 +24,9 @@ def attemptTag(run, id):
 
 
 def segmentHistoryTag(run, index, splitIndex):
-    if run["segments"][splitIndex] == "-":
+    if timeh.isBlank(run.segments[splitIndex]):
         return None
-    return f"""                <Time id="{index+1}"><RealTime>{splitTimeToLss(run["segments"][splitIndex])}</RealTime></Time>"""
+    return f"""                <Time id="{index+1}"><RealTime>{splitTimeToLss(timeh.timeToString(run.segments[splitIndex]))}</RealTime></Time>"""
 
 
 def comparisonTag(comparison, splitIndex):
@@ -36,7 +41,7 @@ def combineTagList(tagList):
 
 def segmentTag(saveData, index):
     comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate([saveData["defaultComparisons"]["bestRun"]] + saveData["customComparisons"])])
-    segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate(saveData["runs"])])
+    segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate([STL.SyncedTimeList(totals=r["totals"])for r in saveData["runs"]])])
     return f"""        <Segment><Name>{saveData["splitNames"][index]}</Name><Icon/>
             <SplitTimes>
 {comparisons}

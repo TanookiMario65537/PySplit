@@ -1,13 +1,8 @@
 import os
 import datetime
-from util import dataManip
 from util import fileio
 from util import timeHelpers as timeh
-from DataClasses import BptList
-from DataClasses import Comparison
-from DataClasses import CurrentRun
-from DataClasses import SumList
-from DataClasses import DifferenceList
+from DataClasses import SyncedTimeList as STL
 from States import BaseState
 
 class State(BaseState.State):
@@ -27,14 +22,14 @@ class State(BaseState.State):
 
     def __init__(self, splitFile):
         super().__init__(splitFile)
-        if (self.saveData):
+        if self.saveData:
             self.loadSplits(self.saveData)
 
     def loadSplits(self, saveData):
         super().loadSplits(saveData)
-        self.currentBests = SumList.SumList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
-        self.bestExits = DifferenceList.DifferenceList(
-            [timeh.listMin([timeh.stringToTime(run["totals"][i]) for run in self.saveData["runs"]]) for i in range(len(self.splitnames))]
+        self.currentBests = STL.SyncedTimeList(segments=timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
+        self.bestExits = STL.SyncedTimeList(
+            totals=[timeh.listMin([timeh.stringToTime(run["totals"][i]) for run in self.saveData["runs"]]) for i in range(len(self.splitnames))]
         )
         self.comparisons = []
         self.setComparisons()
@@ -43,16 +38,18 @@ class State(BaseState.State):
     ## Initialize the comparisons, BPT list, and current run.
     ##########################################################
     def setComparisons(self):
-        self.bptList = BptList.BptList(timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
+        self.bptList = STL.BptList(segments=timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
 
         for key in self.saveData["defaultComparisons"].keys():
             if key == "bestRun":
                 self.pb_index = len(self.comparisons)
-            self.comparisons.append(Comparison.Comparison(
+            saveKey = list(self.saveData["defaultComparisons"][key].keys())[1]
+            initData = {}
+            initData[saveKey] = self.saveData["defaultComparisons"][key][saveKey]
+            cmp = STL.SyncedTimeList(**initData)
+            self.comparisons.append(STL.Comparison(
                 self.saveData["defaultComparisons"][key]["name"],
-                self.saveData["defaultComparisons"][key]["name"],
-                timeh.stringListToTimes(self.saveData["defaultComparisons"][key]["segments"]),
-                timeh.stringListToTimes(self.saveData["defaultComparisons"][key]["totals"]),
+                cmp.totals,
                 "default",
                 name=key
              ))
@@ -60,11 +57,9 @@ class State(BaseState.State):
         self.comparisons.extend(self.generateComparisons())
 
         for i in range(len(self.saveData["customComparisons"])):
-            self.comparisons.append(Comparison.Comparison(
+            self.comparisons.append(STL.Comparison(
                 self.saveData["customComparisons"][i]["name"],
-                self.saveData["customComparisons"][i]["name"],
-                timeh.stringListToTimes(self.saveData["customComparisons"][i]["segments"]),
-                timeh.stringListToTimes(self.saveData["customComparisons"][i]["totals"]),
+                self.saveData["customComparisons"][i]["totals"],
                 "custom"
              ))
 
@@ -73,7 +68,8 @@ class State(BaseState.State):
             self.compareNum = self.numComparisons - 1
         self.currentComparison = self.comparisons[self.compareNum]
         
-        self.currentRun = CurrentRun.CurrentRun()
+        self.currentRun = STL.SyncedTimeList(
+            totals=[timeh.blank() for _ in range(self.numSplits)])
 
     def generateComparisons(self):
         """
@@ -87,27 +83,19 @@ class State(BaseState.State):
         comparison_list = []
 
         # Balanced
-        if len(self.splitnames) and not timeh.isBlank(self.bestExits.totals[-1]) and not timeh.isBlank(timeh.stringToTime(self.saveData["defaultComparisons"]["bestSegments"]["totals"][-1])):
+        if len(self.splitnames) and not timeh.isBlank(self.bestExits.totals[-1]) and not timeh.isBlank(self.bptList.total):
             pbTime = timeh.stringToTime(self.saveData["defaultComparisons"]["bestRun"]["totals"][-1])
-            sobTime = timeh.stringToTime(self.saveData["defaultComparisons"]["bestSegments"]["totals"][-1])
-            balancedDiffList = DifferenceList.DifferenceList(
-                [timeh.blank() if timeh.isBlank(time) else time*pbTime/sobTime for time in self.currentBests.totalBests]
-            )
-            comparison_list.append(Comparison.Comparison(
+            comparison_list.append(STL.Comparison(
                 "Balanced",
-                "Balanced",
-                balancedDiffList.segments,
-                balancedDiffList.totals,
+                [timeh.blank() if timeh.isBlank(time) else time*pbTime/self.bptList.total for time in self.currentBests.totals],
                 "generated"
             ))
 
         # Last Run
         if len(self.saveData["runs"]):
-            comparison_list.append(Comparison.Comparison(
+            comparison_list.append(STL.Comparison(
                 "Last Run",
-                "Last Run",
-                timeh.stringListToTimes(self.saveData["runs"][-1]["segments"]),
-                timeh.stringListToTimes(self.saveData["runs"][-1]["totals"]),
+                self.saveData["runs"][-1]["totals"],
                 "run"
             ))
 
@@ -117,44 +105,37 @@ class State(BaseState.State):
             average = []
             for j in range(len(self.saveData["runs"])):
                 time = timeh.stringToTime(
-                    self.saveData["runs"][j]["segments"][i])
+                    self.saveData["runs"][j]["totals"][i])
                 if not timeh.isBlank(time):
                     average.append(time)
             averageTime = timeh.sumTimeList(average)
             computedAverage.append(
                 timeh.blank() if timeh.isBlank(averageTime)
                 else averageTime/len(average))
-        averageSumlist = SumList.SumList(computedAverage)
 
-        comparison_list.append(Comparison.Comparison(
+        comparison_list.append(STL.Comparison(
             "Average",
-            "Average",
-            averageSumlist.bests,
-            averageSumlist.totalBests,
+            computedAverage,
             "generated"
         ))
 
         # Add best exits
-        comparison_list.append(Comparison.Comparison(
+        comparison_list.append(STL.Comparison(
             "Best Exit",
-            "Best Exit",
-            self.bestExits.segments,
             self.bestExits.totals,
             "generated"
         ))
 
         # Add blanks
-        comparison_list.append(Comparison.Comparison(
+        comparison_list.append(STL.Comparison(
             "Blank",
-            "Blank",
-            [timeh.blank() for _ in self.splitnames],
             [timeh.blank() for _ in self.splitnames],
             "generated"
         ))
 
         return comparison_list
 
-    def getComparison(self, ctype: str, name: str) -> Comparison.Comparison | None:
+    def getComparison(self, ctype: str, name: str) -> STL.Comparison | None:
         """
         Returns a comparison by type and name. Returns None if there is no
         match.
@@ -190,15 +171,15 @@ class State(BaseState.State):
             totalTime = map["system"] - self.starttime
             splitTime = map["system"] - self.splitstarttime
             splitstart = map["system"]
-        self.currentRun.addSegment(splitTime,totalTime)
-        self.bptList.update(totalTime)
+        self.currentRun.update(totalTime, self.splitnum)
+        self.bptList.update(totalTime, self.splitnum)
 
         for i in range(self.numComparisons):
-            self.comparisons[i].updateDiffs(splitTime,totalTime)
-        if timeh.isBlank(self.currentBests.bests[self.splitnum]) or not timeh.greater(self.currentRun.segments[-1],self.currentBests.bests[self.splitnum]):
-            self.currentBests.update(splitTime,self.splitnum)
+            self.comparisons[i].update(totalTime, self.splitnum)
+        if timeh.isBlank(self.currentBests.segments[self.splitnum]) or not timeh.greater(self.currentRun.segments[self.splitnum], self.currentBests.segments[self.splitnum]):
+            self.currentBests.update(splitTime, self.splitnum)
         if timeh.isBlank(self.bestExits.totals[self.splitnum]) or not timeh.greater(totalTime,self.bestExits.totals[self.splitnum]):
-            self.bestExits.update(totalTime,self.splitnum)
+            self.bestExits.update(totalTime, self.splitnum)
         self.splitnum = self.splitnum + 1
         self.splitstarttime = splitstart
         if self.splitnum >= len(self.splitnames):
@@ -218,10 +199,10 @@ class State(BaseState.State):
         else:
             totaltime = map["system"] - self.starttime
             splitstart = map["system"]
-        self.currentRun.addSegment(timeh.blank(),timeh.blank())
-        self.bptList.update(totaltime)
+        self.currentRun.update(timeh.blank(), self.splitnum)
+        self.bptList.update(totaltime, self.splitnum)
         for i in range(self.numComparisons):
-            self.comparisons[i].updateDiffs(timeh.blank(),timeh.blank())
+            self.comparisons[i].update(timeh.blank(), self.splitnum)
         self.splitnum = self.splitnum + 1
         self.splitstarttime = splitstart
         if self.splitnum >= len(self.splitnames):
@@ -256,11 +237,12 @@ class State(BaseState.State):
     ## Returns: True if the current run is a PB, False if not
     ##########################################################
     def isPB(self):
-        if self.currentRun.lastNonBlank() > self.comparisons[self.pb_index].lastNonBlank():
+        pbcmp = self.comparisons[self.pb_index]
+        if self.currentRun.lastNonBlank() > pbcmp.lastNonBlank():
             return True
-        if self.currentRun.lastNonBlank() < self.comparisons[self.pb_index].lastNonBlank():
+        if self.currentRun.lastNonBlank() < pbcmp.lastNonBlank():
             return False
-        if timeh.greater(0,self.comparisons[self.pb_index].totalDiffs[-1]):
+        if timeh.greater(0, pbcmp.diffs.totals[pbcmp.lastNonBlank()]):
             return True
         return False
 
@@ -348,25 +330,16 @@ class State(BaseState.State):
     ## Updates the local versions of the data files.
     ##########################################################
     def localSave(self):
-        self.currentRun.fillTimes(len(self.splitnames))
         self.saveData["splitNames"] = self.splitnames
-        dataManip.replaceSumList(
-            self.currentBests,
-            "bestSegments",
-            self.saveData)
+        self.saveData["defaultComparisons"]["bestSegments"]["segments"] = timeh.timesToStringList(self.currentBests.segments)
         if self.isPB():
-            dataManip.replaceComparison(
-                self.currentRun,
-                "bestRun",
-                self.saveData)
+            self.saveData["defaultComparisons"]["bestRun"]["totals"] = timeh.timesToStringList(self.currentRun.totals)
 
-        if not self.currentRun.empty:
-            self.saveData["runs"].append({
-                "startTime": self.staticStartTime.isoformat(),
-                "endTime": self.staticEndTime.isoformat(),
-                "segments": timeh.timesToStringList(self.currentRun.segments),
-                "totals": timeh.timesToStringList(self.currentRun.totals)
-            })
+        self.saveData["runs"].append({
+            "startTime": self.staticStartTime.isoformat(),
+            "endTime": self.staticEndTime.isoformat(),
+            "totals": timeh.timesToStringList(self.currentRun.totals)
+        })
         self.unSaved = True
 
     ##########################################################

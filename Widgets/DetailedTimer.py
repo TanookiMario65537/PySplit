@@ -78,13 +78,12 @@ class Widget(WidgetBase.WidgetBase):
 
     def timerColour(self):
         splitnum = self.state.splitnum
-        comparisonTime = self.state.currentComparison.totals[splitnum]
-        comparisonSegment = self.state.currentComparison.segments[splitnum]
-        goldSegment = self.state.getComparison("default", "bestSegments").segments[splitnum]
+        comparisonTime = self.state.currentComparison.times.totals[splitnum]
+        comparisonSegment = self.state.currentComparison.times.segments[splitnum]
+        goldSegment = self.state.getComparison("default", "bestSegments").times.segments[splitnum]
 
         # last split skipped
-        if self.state.splitnum \
-            and timeh.isBlank(self.state.currentRun.totals[-1]):
+        if self.state.splitnum and timeh.isBlank(self.state.currentRun.totals[self.state.splitnum-1]):
             # total blank or ahead of total
             if timeh.greater(comparisonTime,self.state.totalTime):
                 return self.config["mainTimer"]["colours"]["main"]

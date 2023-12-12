@@ -9,7 +9,7 @@ The form of a `.pysplit` file defined by the following:
     category: string
     splitNames: list[string]
     defaultComparisons: {
-        bestSegments: Comparison
+        bestSegments: BestSegments
         bestRun: Comparison
     }
     customComparisons: list[Comparison]
@@ -20,15 +20,17 @@ The form of a `.pysplit` file defined by the following:
 with the following auxiliary types:
 
 ```
-Comparison:
+BestSegments:
     name: string
     segments: list[Time]
+
+Comparison:
+    name: string
     totals: list[Time]
 
 Run:
     startTime: IsoTime
     endTime: IsoTime
-    segments: list[Time]
     totals: list[Time]
 
 Time: "(%H:)?(%M:)?%S.xxxxx" | "-"

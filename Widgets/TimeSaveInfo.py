@@ -37,8 +37,8 @@ class Widget(InfoBase.InfoBase):
         self.info.configure(
             text=timeh.timeToString(
                 timeh.difference(
-                    self.state.currentComparison.segments[self.state.splitnum],
-                    self.state.getComparison("default", "bestSegments").segments[self.state.splitnum]
+                    self.state.currentComparison.times.segments[self.state.splitnum],
+                    self.state.getComparison("default", "bestSegments").times.segments[self.state.splitnum]
                 ),
                 {
                     "precision": self.config["precision"],

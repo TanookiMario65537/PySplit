@@ -16,11 +16,11 @@ class Widget(InfoBase.InfoBase):
             self.hide()
             return
         bestSegments = self.state.getComparison("default", "bestSegments")
-        if not timeh.greater(bestSegments.segments[self.state.splitnum],self.state.segmentTime):
+        if not timeh.greater(bestSegments.times.segments[self.state.splitnum],self.state.segmentTime):
             self.info.configure(
                 text=timeh.timeToString(
                     timeh.add(
-                        timeh.difference(self.state.segmentTime, bestSegments.segments[self.state.splitnum]),
+                        timeh.difference(self.state.segmentTime, bestSegments.times.segments[self.state.splitnum]),
                         self.state.bptList.total
                     ),
                     {"precision": self.config["precision"]}

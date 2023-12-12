@@ -32,8 +32,8 @@ class Widget(InfoBase.InfoBase):
 
     def updateBestExit(self,splitnum):
         bestExits = self.state.getComparison("generated", "Best Exit")
-        if not timeh.greater(bestExits.totalDiffs[splitnum],0)\
-            or (timeh.isBlank(bestExits.totals[splitnum])
+        if not timeh.greater(bestExits.diffs.totals[splitnum],0)\
+            or (timeh.isBlank(bestExits.times.totals[splitnum])
             and not timeh.isBlank(self.state.currentRun.totals[splitnum])):
             self.info.configure(text="Yes",fg=self.config["colours"]["yes"])
         else:

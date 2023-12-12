@@ -58,8 +58,8 @@ class Widget(WidgetBase.WidgetBase):
 
     def frameUpdate(self):
         if not self.state.runEnded\
-            and (not timeh.greater(self.state.currentComparison.totals[self.state.splitnum],self.state.totalTime)\
-            or not timeh.greater(self.state.getComparison("default", "bestSegments").segments[self.state.splitnum],self.state.segmentTime)):
+            and (not timeh.greater(self.state.currentComparison.times.totals[self.state.splitnum],self.state.totalTime)\
+            or not timeh.greater(self.state.getComparison("default", "bestSegments").times.segments[self.state.splitnum],self.state.segmentTime)):
 
             self.showCurrentSplitDiff()
         if not self.state.runEnded:
@@ -144,8 +144,8 @@ class Widget(WidgetBase.WidgetBase):
                                 self.state.currentRun.totals[split.start]\
                             ),\
                             timeh.difference(\
-                                self.state.currentComparison.totals[split.end],\
-                                self.state.currentComparison.totals[split.start]\
+                                self.state.currentComparison.times.totals[split.end],\
+                                self.state.currentComparison.times.totals[split.start]\
                             )\
                         )
                         if timeh.isBlank(groupChange):
@@ -153,15 +153,15 @@ class Widget(WidgetBase.WidgetBase):
                         else:
                             diffColour=self.getCurrentDiffColour(\
                                 groupChange,\
-                                self.state.currentComparison.totalDiffs[split.end]\
+                                self.state.currentComparison.diffs.totals[split.end]\
                             )
                     else:
                         diffColour=self.getCurrentDiffColour(\
                             timeh.blank(),\
-                            self.state.currentComparison.totalDiffs[split.end]\
+                            self.state.currentComparison.diffs.totals[split.end]\
                         )
                     self.rows[i].setDiff(\
-                        text=self.formatDiff(self.state.currentComparison.totalDiffs[split.end]),\
+                        text=self.formatDiff(self.state.currentComparison.diffs.totals[split.end]),\
                         fg=diffColour\
                     )
                 else:
@@ -169,7 +169,7 @@ class Widget(WidgetBase.WidgetBase):
             else:
                 if (split.index < self.state.splitnum):
                     self.rows[i].setDiff(\
-                        text=self.formatDiff(self.state.currentComparison.totalDiffs[split.index]),\
+                        text=self.formatDiff(self.state.currentComparison.diffs.totals[split.index]),\
                         fg=self.findDiffColour(split.index)\
                     )
                 else:
@@ -180,7 +180,7 @@ class Widget(WidgetBase.WidgetBase):
             self.rows[-1].setDiff(\
                 text=\
                     timeh.timeToString(\
-                        self.state.currentComparison.totalDiffs[-1],\
+                        self.state.currentComparison.diffs.totals[-1],\
                         {\
                             "showSign": True,\
                             "precision": self.config["diff"]["precision"],\
@@ -229,7 +229,7 @@ class Widget(WidgetBase.WidgetBase):
                     )
                 else:
                     self.rows[i].setComparison(\
-                        text=self.formatComparison(self.state.currentComparison.totals[split.end])\
+                        text=self.formatComparison(self.state.currentComparison.times.totals[split.end])\
                     )
             else:
                 if (split.index < self.state.splitnum):
@@ -238,7 +238,7 @@ class Widget(WidgetBase.WidgetBase):
                     )
                 else:
                     self.rows[i].setComparison(\
-                        text=self.formatComparison(self.state.currentComparison.totals[split.index])\
+                        text=self.formatComparison(self.state.currentComparison.times.totals[split.index])\
                     )
 
     def setLastComparison(self):
@@ -257,7 +257,7 @@ class Widget(WidgetBase.WidgetBase):
             self.rows[-1].setComparison(\
                 text=\
                     timeh.timeToString(\
-                        self.state.currentComparison.totals[-1],\
+                        self.state.currentComparison.times.totals[-1],\
                         {\
                             "precision": self.config["main"]["precision"],\
                             "noPrecisionOnMinute": self.config["main"]["noPrecisionOnMinute"]\
@@ -272,7 +272,7 @@ class Widget(WidgetBase.WidgetBase):
     def showCurrentSplitDiff(self):
         self.rows[self.splits.activeIndex].setDiff(\
             text=timeh.timeToString(\
-                timeh.difference(self.state.totalTime,self.state.currentComparison.totals[self.state.splitnum]),\
+                timeh.difference(self.state.totalTime,self.state.currentComparison.times.totals[self.state.splitnum]),\
                 {\
                     "showSign": True,\
                     "precision": self.config["diff"]["precision"],\
@@ -280,8 +280,8 @@ class Widget(WidgetBase.WidgetBase):
                 }\
             ),\
             fg=self.getCurrentDiffColour(\
-                timeh.difference(self.state.segmentTime,self.state.currentComparison.segments[self.state.splitnum]), \
-                timeh.difference(self.state.totalTime,self.state.currentComparison.totals[self.state.splitnum])\
+                timeh.difference(self.state.segmentTime,self.state.currentComparison.times.segments[self.state.splitnum]), \
+                timeh.difference(self.state.totalTime,self.state.currentComparison.times.totals[self.state.splitnum])\
             )\
         )
 
@@ -307,16 +307,16 @@ class Widget(WidgetBase.WidgetBase):
         bestSegments = self.state.getComparison("default", "bestSegments")
         if \
             timeh.isBlank(self.state.currentRun.totals[splitIndex]) \
-            or timeh.isBlank(self.state.currentComparison.totals[splitIndex]):
+            or timeh.isBlank(self.state.currentComparison.times.totals[splitIndex]):
             return self.config["diff"]["colours"]["skipped"]
         # This split is the best ever. Mark it with the gold colour
-        elif not timeh.isBlank(bestSegments.segmentDiffs[splitIndex]) \
-            and timeh.greater(0, bestSegments.segmentDiffs[splitIndex]):
+        elif not timeh.isBlank(bestSegments.diffs.segments[splitIndex]) \
+            and timeh.greater(0, bestSegments.diffs.segments[splitIndex]):
             return self.config["diff"]["colours"]["gold"]
         else:
             return self.getCurrentDiffColour(\
-                self.state.currentComparison.segmentDiffs[splitIndex],\
-                self.state.currentComparison.totalDiffs[splitIndex]\
+                self.state.currentComparison.diffs.segments[splitIndex],\
+                self.state.currentComparison.diffs.totals[splitIndex]\
             )
 
     def setHighlight(self):

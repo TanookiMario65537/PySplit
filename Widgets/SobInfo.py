@@ -14,4 +14,4 @@ class Widget(InfoBase.InfoBase):
         self.updateTime()
 
     def updateTime(self):
-        self.info.configure(text=timeh.timeToString(self.state.currentBests.total,{"precision":self.config["precision"]}))
+        self.info.configure(text=timeh.timeToString(self.state.currentBests.totals[-1],{"precision":self.config["precision"]}))

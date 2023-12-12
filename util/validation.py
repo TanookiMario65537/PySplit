@@ -12,19 +12,22 @@ DateTime = Annotated[
 
 class Comparison(BaseModel):
     name: str
-    segments: List[Time]
     totals: List[Time]
+
+
+class BestSegments(BaseModel):
+    name: str
+    segments: List[Time]
 
 
 class Run(BaseModel):
     startTime: DateTime
     endTime: DateTime
-    segments: List[Time]
     totals: List[Time]
 
 
 class DefaultComparisons(BaseModel):
-    bestSegments: Comparison
+    bestSegments: BestSegments
     bestRun: Comparison
 
 
@@ -59,6 +62,12 @@ def updateVersion(saveData, version):
         del newSave["defaultComparisons"]["average"]
         del newSave["defaultComparisons"]["bestExits"]
         del newSave["defaultComparisons"]["blank"]
+        del newSave["defaultComparisons"]["bestSegments"]["totals"]
+        del newSave["defaultComparisons"]["bestRun"]["segments"]
+        for cmp in newSave["customComparisons"]:
+            del cmp["segments"]
+        for run in newSave["runs"]:
+            del run["segments"]
     return newSave
 
 

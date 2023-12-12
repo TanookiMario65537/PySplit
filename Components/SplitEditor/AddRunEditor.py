@@ -5,7 +5,6 @@ from Components.SplitEditor import MainEditor
 from Dialogs import fileDialogs
 from States import State
 from util import fileio
-from util import dataManip
 from util import readConfig as rc
 
 class SplitEditor(tk.Frame):
@@ -40,7 +39,7 @@ class SplitEditor(tk.Frame):
         self.editor.pack(side="bottom")
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave
-        self.localEntries = EntryGrid.EntryGrid(self.editor,dataManip.newComparisons(),self.editor) 
+        self.localEntries = EntryGrid.EntryGrid(self.editor, fileio.newComparisons(),self.editor) 
 
         self.savedGame = ""
         self.savedCategory = ""

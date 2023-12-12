@@ -1,5 +1,4 @@
 import os, csv, json
-from util import dataManip
 from util import validation
 from pydantic import ValidationError
 from pathlib import Path
@@ -14,7 +13,7 @@ def readSplitFile(splitFileName):
     saveData = readJson(splitFileName)
     if saveData:
         return validation.updateSave(saveData)
-    return dataManip.newComparisons()
+    return newComparisons()
 
 def writeCSVs(baseDir,name,category,splitWrite,comparesWrite):
     if splitWrite:
@@ -97,3 +96,41 @@ def hasSplitFile(baseDir):
             if file.endswith(".pysplit"):
                 return True
     return False
+
+
+def newComparisons(names=[]):
+    """
+    Creates a dictionary with a new collection of comparisons
+    based on a spcified list of split names.
+
+    Parameters: names - a list of the desired split names
+
+    Returns: A dictionary containing splitNames,
+             defaultComparisons, and customComparisons.
+             defaultComparisons will be poplated automatically
+             with the default comparison list, and each
+             comparison will have the default name and segment
+             and total lists with the number of blank splits
+             matching the number of specified splits. Should
+             be used with saveData.update(newComparisons()) or
+             something similar.
+    """
+    data = {
+        "version": "1.1",
+        "game": "",
+        "category": "",
+        "splitNames": names,
+        "defaultComparisons": {
+            "bestSegments": {
+                "name": "Best Segments",
+                "segments": ['-' for _ in range(len(names))],
+            },
+            "bestRun": {
+                "name": "Personal Best",
+                "totals": ['-' for _ in range(len(names))]
+            }
+        },
+        "customComparisons": [],
+        "runs": []
+    }
+    return data

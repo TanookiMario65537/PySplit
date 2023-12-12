@@ -70,11 +70,11 @@ class Widget(WidgetBase.WidgetBase):
             runData.append({
                 "name": name,
                 "splitTime": self.clean_time_to_therun_api(self.state.currentRun.totals[i]) if len(self.state.currentRun.totals) > i and not is_reset else None,
-                "pbSplitTime": self.clean_time_to_therun_api(bestRun.totals[i]),
-                "bestPossible": self.clean_time_to_therun_api(bestSegments.segments[i]),
+                "pbSplitTime": self.clean_time_to_therun_api(bestRun.times.totals[i]),
+                "bestPossible": self.clean_time_to_therun_api(bestSegments.times.segments[i]),
                 "comparisons": [{
-                    "name": comparison.totalHeader,
-                    "time": self.clean_time_to_therun_api(comparison.totals[i])
+                    "name": comparison.title,
+                    "time": self.clean_time_to_therun_api(comparison.times.totals[i])
                 } for comparison in self.state.comparisons]
             })
         return {
@@ -85,7 +85,7 @@ class Widget(WidgetBase.WidgetBase):
             "currentTime": self.clean_time_to_therun_api(self.state.totalTime),
             "currentSplitName": self.state.splitnames[self.state.splitnum] if self.state.splitnum < self.state.numSplits else "",
             "currentSplitIndex": self.state.splitnum if not is_reset else -1,
-            "currentComparison": self.state.currentComparison.totalHeader,
+            "currentComparison": self.state.currentComparison.title,
             "startTime": f"/Date({starttime})/",
             "endTime": f"/Date({endtime})/",
             "isPaused": self.state.paused,

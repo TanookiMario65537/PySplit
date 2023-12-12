@@ -1,14 +1,16 @@
 from util import fileio
 from util import timeHelpers as timeh
+from DataClasses import SyncedTimeList as STL
 global varianceList
 
 
 def getRows(saveData):
     rows = []
+    runs = [STL.SyncedTimeList(totals=run["totals"]) for run in saveData["runs"]]
     for i in range(len(saveData["splitNames"])):
         timeList = []
         for j in range(len(saveData["runs"])):
-            time = timeh.stringToTime(saveData["runs"][j]["segments"][i])
+            time = runs[j].segments[i]
             if not timeh.isBlank(time):
                 timeList.append(time)
         rows.append(timeList)
