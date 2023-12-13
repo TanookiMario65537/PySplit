@@ -29,8 +29,11 @@ class Session:
 
     def loadSave(self):
         saved = fileio.readJson(self.saveFile)
-        self.setRun(saved["splitFile"])
-        self.setLayout(saved["layoutName"])
+        if os.path.exists(saved["splitFile"]):
+            self.setRun(saved["splitFile"])
+            self.setLayout(saved["layoutName"])
+        else:
+            self.getSession()
 
     def save(self):
         fileio.writeJson(self.saveFile, {
