@@ -50,19 +50,19 @@ class State:
     def frameUpdate(self):
         pass
 
-    def onStarted(self,_):
+    def onStarted(self):
         pass
 
-    def onSplit(self,_):
+    def onSplit(self):
         pass
 
     def onComparisonChanged(self,_):
         pass
 
-    def onPaused(self,_):
+    def onPaused(self):
         pass
 
-    def onSplitSkipped(self,_):
+    def onSplitSkipped(self):
         pass
 
     def onReset(self):

@@ -3,7 +3,6 @@
 import tkinter as tk
 import threading
 import datetime
-from timeit import default_timer as timer
 from Components import MainMenu
 from Dialogs import AddRun
 from Dialogs import ConfirmPopup
@@ -134,7 +133,7 @@ class App(threading.Thread):
     ## Set the timer to update every time this is called
     ##########################################################
     def update(self):
-        exitCode = self.state.frameUpdate(timer())
+        exitCode = self.state.frameUpdate()
         if self.initialLoad:
             self.confirmPartialLoad()
             self.initialLoad = False
@@ -149,7 +148,7 @@ class App(threading.Thread):
     ## starts
     ##########################################################
     def start(self, _=None):
-        if not self.state.onStarted(timer()):
+        if not self.state.onStarted():
             self.updateWidgets("start")
             if self.menu:
                 self.menu.updateMenuState("during")
@@ -159,9 +158,8 @@ class App(threading.Thread):
     ## calculate all the diffs, and call the helper functions 
     ## to update the GUI
     ##########################################################
-    def onSplitEnd(self,event=None):
-        event = self.misconstrueEvent(event)
-        exitCode = self.state.onSplit(event)
+    def onSplitEnd(self, event=None):
+        exitCode = self.state.onSplit()
         if exitCode == 1:
             return
         elif exitCode and exitCode > 6:
@@ -197,17 +195,15 @@ class App(threading.Thread):
     ##########################################################
     ## Skip a split
     ##########################################################
-    def skip(self,event=None):
-        event = self.misconstrueEvent(event)
-        if not self.state.onSplitSkipped(event):
+    def skip(self, event=None):
+        if not self.state.onSplitSkipped():
             self.updateWidgets("skip")
 
     ##########################################################
     ## If paused, unpause. If not paused, pause.
     ##########################################################
     def togglePause(self,event=None):
-        event = self.misconstrueEvent(event)
-        if not self.state.onPaused(event["system"]):
+        if not self.state.onPaused():
             self.updateWidgets("pause")
             if self.menu:
                 if self.menu.state == "paused":
@@ -309,23 +305,6 @@ class App(threading.Thread):
     ##########################################################
 
     ##########################################################
-    ## If the event is really an event, replace it with a
-    ## dictionary that has a single key indicating the current
-    ## system time. This is a hacky way of detecting whether
-    ## we've called a function directly or by the user
-    ## pressing a button, and doesn't break anything because
-    ## we don't actually use event properties for anything. 
-    ##
-    ## Functions are only called directly when loading a
-    ## partially completed run.
-    ##########################################################
-    def misconstrueEvent(self,event):
-        if type(event) != dict:
-            event = {}
-        event["system"] = timer()
-        return event
-
-    ##########################################################
     ## The function called when the 'Switch Compare' button is
     ## clicked
     ##########################################################
@@ -395,25 +374,10 @@ class App(threading.Thread):
     ## Loads previously saved partial run data.
     ##########################################################
     def partialLoad(self):
-        partialState = self.state.partialLoad()
-
-        # Start so we can split
         self.start()
-        # Do all the splits
-        for i in range(len(partialState["splits"]["segments"])):
-            if (timeh.isBlank(partialState["splits"]["totals"][i])):
-                # skipped
-                self.skip({"total": ""})
-            else:
-                # not skipped
-                self.onSplitEnd({"segment": partialState["splits"]["segments"][i], "total": partialState["splits"]["totals"][i]})
-
-        # Pause the timer
         self.togglePause({})
-        # Update the total and segment timers so they are accurate
-        self.state.staticStartTime = datetime.datetime.fromisoformat(partialState["startTime"])
-        self.state.starttime = self.state.pauseTime - partialState["times"]["total"]
-        self.state.splitstarttime = self.state.pauseTime - partialState["times"]["segment"]
+        self.state.partialLoad()
+        self.updateWidgets("split")
         self.confirmDeletePartialSave()
 
     ##########################################################

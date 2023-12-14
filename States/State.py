@@ -1,5 +1,6 @@
 import os
 import datetime
+from timeit import default_timer as timer
 from util import fileio
 from util import timeHelpers as timeh
 from DataClasses import SyncedTimeList as STL
@@ -162,26 +163,19 @@ class State(BaseState.State):
     ## 
     ## Parameters: time - the current system time
     ##########################################################
-    def completeSegment(self,map):
-        if "total" in map.keys():
-            totalTime = map["total"]
-            splitTime = map["segment"]
-            splitstart = map["system"]
-        else:
-            totalTime = map["system"] - self.starttime
-            splitTime = map["system"] - self.splitstarttime
-            splitstart = map["system"]
-        self.currentRun.update(totalTime, self.splitnum)
-        self.bptList.update(totalTime, self.splitnum)
+    def completeSegment(self, total, system_time):
+        splitTime = timeh.difference(total, self.currentRun.totals[self.splitnum-1]) if self.splitnum > 0 else total
+        self.currentRun.update(total, self.splitnum)
+        self.bptList.update(total, self.splitnum)
 
         for i in range(self.numComparisons):
-            self.comparisons[i].update(totalTime, self.splitnum)
+            self.comparisons[i].update(total, self.splitnum)
         if timeh.isBlank(self.currentBests.segments[self.splitnum]) or not timeh.greater(self.currentRun.segments[self.splitnum], self.currentBests.segments[self.splitnum]):
             self.currentBests.update(splitTime, self.splitnum)
-        if timeh.isBlank(self.bestExits.totals[self.splitnum]) or not timeh.greater(totalTime,self.bestExits.totals[self.splitnum]):
-            self.bestExits.update(totalTime, self.splitnum)
+        if timeh.isBlank(self.bestExits.totals[self.splitnum]) or not timeh.greater(total,self.bestExits.totals[self.splitnum]):
+            self.bestExits.update(total, self.splitnum)
         self.splitnum = self.splitnum + 1
-        self.splitstarttime = splitstart
+        self.splitstarttime = system_time
         if self.splitnum >= len(self.splitnames):
             self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
             self.runEnded = True
@@ -192,19 +186,12 @@ class State(BaseState.State):
     ## 
     ## Parameters: time - the current system time
     ##########################################################
-    def skipSegment(self,map):
-        if "total" in map.keys():
-            totaltime = map["system"]
-            splitstart = map["system"]
-        else:
-            totaltime = map["system"] - self.starttime
-            splitstart = map["system"]
+    def skipSegment(self, system_time):
         self.currentRun.update(timeh.blank(), self.splitnum)
-        self.bptList.update(totaltime, self.splitnum)
         for i in range(self.numComparisons):
             self.comparisons[i].update(timeh.blank(), self.splitnum)
         self.splitnum = self.splitnum + 1
-        self.splitstarttime = splitstart
+        self.splitstarttime = system_time
         if self.splitnum >= len(self.splitnames):
             self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
             self.runEnded = True
@@ -255,7 +242,8 @@ class State(BaseState.State):
         self.splitstarttime = 0
         self.comparisons = []
 
-    def frameUpdate(self,time):
+    def frameUpdate(self):
+        time = timer()
         if not self.started:
             return 1
         if self.runEnded:
@@ -264,7 +252,8 @@ class State(BaseState.State):
             time = self.pauseTime
         self.setTimes(time)
 
-    def onStarted(self,time):
+    def onStarted(self):
+        time = timer()
         if self.started:
             return 1
         self.staticStartTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
@@ -272,7 +261,7 @@ class State(BaseState.State):
         self.splitstarttime = time
         self.started = True
 
-    def onSplit(self,map):
+    def onSplit(self):
         if not self.started or self.paused or self.runEnded:
             return 1
 
@@ -280,7 +269,8 @@ class State(BaseState.State):
         if self.splitnames[self.splitnum][-3:] == "[P]" and not self.splitnum == len(self.splitnames) and not self.paused:
             retVal = retVal + 3
 
-        self.completeSegment(map)
+        current = timer()
+        self.completeSegment(current - self.starttime, current)
         if self.splitnum == len(self.splitnames):
             retVal = retVal + 4
         elif self.splitnum == len(self.splitnames) - 1:
@@ -297,7 +287,8 @@ class State(BaseState.State):
         self.compareNum = num
         self.currentComparison = self.comparisons[self.compareNum]
 
-    def onPaused(self,time):
+    def onPaused(self):
+        time = timer()
         if not self.started or self.runEnded:
             return 1
         if self.paused:
@@ -305,10 +296,10 @@ class State(BaseState.State):
         else:
             self.startPause(time)
 
-    def onSplitSkipped(self,map):
+    def onSplitSkipped(self):
         if not self.started or self.runEnded or self.paused:
             return 1
-        self.skipSegment(map)
+        self.skipSegment(timer())
 
     def onReset(self):
         if not self.started or self.runEnded:
@@ -382,7 +373,16 @@ class State(BaseState.State):
     ## Loads a state saved partway through a run.
     ##########################################################
     def partialLoad(self):
-        return fileio.readJson(self.partialSaveFile())
+        loadedState = fileio.readJson(self.partialSaveFile())
+        for total in loadedState["splits"]["totals"]:
+            if (timeh.isBlank(total)):
+                self.skipSegment(timer())
+            else:
+                self.completeSegment(total, timer())
+        self.staticStartTime = datetime.datetime.fromisoformat(loadedState["startTime"])
+        self.starttime = self.pauseTime - loadedState["times"]["total"]
+        self.splitstarttime = self.pauseTime - loadedState["times"]["segment"]
+        return loadedState
 
     ##########################################################
     ## Compute the save file name for partial saves.
@@ -398,8 +398,10 @@ class State(BaseState.State):
         dataMap = {}
         dataMap["startTime"] = self.staticStartTime.isoformat()
         dataMap["times"] = {"segment": self.segmentTime, "total": self.totalTime}
-        dataMap["splits"] = {"segments": self.currentRun.segments,
-"totals": self.currentRun.totals}
+        dataMap["splits"] = {
+            "segments": self.currentRun.segments[:self.currentRun.lastNonBlank()+1],
+            "totals": self.currentRun.totals[:self.currentRun.lastNonBlank()+1]
+        }
         return dataMap
 
     ##########################################################
