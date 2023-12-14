@@ -1,3 +1,4 @@
+from timeit import default_timer as timer
 from util import fileio
 from util import timeHelpers as timeh
 from States import BaseState
@@ -18,18 +19,16 @@ class State(BaseState.State):
             self.saveData["defaultComparisons"]["bestSegments"]["segments"][self.splitnum])
         self.unSaved = False
 
-    def frameUpdate(self, time):
+    def frameUpdate(self):
         if not (self.started and not self.runEnded):
             return 1
-        self.segmentTime = time - self.starttime
+        self.segmentTime = timer() - self.starttime
 
     ##########################################################
     # Do the state update when the run starts
-    #
-    # Parameters: time - the time the run started
     ##########################################################
-    def onStarted(self, time):
-        self.starttime = time
+    def onStarted(self):
+        self.starttime = timer()
         self.started = True
         self.runEnded = False
 
@@ -38,9 +37,9 @@ class State(BaseState.State):
     #
     # Parameters: time - the time the split was ended
     ##########################################################
-    def onSplit(self, map):
+    def onSplit(self):
         self.runEnded = True
-        splitTime = map["system"] - self.starttime
+        splitTime = timer() - self.starttime
         self.currentTime = splitTime
         self.unSaved = True
         if timeh.greater(self.bestTime, splitTime):
