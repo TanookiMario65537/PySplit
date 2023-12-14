@@ -15,8 +15,9 @@ class Widget(InfoBase.InfoBase):
         if self.state.splitnum and self.shouldHide():
             self.hide()
             return
-        if not timeh.greater(self.state.comparisons[0].segments[self.state.splitnum],self.state.segmentTime)\
-            and not timeh.isBlank(self.state.comparisons[0].segments[self.state.splitnum])\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        if not timeh.greater(bestSegments.times.segments[self.state.splitnum],self.state.segmentTime)\
+            and not timeh.isBlank(bestSegments.times.segments[self.state.splitnum])\
             and not (self.state.splitnum and timeh.isBlank(self.state.currentRun.segments[self.state.splitnum-1])):
 
             if self.state.splitnum and self.shouldHide():
@@ -60,11 +61,12 @@ class Widget(InfoBase.InfoBase):
             splitnum = self.state.splitnum - 1
         else:
             splitnum = self.state.splitnum
+        bestSegments = self.state.getComparison("default", "bestSegments")
         self.info.configure(text=\
             timeh.timeToString(\
                 timeh.difference(
                     time,\
-                    self.state.currentComparison.segments[splitnum]\
+                    self.state.currentComparison.times.segments[splitnum]\
                 ),\
                 {\
                     "showSign": True, \
@@ -72,12 +74,12 @@ class Widget(InfoBase.InfoBase):
                     "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]\
                 }\
             )\
-            +" / "\
-            +timeh.timeToString(\
-                timeh.difference(\
-                    self.state.currentComparison.segments[splitnum],\
-                    self.state.comparisons[0].segments[splitnum]\
-                ),\
+            + " / "
+            + timeh.timeToString(
+                timeh.difference(
+                    self.state.currentComparison.times.segments[splitnum],
+                    bestSegments.times.segments[splitnum]
+                ),
                 {\
                     "precision": self.config["precision"],\
                     "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]\
@@ -91,25 +93,26 @@ class Widget(InfoBase.InfoBase):
 
     def setCurrentColour(self):
         split = self.state.splitnum
-        if timeh.isBlank(self.state.currentComparison.segments[split]):
+        if timeh.isBlank(self.state.currentComparison.times.segments[split]):
             return self.config["colours"]["skipped"]
 
-        elif timeh.greater(self.state.currentComparison.segments[split],self.state.segmentTime):
+        elif timeh.greater(self.state.currentComparison.times.segments[split],self.state.segmentTime):
             return self.config["colours"]["gaining"]
         else:
             return self.config["colours"]["losing"]
 
     def setPreviousColour(self):
         split = self.state.splitnum-1
-        if timeh.isBlank(self.state.comparisons[0].segments[split])\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        if timeh.isBlank(bestSegments.times.segments[split])\
             or timeh.isBlank(self.state.currentRun.segments[split])\
-            or timeh.isBlank(self.state.currentComparison.segments[split]):
+            or timeh.isBlank(self.state.currentComparison.times.segments[split]):
             return self.config["colours"]["skipped"]
 
-        if timeh.greater(self.state.comparisons[0].segments[split],self.state.currentRun.segments[split]):
+        if timeh.greater(bestSegments.times.segments[split],self.state.currentRun.segments[split]):
             return self.config["colours"]["gold"]
 
-        elif timeh.greater(self.state.currentComparison.segments[split],self.state.currentRun.segments[split]):
+        elif timeh.greater(self.state.currentComparison.times.segments[split],self.state.currentRun.segments[split]):
             return self.config["colours"]["gaining"]
 
         else:

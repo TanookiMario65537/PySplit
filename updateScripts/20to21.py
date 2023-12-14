@@ -2,7 +2,28 @@ from util import fileio
 from util import readConfig as rc
 from util import categorySelection as cate
 from util import timeHelpers as timeh
-from DataClasses import DifferenceList
+
+
+class DifferenceList:
+    # segments = []
+    # totals = []
+
+    def __init__(self,totals):
+        self.totals = totals
+        self.segments = [0 for _ in range(len(totals))]
+        self.setSegments()
+
+    def update(self,time,index):
+        self.totals[index] = time
+        self.setSegments()
+
+    def setSegments(self):
+        if not len(self.totals):
+            self.segments = []
+            return
+        self.segments[0] = self.totals[0]
+        for i in range(1,len(self.totals)):
+            self.segments[i] = timeh.difference(self.totals[i],self.totals[i-1])
 
 def insertCsvLines(lines,startIndex,csv_ref):
     for i in range(len(csv_ref)):
@@ -43,7 +64,7 @@ def main():
             comparesCsv = splitArrs[1]
 
             newCompares = [['To Best Exit','Best Exit']]
-            bestExits = DifferenceList.DifferenceList([findBestExit(i,splitArrs[0]) for i in range(len(comparesCsv)-1)])
+            bestExits = DifferenceList([findBestExit(i,splitArrs[0]) for i in range(len(comparesCsv)-1)])
             for i in range(len(comparesCsv)-1):
                 newCompares.append([timeh.timeToString(bestExits.segments[i],{"precision":5}),timeh.timeToString(bestExits.totals[i],{"precision":5})])
             insertCsvLines(newCompares,7,comparesCsv)

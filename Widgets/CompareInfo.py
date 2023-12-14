@@ -7,7 +7,7 @@ class Widget(InfoBase.InfoBase):
 
     def resetUI(self):
         self.header.configure(text="Comparing Against:")
-        self.info.configure(text=self.state.currentComparison.totalHeader)
+        self.info.configure(text=self.state.currentComparison.title)
 
     def onComparisonChanged(self):
         self.resetUI()

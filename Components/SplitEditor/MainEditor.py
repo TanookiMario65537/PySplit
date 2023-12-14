@@ -25,7 +25,7 @@ class Editor(tk.Frame):
 
         self.deleteComparisonButton = tk.Button(self.buttonFrame, text="Delete Comparison", command=self.deleteComparison)
         self.deleteComparisonButton.pack(fill="x")
-        if len(self.entries.comparisons) <= 5:
+        if len(self.entries.comparisons) <= len(self.saveData["defaultComparisons"].keys()):
             self.deleteComparisonButton["state"] = "disabled"
 
         self.saveButton = SaveButton.SaveButton(self.buttonFrame, \
@@ -49,7 +49,7 @@ class Editor(tk.Frame):
 
     def deleteComparison(self,_=None):
         self.entries.removeComparison()
-        if len(self.entries.comparisons) <= 5:
+        if len(self.entries.comparisons) <= len(self.saveData["defaultComparisons"].keys()):
             self.deleteComparisonButton["state"] = "disabled"
 
     def updateDeleteState(self):

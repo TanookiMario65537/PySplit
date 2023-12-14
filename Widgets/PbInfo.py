@@ -16,7 +16,7 @@ class Widget(InfoBase.InfoBase):
 
     def setInfo(self,new=False):
         if new:
-            time = self.state.currentRun.totals[-1]
+            time = self.state.currentRun.totals[self.state.currentRun.lastNonBlank()]
         else:
-            time = self.state.comparisons[2].totals[-1]
+            time = self.state.getComparison("default", "bestRun").times.totals[-1]
         self.info.configure(text=timeh.timeToString(time,{"precision":self.config["precision"]}))

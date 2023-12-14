@@ -30,7 +30,7 @@ class Widget(WidgetBase.WidgetBase):
         self.game.configure(text=self.state.game)
         self.category.configure(text=self.state.category)
         self.compHeader.configure(text="Comparing Against")
-        self.compName.configure(text=self.state.currentComparison.totalHeader)
+        self.compName.configure(text=self.state.currentComparison.title)
 
     def onComparisonChanged(self):
         self.resetUI()

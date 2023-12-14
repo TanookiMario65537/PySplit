@@ -34,16 +34,12 @@ class SplitEditor(Popup.Popup):
         saveData.update(self.editor.entries.generateGrid())
         old = self.editor.entries.oldSplitLocations
         for i, run in enumerate(saveData["runs"]):
-            segments = []
             totals = []
             for j in range(len(saveData["splitNames"])):
                 if j in old:
-                    segments.append(run["segments"][old.index(j)])
                     totals.append(run["totals"][old.index(j)])
                 else:
-                    segments.append("-")
                     totals.append("-")
-            saveData["runs"][i]["segments"] = segments
             saveData["runs"][i]["totals"] = totals
         self.retVal = saveData
         fileio.writeSplitFile(

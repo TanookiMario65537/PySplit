@@ -30,6 +30,7 @@ class State:
         self.saveData = fileio.readSplitFile(splitFile)
 
     def loadSplits(self, saveData):
+        self.saveData = saveData
         self.game = saveData["game"]
         self.category = saveData["category"]
         self.splitnames = saveData["splitNames"]

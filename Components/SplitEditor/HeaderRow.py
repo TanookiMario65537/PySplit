@@ -8,18 +8,10 @@ class HeaderRow(tk.Frame):
         super().__init__(parent)
         self.entries = []
         for i in range(len(headerRow)):
-            if not i in [2*self.blankIndex,2*self.blankIndex+1]:
-                self.addHeader(headerRow[i])
-            else:
-                entry = tk.Label(self,text=headerRow[i],width=self.cellWidth)
-                entry.pack(side="left")
-                self.entries.append(entry)
+            self.addHeader(headerRow[i])
 
     def headers(self):
-        return\
-            [self.entries[i].val for i in range(2*self.blankIndex)]\
-            + [self.entries[2*self.blankIndex]["text"],self.entries[2*self.blankIndex+1]["text"]]\
-            + [self.entries[i].val for i in range(2*(self.blankIndex+1),len(self.entries))]
+        return [self.entries[i].val for i in range(len(self.entries))]
 
     def addHeaders(self,newHeaders):
         for header in newHeaders:

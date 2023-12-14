@@ -1,4 +1,5 @@
 import tkinter as tk
+from util import timeHelpers as timeh
 from Widgets import WidgetBase
 
 class Widget(WidgetBase.WidgetBase):
@@ -77,31 +78,19 @@ class Widget(WidgetBase.WidgetBase):
             self.updateSegmentTime()
 
     def updateSegmentHeader(self):
-        self.segmentHeader.configure(text=self.state.currentComparison.segmentHeader+":")
+        self.segmentHeader.configure(text=self.state.currentComparison.title+":")
 
     def updateSegmentTime(self):
-        self.segmentTime.configure(\
-            text=\
-                self.state.currentComparison.getString(\
-                    "segments",\
-                    self.state.splitnum,\
-                    {\
-                        "precision": self.config["precision"]\
-                    }\
-                )\
-        )
+        self.segmentTime.configure(
+            text=timeh.timeToString(
+                self.state.currentComparison.times.segments[self.state.splitnum],
+                {"precision": self.config["precision"]}))
 
     def updateGoldHeader(self):
         self.goldHeader.configure(text="Best Split:")
 
     def updateGoldTime(self):
-        self.goldTime.configure(\
-            text=\
-                self.state.comparisons[0].getString(\
-                    "segments",\
-                    self.state.splitnum,\
-                    {\
-                        "precision": self.config["precision"]\
-                    }\
-                )\
-        )
+        self.goldTime.configure(
+            text=timeh.timeToString(
+                self.state.getComparison("default", "bestSegments").times.segments[self.state.splitnum],
+                {"precision": self.config["precision"]}))

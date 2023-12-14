@@ -18,7 +18,7 @@ class WidgetBase(tk.Frame):
     def shouldHide(self):
         if not "hideOnBlank" in self.config.keys():
             return False
-        return self.state.currentComparison.totalHeader == "Blank" and self.config["hideOnBlank"]
+        return self.state.currentComparison.title == "Blank" and self.config["hideOnBlank"]
 
     def hide(self):
         pass

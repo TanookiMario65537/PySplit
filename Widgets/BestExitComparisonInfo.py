@@ -15,10 +15,12 @@ class Widget(InfoBase.InfoBase):
         if self.state.splitnum and self.shouldHide():
             self.hide()
             return
-        if (not timeh.greater(self.state.comparisons[0].segments[self.state.splitnum],self.state.segmentTime)\
-            and not timeh.isBlank(self.state.comparisons[0].segments[self.state.splitnum]))\
-            or (not timeh.greater(self.state.comparisons[3].totals[self.state.splitnum],self.state.totalTime)\
-            and not timeh.isBlank(self.state.comparisons[3].totals[self.state.splitnum]))\
+        bestSegments = self.state.getComparison("default", "bestSegments")
+        bestExits = self.state.getComparison("generated", "Best Exit")
+        if (not timeh.greater(bestSegments.times.segments[self.state.splitnum], self.state.segmentTime)
+            and not timeh.isBlank(bestSegments.times.segments[self.state.splitnum]))\
+            or (not timeh.greater(bestExits.times.totals[self.state.splitnum], self.state.totalTime)
+            and not timeh.isBlank(bestExits.times.totals[self.state.splitnum]))\
             and not (self.state.splitnum and timeh.isBlank(self.state.currentRun.totals[self.state.splitnum-1])):
 
             if self.shouldHide():
@@ -61,19 +63,15 @@ class Widget(InfoBase.InfoBase):
             splitnum = self.state.splitnum - 1
         else:
             splitnum = self.state.splitnum
-        self.info.configure(text=\
-            timeh.timeToString(\
-                timeh.difference(\
-                    time,\
-                    self.state.comparisons[3].totals[splitnum]\
-                ),\
-                {\
-                    "showSign": True,\
-                    "precision": self.config["precision"],\
-                    "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]\
-                }\
-                )\
-        )
+        bestExits = self.state.getComparison("generated", "Best Exit")
+        self.info.configure(
+            text=timeh.timeToString(
+                timeh.difference(time, bestExits.times.totals[splitnum]),
+                {
+                    "showSign": True,
+                    "precision": self.config["precision"],
+                    "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]
+                }))
         if previous:
             self.info.configure(fg=self.setPreviousColour())
         else:
@@ -81,7 +79,7 @@ class Widget(InfoBase.InfoBase):
 
     def setCurrentColour(self):
         split = self.state.splitnum
-        if timeh.isBlank(self.state.currentComparison.segments[split]):
+        if timeh.isBlank(self.state.currentComparison.times.segments[split]):
             return self.config["colours"]["skipped"]
 
         else:
@@ -89,27 +87,29 @@ class Widget(InfoBase.InfoBase):
 
     def setPreviousColour(self):
         split = self.state.splitnum-1
-        if timeh.isBlank(self.state.comparisons[3].totals[split])\
+        bestExits = self.state.getComparison("generated", "Best Exit")
+        if timeh.isBlank(bestExits.times.totals[split])\
             or timeh.isBlank(self.state.currentRun.totals[split])\
-            or timeh.isBlank(self.state.currentComparison.totals[split]):
+            or timeh.isBlank(self.state.currentComparison.times.totals[split]):
             return self.config["colours"]["skipped"]
 
-        if timeh.greater(self.state.comparisons[3].totals[split],self.state.currentRun.totals[split]):
+        if timeh.greater(bestExits.times.totals[split], self.state.currentRun.totals[split]):
             return self.config["colours"]["gold"]
         else:
             return self.setColour(self.state.currentRun.segments[split],self.state.currentRun.totals[split],split)
 
     def setColour(self,segment,total,split):
-        if timeh.greater(self.state.comparisons[3].totals[split],total):
+        bestExits = self.state.getComparison("generated", "Best Exit")
+        if timeh.greater(bestExits.times.totals[split], total):
 
-            if timeh.greater(self.state.comparisons[3].segments[split],segment):
+            if timeh.greater(bestExits.times.segments[split], segment):
                 return self.config["colours"]["aheadGaining"]
 
             else:
                 return self.config["colours"]["aheadLosing"]
 
         else:
-            if timeh.greater(self.state.comparisons[3].segments[split],segment):
+            if timeh.greater(bestExits.times.segments[split], segment):
                 return self.config["colours"]["behindGaining"]
 
             else:

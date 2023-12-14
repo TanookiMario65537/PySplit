@@ -3,7 +3,7 @@ from Components.SplitEditor import EntryRow
 from Components.SplitEditor import HeaderRow
 from Components.SplitEditor import LeftFrame
 from Components import ScrollableFrame
-from DataClasses import SumList
+from DataClasses import SyncedTimeList as STL
 from util import timeHelpers as timeh
 
 
@@ -39,17 +39,19 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
 
         self.rows = []
         self.originals = list(range(len(saveData["splitNames"])))
+        self.comparisons = []
+        for key in self.defaultComparisonOrder:
+            saveKey = list(saveData["defaultComparisons"][key].keys())[1]
+            initData = {}
+            initData[saveKey] = saveData["defaultComparisons"][key][saveKey]
+            self.comparisons.append(STL.SyncedTimeList(**initData))
+        self.comparisons.extend([STL.SyncedTimeList(totals=cmp["totals"]) for cmp in saveData["customComparisons"]])
         for i in range(len(saveData["splitNames"])):
             cmpRow = []
-            for key in self.defaultComparisonOrder:
+            for cmp in self.comparisons:
                 cmpRow.extend([
-                    saveData["defaultComparisons"][key]["segments"][i],
-                    saveData["defaultComparisons"][key]["totals"][i]
-                ])
-            for cmp in saveData["customComparisons"]:
-                cmpRow.extend([
-                    cmp["segments"][i],
-                    cmp["totals"][i]
+                    timeh.timeToString(cmp.segments[i]),
+                    timeh.timeToString(cmp.totals[i])
                 ])
             row = EntryRow.EntryRow(
                 self.rightFrame,
@@ -59,18 +61,6 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
                 side="top",
                 fill="both")
             self.rows.append(row)
-
-        self.comparisons = []
-        for i in range(len(self.defaultComparisonOrder)):
-            self.comparisons.append(SumList.SumList([
-                timeh.stringToTime(
-                    saveData["defaultComparisons"]
-                    [self.defaultComparisonOrder[i]]["segments"][j]
-                ) for j in range(len(self.splitNames))]))
-        for cmp in saveData["customComparisons"]:
-            self.comparisons.append(SumList.SumList([
-                timeh.stringToTime(cmp["segments"][j])
-                for j in range(len(self.splitNames))]))
 
     def shouldWarn(self):
         return any([row.shouldWarn() for row in self.rows])\
@@ -104,10 +94,10 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         self.leftFrame.addSplit(index)
         newComparisons = []
         for comparison in self.comparisons:
-            comparison.insertNewSegment(index)
+            comparison.insert(timeh.blank(), index, "total")
             newComparisons.extend([
                 '-',
-                timeh.timeToString(comparison.totalBests[index])
+                timeh.timeToString(comparison.totals[index])
             ])
         self.rows.insert(
             index,
@@ -138,7 +128,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         self.rows[currentSplit].pack_forget()
         del self.rows[currentSplit]
         for comparison in range(len(self.comparisons)):
-            self.comparisons[comparison].removeSegment(currentSplit)
+            self.comparisons[comparison].remove(currentSplit, "total")
             self.updateComparison(comparison, ["entry"])
 
         for i in range(len(self.originals)):
@@ -151,11 +141,10 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         self.headerRow.addHeaders(["New Comparison", "New Comparison Totals"])
         for row in self.rows:
             row.addComparison()
-        self.comparisons.append(
-            SumList.SumList([timeh.blank() for _ in self.rows]))
+        self.comparisons.append(STL.SyncedTimeList(totals=[timeh.blank() for _ in self.rows]))
 
     def removeComparison(self):
-        if len(self.comparisons) <= 5:
+        if len(self.comparisons) <= len(self.defaultComparisonOrder):
             return
         del self.comparisons[-1]
         self.headerRow.removeHeaders(2)
@@ -164,8 +153,9 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
 
     def updateComparisonValue(self, row, comparison, time):
         self.comparisons[comparison].update(
+            self.rows.index(row),
             timeh.stringToTime(time),
-            self.rows.index(row))
+            "segment")
         self.updateComparison(comparison, ["label"])
 
     def updateComparison(self, comparison, columns=[]):
@@ -173,19 +163,24 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
             if "label" in columns:
                 self.rows[i].updateLabel(
                     comparison,
-                    self.comparisons[comparison].totalBests[i])
+                    self.comparisons[comparison].totals[i])
             if "entry" in columns:
                 self.rows[i].updateEntry(
                     comparison,
-                    self.comparisons[comparison].bests[i])
+                    self.comparisons[comparison].segments[i])
+
+    def createBestSegmentSave(self, comparison):
+        return {
+            "name": self.headerRow.headers()[2*comparison],
+            "segments": timeh.timesToStringList(
+                self.comparisons[comparison].segments)
+        }
 
     def createComparisonSave(self, comparison):
         return {
             "name": self.headerRow.headers()[2*comparison],
-            "segments": timeh.timesToStringList(
-                self.comparisons[comparison].bests),
             "totals": timeh.timesToStringList(
-                self.comparisons[comparison].totalBests)
+                self.comparisons[comparison].totals)
         }
 
     def generateGrid(self):
@@ -196,7 +191,7 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         }
         for i in range(len(self.defaultComparisonOrder)):
             key = self.defaultComparisonOrder[i]
-            newSaveData["defaultComparisons"][key] = self.createComparisonSave(i)
+            newSaveData["defaultComparisons"][key] = self.createBestSegmentSave(i) if key == "bestSegments" else self.createComparisonSave(i)
         for i in range(len(self.defaultComparisonOrder), len(self.comparisons)):
             newSaveData["customComparisons"].append(
                 self.createComparisonSave(i))
