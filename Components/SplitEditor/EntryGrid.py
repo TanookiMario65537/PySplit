@@ -153,8 +153,8 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
 
     def updateComparisonValue(self, row, comparison, time):
         self.comparisons[comparison].update(
-            self.rows.index(row),
             timeh.stringToTime(time),
+            self.rows.index(row),
             "segment")
         self.updateComparison(comparison, ["label"])
 
