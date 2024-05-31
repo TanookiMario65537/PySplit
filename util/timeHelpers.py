@@ -38,6 +38,11 @@ def isStringTime(time):
         return False
     if time == "-":
         return True
+    try:
+        int(time)
+        return True
+    except ValueError:
+        pass
     secs = re.compile(r'^[1-5]?\d{1}\.\d{1,5}$')
     mins = re.compile(r'^[1-5]?\d{1}:[0-5]\d{1}\.\d{1,5}$')
     hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
