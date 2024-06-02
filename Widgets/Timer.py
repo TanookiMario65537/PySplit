@@ -27,7 +27,7 @@ class Widget(WidgetBase.WidgetBase):
         self.resetUI()
 
     def resetUI(self):
-        self.setMainTime(0)
+        self.setMainTime(timeh.stringToTime(self.state.offset))
         self.main.configure(fg=self.config["colours"]["main"])
 
     def frameUpdate(self):
@@ -44,6 +44,7 @@ class Widget(WidgetBase.WidgetBase):
                 {\
                     "blankToDash": False,\
                     "precision": self.config["precision"],\
+                    "showSign": time < 0
                 }\
             )\
         )

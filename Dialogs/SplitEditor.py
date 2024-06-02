@@ -32,6 +32,7 @@ class SplitEditor(Popup.Popup):
     def save(self):
         saveData = copy.deepcopy(self.state.saveData)
         saveData.update(self.editor.entries.generateGrid())
+        saveData["offset"] = self.editor.getOffset()
         old = self.editor.entries.oldSplitLocations
         for i, run in enumerate(saveData["runs"]):
             totals = []

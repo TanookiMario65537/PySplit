@@ -23,6 +23,9 @@ class Entry(tk.Entry):
         else:
             self["bg"] = "#ff6666"
 
+    def getText(self):
+        return self.var.get()
+
     def setText(self,text,validate=False):
         self.val = text
         if not validate:

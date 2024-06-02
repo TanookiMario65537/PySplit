@@ -63,7 +63,7 @@ def pysplitToLss(saveData):
     <CategoryName>{saveData["category"]}</CategoryName>
     <Metadata><Run id=""/><Platform usesEmulator="False"/><Region/><SpeedrunComVariables/><CustomVariables/></Metadata>
     <LayoutPath/>
-    <Offset>00:00:00.000000000</Offset>
+    <Offset>{splitTimeToLss(saveData["offset"])}</Offset>
     <AttemptCount>{len(saveData["runs"])}</AttemptCount>
     <AttemptHistory>
 {attemptHistory}

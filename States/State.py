@@ -9,6 +9,7 @@ from States import BaseState
 class State(BaseState.State):
     pauseTime = 0
     splitstarttime = 0
+    # offset = 0
 
     # bptList = None
     # currentBests = None
@@ -28,6 +29,7 @@ class State(BaseState.State):
 
     def loadSplits(self, saveData):
         super().loadSplits(saveData)
+        self.offset = saveData["offset"]
         self.currentBests = STL.SyncedTimeList(segments=timeh.stringListToTimes(self.saveData["defaultComparisons"]["bestSegments"]["segments"]))
         self.bestExits = STL.SyncedTimeList(
             totals=[timeh.listMin([timeh.stringToTime(run["totals"][i]) for run in self.saveData["runs"]]) for i in range(len(self.splitnames))]
@@ -257,8 +259,8 @@ class State(BaseState.State):
         if self.started:
             return 1
         self.staticStartTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
-        self.starttime = time
-        self.splitstarttime = time
+        self.starttime = time - timeh.stringToTime(self.offset)
+        self.splitstarttime = time - timeh.stringToTime(self.offset)
         self.started = True
 
     def onSplit(self):

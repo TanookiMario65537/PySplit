@@ -2,11 +2,27 @@ import tkinter as tk
 import copy
 from Components.SplitEditor import EntryGrid
 from Components import SaveButton
+from Components import ValidationEntry as VE
+from util import timeHelpers as timeh
 
 class Editor(tk.Frame):
     def __init__(self,master,state):
         super().__init__(master)
         self.saveData = copy.deepcopy(state.saveData)
+
+        self.headerFrame = tk.Frame(self)
+        self.headerFrame.pack(side="top", anchor="nw")
+
+        self.offsetFrame = tk.Frame(self.headerFrame)
+        self.offsetFrame.pack()
+
+        offsetLabel = tk.Label(self.offsetFrame, text='Offset:')
+        self.offsetField = VE.Entry(
+            self.offsetFrame,
+            self.saveData["offset"],
+            {"validate": lambda x: timeh.validTime(x, True)})
+        offsetLabel.grid(row=0, column=0, sticky='w')
+        self.offsetField.grid(row=0, column=1)
 
         self.buttonFrame = tk.Frame(self)
         self.buttonFrame.pack(side="right",fill="y")
@@ -34,6 +50,9 @@ class Editor(tk.Frame):
             "invalidMsg": "Current data is invalid."})
         self.saveButton.pack(side="bottom",fill="x")
         self.saveWarning = tk.Label(self.buttonFrame,text="Warning: some\ncurrent values are\ninvalid. For invalid\nvalues, the most\nrecent valid value\n will be saved.",fg="orange")
+
+    def getOffset(self):
+        return self.offsetField.getText()
 
     def addSplit(self,_=None):
         self.entries.addSplit()

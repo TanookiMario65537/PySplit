@@ -20,17 +20,21 @@ def trimTime(time):
         return time
     return time[:min([index+3,len(time)])]
 
-def validTime(time):
+def validTime(time, allowNegative=False):
     if not type(time) in [float,str]:
         return False
     if type(time) == float:
         return True
     if time == "-":
         return True
+    if allowNegative and time.startswith("-"):
+        timechecker = time[1:]
+    else:
+        timechecker = time[:]
     secs = re.compile(r'^[1-5]?\d{1}\.\d{1,5}$')
     mins = re.compile(r'^[1-5]?\d{1}:[0-5]\d{1}\.\d{1,5}$')
     hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
-    return secs.match(time) or mins.match(time) or hours.match(time)
+    return secs.match(timechecker) or mins.match(timechecker) or hours.match(timechecker)
 
 
 def isStringTime(time):
@@ -108,7 +112,8 @@ def timesToStringList(arr,options={}):
 def stringToTime(timestring):
     if timestring == "-":
         return blank()
-    parts1 = re.split("\.",timestring)
+    isNeg = timestring.startswith("-")
+    parts1 = re.split("\.", timestring[1:] if isNeg else timestring)
     parts2 = re.split(":",parts1[0])
     hours = 0
     mins = 0
@@ -125,7 +130,7 @@ def stringToTime(timestring):
         secs = int(parts2[1])
     else:
         secs = int(parts2[0])
-    return 3600*hours + 60*mins + secs + fracsecs
+    return (-1 if isNeg else 1)*(3600*hours + 60*mins + secs + fracsecs)
 
 def stringListToTimes(arr):
     times = []

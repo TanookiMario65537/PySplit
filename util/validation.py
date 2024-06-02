@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 import copy
 
 
-versionList = ["1.0", "1.1"]
+versionList = ["1.0", "1.1", "1.2"]
 Time = Annotated[str, Field(pattern=r'^(((\d+:)?(\d?\d:))?\d)?\d.\d{5}$|^-$')]
 DateTime = Annotated[
     str,
@@ -68,6 +68,8 @@ def updateVersion(saveData, version):
             del cmp["segments"]
         for run in newSave["runs"]:
             del run["segments"]
+    elif version == "1.2":
+        newSave["offset"] = "0:00.00000"
     return newSave
 
 
