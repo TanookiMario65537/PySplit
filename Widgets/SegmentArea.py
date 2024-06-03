@@ -47,14 +47,8 @@ class Widget(WidgetBase.WidgetBase):
         self.setAllComparisons()
         self.setHighlight()
 
-    def preStart(self):
-        # Before the run is started, set the header texts every few
-        # frames so that the length is adjusted appropriately. The
-        # assumption here is that the user isn't resizing during
-        # the run.
-        if not self.updateFrame%6:
-            self.setAllHeaders()
-        self.updateFrame = self.updateFrame + 1
+    def onResize(self):
+        self.setAllHeaders()
 
     def frameUpdate(self):
         if not self.state.runEnded\
@@ -209,8 +203,13 @@ class Widget(WidgetBase.WidgetBase):
         for i in range(len(self.splits.currentSplits)):
             split = self.splits.currentSplits[i]
             if self.splits.typeChecker.isGroup(split) and split.open:
-                self.rows[i].setComparison(\
-                    text=self.formatComparison(timeh.difference(self.state.totalTime,self.splits.groupStart)),\
+                self.rows[i].setComparison(
+                    text=self.formatComparison(
+                        timeh.difference(
+                            self.state.totalTime,
+                            self.state.currentRun.totals[split.start-1] if split.start > 0 else 0
+                        )
+                    ),
                     fg="grey"
                 )
                 break

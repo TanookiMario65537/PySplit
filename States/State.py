@@ -24,6 +24,7 @@ class State(BaseState.State):
 
     def __init__(self, splitFile):
         super().__init__(splitFile)
+        self.loadingPartial = False
         if self.saveData:
             self.loadSplits(self.saveData)
 
@@ -176,12 +177,7 @@ class State(BaseState.State):
             self.currentBests.update(splitTime, self.splitnum)
         if timeh.isBlank(self.bestExits.totals[self.splitnum]) or not timeh.greater(total,self.bestExits.totals[self.splitnum]):
             self.bestExits.update(total, self.splitnum)
-        self.splitnum = self.splitnum + 1
-        self.splitstarttime = system_time
-        if self.splitnum >= len(self.splitnames):
-            self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
-            self.runEnded = True
-            self.localSave()
+        self.segmentFollowup(system_time)
 
     ##########################################################
     ## Does all the state updates necessary to skip a split.
@@ -192,12 +188,30 @@ class State(BaseState.State):
         self.currentRun.update(timeh.blank(), self.splitnum)
         for i in range(self.numComparisons):
             self.comparisons[i].update(timeh.blank(), self.splitnum)
+        self.segmentFollowup(system_time)
+
+    def segmentFollowup(self, system_time):
+        """
+        Performs final state updates common to both completeSegment and
+        skipSegment. Updates the current split number and split start time,
+        then:
+
+        1. If the run is completed, marks the run as ended, sets play time and
+        end time, and removes the partial save file.
+        2. If the run is not completed, makes a partial save file.
+
+        Parameters:
+            system_time - The current system time as used by the associated
+                split-ending function.
+        """
         self.splitnum = self.splitnum + 1
         self.splitstarttime = system_time
         if self.splitnum >= len(self.splitnames):
             self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
             self.runEnded = True
             self.localSave()
+        else:
+            self.partialSave()
 
     ##########################################################
     ## Unpause
@@ -375,6 +389,7 @@ class State(BaseState.State):
     ## Loads a state saved partway through a run.
     ##########################################################
     def partialLoad(self):
+        self.loadingPartial = True
         loadedState = fileio.readJson(self.partialSaveFile())
         for total in loadedState["splits"]["totals"]:
             if (timeh.isBlank(total)):
@@ -384,31 +399,42 @@ class State(BaseState.State):
         self.staticStartTime = datetime.datetime.fromisoformat(loadedState["startTime"])
         self.starttime = self.pauseTime - loadedState["times"]["total"]
         self.splitstarttime = self.pauseTime - loadedState["times"]["segment"]
+        self.loadingPartial = False
         return loadedState
 
     ##########################################################
     ## Compute the save file name for partial saves.
     ##########################################################
     def partialSaveFile(self):
-        return self.config["baseDir"] + "/" + self.game + "/." + self.category + ".psave"
+        # This should never happen, but leave it as a failsafe
+        # so we don't throw an IndexError.
+        if not self.splitFile.endswith(".pysplit"):
+            return self.config["baseDir"] + "/" + self.game + "/." + self.category + ".psave"
+        return os.path.join(
+            os.path.dirname(self.splitFile),
+            "." + os.path.basename(self.splitFile).split(".pysplit")[0] + ".psave")
 
     ##########################################################
     ## Convert the current run's data into a dictionary. Used
     ## for saving a partially completed run.
     ########################################################## 
     def dataMap(self):
-        dataMap = {}
-        dataMap["startTime"] = self.staticStartTime.isoformat()
-        dataMap["times"] = {"segment": self.segmentTime, "total": self.totalTime}
-        dataMap["splits"] = {
-            "segments": self.currentRun.segments[:self.currentRun.lastNonBlank()+1],
-            "totals": self.currentRun.totals[:self.currentRun.lastNonBlank()+1]
+        return {
+            "startTime": self.staticStartTime.isoformat(),
+            "times": {
+                "segment": self.segmentTime,
+                "total": self.totalTime
+            },
+            "splits": {
+                "totals": self.currentRun.totals[:self.currentRun.lastNonBlank()+1]
+            }
         }
-        return dataMap
 
     ##########################################################
     ## Save the current state partway through a run.
     ########################################################## 
     def partialSave(self):
+        if self.loadingPartial:
+            return
         print("Writing partial save to", self.partialSaveFile())
         fileio.writeJson(self.partialSaveFile(), self.dataMap())

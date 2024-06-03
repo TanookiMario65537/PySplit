@@ -26,9 +26,6 @@ class WidgetBase(tk.Frame):
     def frameUpdate(self):
         pass
 
-    def preStart(self):
-        pass
-
     def onStarted(self):
         pass
 
@@ -48,6 +45,9 @@ class WidgetBase(tk.Frame):
         pass
 
     def onRestart(self):
+        pass
+
+    def onResize(self):
         pass
 
     def runChanged(self,**kwargs):
