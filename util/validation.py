@@ -1,9 +1,10 @@
 from typing import List, Annotated
 from pydantic import BaseModel, Field
+from util import timeHelpers as timeh
 import copy
 
 
-versionList = ["1.0", "1.1", "1.2"]
+versionList = ["1.0", "1.1", "1.2", "1.3"]
 Time = Annotated[str, Field(pattern=r'^(((\d+:)?(\d?\d:))?\d)?\d.\d{5}$|^-$')]
 DateTime = Annotated[
     str,
@@ -20,10 +21,15 @@ class BestSegments(BaseModel):
     segments: List[Time]
 
 
-class Run(BaseModel):
+class PlaySession(BaseModel):
     startTime: DateTime
     endTime: DateTime
+
+
+class Run(BaseModel):
     totals: List[Time]
+    sessions: List[PlaySession]
+    playTime: Time
 
 
 class DefaultComparisons(BaseModel):
@@ -70,6 +76,16 @@ def updateVersion(saveData, version):
             del run["segments"]
     elif version == "1.2":
         newSave["offset"] = "0:00.00000"
+    elif version == "1.3":
+        for i, run in enumerate(newSave["runs"]):
+            newSave["runs"][i]["sessions"] = [{
+                "startTime": run["startTime"],
+                "endTime": run["endTime"]
+            }]
+            del newSave["runs"][i]["startTime"]
+            del newSave["runs"][i]["endTime"]
+            all_times = list(filter(lambda x: x != "-", run["totals"]))
+            newSave["runs"][i]["playTime"] = all_times[-1] if len(all_times) else timeh.timeToString(0)
     return newSave
 
 

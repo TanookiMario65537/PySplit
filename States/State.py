@@ -27,6 +27,7 @@ class State(BaseState.State):
         self.loadingPartial = False
         if self.saveData:
             self.loadSplits(self.saveData)
+        self.sessionTimes = []
 
     def loadSplits(self, saveData):
         super().loadSplits(saveData)
@@ -207,7 +208,8 @@ class State(BaseState.State):
         self.splitnum = self.splitnum + 1
         self.splitstarttime = system_time
         if self.splitnum >= len(self.splitnames):
-            self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
+            self.playTime = system_time - self.starttime
+            self.staticEndTime = self.currentTime()
             self.runEnded = True
             self.localSave()
         else:
@@ -254,6 +256,8 @@ class State(BaseState.State):
     ##########################################################
     def cleanState(self):
         self._cleanState()
+        self.sessionTimes = []
+        self.playTime = 0
         self.pauseTime = 0
         self.splitstarttime = 0
         self.comparisons = []
@@ -272,7 +276,7 @@ class State(BaseState.State):
         time = timer()
         if self.started:
             return 1
-        self.staticStartTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
+        self.staticStartTime = self.currentTime()
         self.starttime = time - timeh.stringToTime(self.offset)
         self.splitstarttime = time - timeh.stringToTime(self.offset)
         self.started = True
@@ -320,7 +324,9 @@ class State(BaseState.State):
     def onReset(self):
         if not self.started or self.runEnded:
             return 1
-        self.staticEndTime = datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo)
+        time = timer()
+        self.playTime = time - self.starttime
+        self.staticEndTime = self.currentTime()
         self.runEnded = True
         self.localSave()
 
@@ -333,6 +339,9 @@ class State(BaseState.State):
     def shouldFinish(self):
         return not self.started or self.paused or self.runEnded
 
+    def currentTime(self):
+        return datetime.datetime.now(datetime.timezone.utc)
+
     ##########################################################
     ## Updates the local versions of the data files.
     ##########################################################
@@ -343,8 +352,11 @@ class State(BaseState.State):
             self.saveData["defaultComparisons"]["bestRun"]["totals"] = timeh.timesToStringList(self.currentRun.totals)
 
         self.saveData["runs"].append({
-            "startTime": self.staticStartTime.isoformat(),
-            "endTime": self.staticEndTime.isoformat(),
+            "sessions": self.sessionTimes + [{
+                "startTime": self.staticStartTime.isoformat(),
+                "endTime": self.staticEndTime.isoformat()
+             }],
+            "playTime": timeh.timeToString(self.playTime),
             "totals": timeh.timesToStringList(self.currentRun.totals)
         })
         self.unSaved = True
@@ -396,9 +408,10 @@ class State(BaseState.State):
                 self.skipSegment(timer())
             else:
                 self.completeSegment(total, timer())
-        self.staticStartTime = datetime.datetime.fromisoformat(loadedState["startTime"])
+        self.staticStartTime = self.currentTime()
         self.starttime = self.pauseTime - loadedState["times"]["total"]
         self.splitstarttime = self.pauseTime - loadedState["times"]["segment"]
+        self.sessionTimes = loadedState["sessions"]
         self.loadingPartial = False
         return loadedState
 
@@ -420,7 +433,10 @@ class State(BaseState.State):
     ########################################################## 
     def dataMap(self):
         return {
-            "startTime": self.staticStartTime.isoformat(),
+            "sessions": self.sessionTimes + [{
+                "startTime": self.staticStartTime.isoformat(),
+                "endTime": self.currentTime().isoformat()
+            }],
             "times": {
                 "segment": self.segmentTime,
                 "total": self.totalTime

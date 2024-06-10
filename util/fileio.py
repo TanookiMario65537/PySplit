@@ -116,7 +116,7 @@ def newComparisons(names=[]):
              something similar.
     """
     data = {
-        "version": "1.2",
+        "version": "1.3",
         "offset": "0:00.00000",
         "game": "",
         "category": "",
