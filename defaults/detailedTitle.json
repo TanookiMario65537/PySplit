@@ -3,5 +3,8 @@
     "colours": {
         "text": "white",
         "bg": "black"
-    }
+    },
+    "showAttempts": true,
+    "showCompletions": true,
+    "showSessions": true
 }
