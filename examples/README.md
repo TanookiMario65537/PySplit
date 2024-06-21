@@ -28,10 +28,14 @@ Comparison:
     name: string
     totals: list[Time]
 
-Run:
+PlaySession:
     startTime: IsoTime
     endTime: IsoTime
+
+Run:
     totals: list[Time]
+    sessions: list[PlaySession]
+    playTime: Time
 
 Time: "(%H:)?(%M:)?%S.xxxxx" | "-"
 
