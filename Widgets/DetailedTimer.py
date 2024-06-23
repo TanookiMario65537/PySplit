@@ -45,8 +45,8 @@ class Widget(WidgetBase.WidgetBase):
 
     def resetUI(self):
         self.main.configure(fg=self.config["mainTimer"]["colours"]["main"])
-        self.setMainTime(0)
-        self.setSegmentTime(0)
+        self.setMainTime(timeh.stringToTime(self.state.offset))
+        self.setSegmentTime(timeh.stringToTime(self.state.offset))
 
     def frameUpdate(self):
         if not self.state.runEnded:
@@ -72,7 +72,8 @@ class Widget(WidgetBase.WidgetBase):
                 time,\
                 {\
                     "blankToDash": False,\
-                    "precision": precision
+                    "precision": precision,
+                    "showSign": time < 0
                 }\
             )\
 

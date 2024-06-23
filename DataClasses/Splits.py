@@ -10,10 +10,12 @@ class SplitList:
         self.currentSplits = []
         self.activeIndex = 0
         self.state = state
-        self.groupStart = -1
         self.setOpenOnEnd = True
 
     def parseSplits(self,names):
+        """
+        Parses all the splits and split groups from the list of split names.
+        """
         splits = []
         groups = []
         groupStart = -1
@@ -33,11 +35,26 @@ class SplitList:
         return splits, groups
 
     def setVisualConfig(self,numSplits,visuallyActive,setOpenOnEnd):
+        """
+        Sets information needed for choosing how many splits to show, the ideal
+        location for the current split, and whether to leave the current group
+        open at the end.
+        """
         self.visibleSplits = numSplits
         self.visuallyActive = visuallyActive
         self.setOpenOnEnd = setOpenOnEnd
 
     def updateCurrent(self,currentSplit):
+        """
+        Updates the current split list and the index of the current active
+        split. The split list is a mix of SplitGroups, Splits, and EmptySplits.
+
+        Parameters:
+            currentSplit - The index of the current split
+
+        Returns:
+            None
+        """
         self.setOpen(currentSplit)
         if currentSplit == self.numSplits and len(self.groups) and self.groups[-1].end == self.numSplits - 1:
             if self.setOpenOnEnd:
@@ -49,8 +66,6 @@ class SplitList:
         subs = []
         if group:
             subs = self.splits[group.start:group.end+1]
-            if currentSplit == group.start:
-                self.groupStart = self.state.splitstarttime - self.state.starttime
         available = self.synthesizeSplits(subs)
         if currentSplit == self.numSplits:
             self.activeIndex = self.numSplits
@@ -83,12 +98,29 @@ class SplitList:
             self.currentSplits = available[topSplitIndex:topSplitIndex+self.visibleSplits-1] + [available[-1]]
 
     def findGroup(self,index):
+        """
+        Finds the SplitGroup at the given index.
+
+        Returns:
+            The SplitGroup if the split at the given index is in a group.
+            None otherwise.
+        """
         for group in self.groups:
             if group.start <= index and group.end >= index:
                 return group
         return None
 
     def findSplit(self,available,index):
+        """
+        Finds the index of the given split in the list of available splits.
+
+        Parameters:
+            available - The list of available splits.
+            index - The index of the current split.
+
+        Returns:
+            The index of the current split within the available splits.
+        """
         for i in range(len(available)):
             split = available[i]
             if not self.typeChecker.isNormal(split):
@@ -98,6 +130,17 @@ class SplitList:
         return -1
 
     def groupIndex(self,available,group):
+        """
+        Finds the index of a group in the list of available splits.
+
+        Parameters:
+            available - The list of available splits.
+            group - The group.
+
+        Returns:
+            The index of the group in the list of splits. -1 if the group is not
+            in the list.
+        """
         for i in range(len(available)):
             split = available[i]
             if not self.typeChecker.isGroup(split):
@@ -107,6 +150,11 @@ class SplitList:
         return -1
 
     def setOpen(self,index):
+        """
+        Sets the group at the given index to be open and all other groups to be
+        closed. If there is no group at this index, all groups will be set to
+        closed.
+        """
         for group in self.groups:
             if group.start <= index and group.end >= index:
                 group.open = True
@@ -114,6 +162,20 @@ class SplitList:
                 group.open = False
 
     def synthesizeSplits(self,openSubsplits):
+        """
+        Adds the open subsplits to the top level splits to generate a list of
+        possibly visible splits. Fills out empty splits if there is more space
+        than there are splits.
+
+        Parameters:
+            openSubsplits - The list of splits in the currently open group.
+
+        Returns:
+            A list of splits, including all the top level splits plus the given
+            open subsplits in the appropriate location after their associated
+            group split and before the next one. Empty splits are filled in if
+            necessary.
+        """
         topLevel = self.getTopLevelSplits()
         if not len(openSubsplits):
             while len(topLevel) < self.visibleSplits:
@@ -136,6 +198,13 @@ class SplitList:
         return topLevel
 
     def getTopLevelSplits(self):
+        """
+        Get the splits at the top level. Top level splits are SplitGroups and
+        splits that exist outside a group.
+
+        Returns:
+            The list of top level splits.
+        """
         topLevel = []
         i = 0
         while i < len(self.splits):
@@ -149,14 +218,41 @@ class SplitList:
         return topLevel
 
     def trueTopSplitIndex(self,current,available):
-        if current <= self.visuallyActive - 1:
-            return 0
-        elif current >= available - (self.visibleSplits-self.visuallyActive):
-            return available - self.visibleSplits
-        else:
-            return current - (self.visuallyActive - 1)
+        """
+        Determines the index of the split that should be at the top of the
+        window.
+
+        Parameters:
+            current - The current split index within the available splits
+                (returned by trueTopSplitIndex).
+            available - The list of available splits.
+
+        Returns:
+            The index that should be at the top of the window.
+        """
+        return self.subTopIndex(
+            current,
+            available,
+            self.visibleSplits,
+            self.visuallyActive)
 
     def subTopIndex(self,current,available,visible,visuallyActive):
+        """
+        Determines the index of the split that should be at the top of the
+        window, given an explicit number of visible splits and the index of the
+        currently active one.
+
+        Parameters:
+            current - The current split index within the available splits
+                (returned by trueTopSplitIndex).
+            available - The list of available splits.
+            visible - The number of visible splits.
+            visuallyActive - The ideal location of the current split within the
+                window.
+
+        Returns:
+            The index that should be at the top of the window.
+        """
         if current <= visuallyActive - 1:
             return 0
         elif current >= available - (visible-visuallyActive):

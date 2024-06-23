@@ -75,7 +75,7 @@ class App(threading.Thread):
             "reset": component.onReset,
             "restart": component.onRestart,
             "runChanged": component.runChanged,
-            "preStart": component.preStart
+            "resize": component.onResize
         }
         signals.get(signalType,component.frameUpdate)(**kwargs)
 
@@ -122,6 +122,8 @@ class App(threading.Thread):
         if not len(list(filter(lambda x: x==1,[self.components[i].winfo_height() for i in range(self.numWidgets)]))):
             for component in self.components:
                 component.unbind('<Configure>')
+        else:
+            self.updateWidgets("resize")
 
     ##########################################################
     ##########################################################
@@ -139,8 +141,6 @@ class App(threading.Thread):
             self.initialLoad = False
         if not exitCode:
             self.updateWidgets("frame")
-        elif exitCode == 1:
-            self.updateWidgets("preStart")
         self.updater = self.root.after(17,self.update)
 
     ##########################################################
@@ -325,7 +325,10 @@ class App(threading.Thread):
         if self.state.hasPartialSave():
             ConfirmPopup.ConfirmPopup(\
                 self.root,\
-                {"accepted": self.partialLoad},\
+                {
+                    "accepted": self.partialLoad,
+                    "rejected": self.confirmDeletePartialSave
+                },\
                 "Load",\
                 "This category has an incomplete run saved. Load it?"\
             )

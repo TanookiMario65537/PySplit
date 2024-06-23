@@ -1,10 +1,8 @@
 {
+    "precision": 0,
     "font": ["DejaVu Sans", 10],
     "colours": {
         "text": "white",
         "bg": "black"
-    },
-    "showAttempts": true,
-    "showCompletions": true,
-    "showSessions": true
+    }
 }

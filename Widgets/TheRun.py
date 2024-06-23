@@ -61,8 +61,12 @@ class Widget(WidgetBase.WidgetBase):
 
     def jsonify(self):
         is_reset = self.state.runEnded and self.state.splitnum < self.state.numSplits
-        starttime = int(self.state.staticStartTime.timestamp() * 1000)
-        endtime = int(datetime.datetime.now().replace(tzinfo=datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo).timestamp() * 1000)
+        starttime = int((
+            datetime.datetime.fromisoformat(self.state.sessionTimes[0]["startTime"])
+            if len(self.state.sessionTimes)
+            else self.state.staticStartTime
+        ).timestamp() * 1000)
+        endtime = int(self.state.currentTime().timestamp() * 1000)
         runData = []
         bestSegments = self.state.getComparison("default", "bestSegments")
         bestRun = self.state.getComparison("default", "bestRun")

@@ -18,9 +18,9 @@ def splitTimeToLss(timestring):
 
 def attemptTag(run, id):
     if run["totals"][-1] != "-":
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
     else:
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["endTime"])}" isEndedSynced="False"/>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"/>"""
 
 
 def segmentHistoryTag(run, index, splitIndex):
@@ -63,7 +63,7 @@ def pysplitToLss(saveData):
     <CategoryName>{saveData["category"]}</CategoryName>
     <Metadata><Run id=""/><Platform usesEmulator="False"/><Region/><SpeedrunComVariables/><CustomVariables/></Metadata>
     <LayoutPath/>
-    <Offset>00:00:00.000000000</Offset>
+    <Offset>{splitTimeToLss(saveData["offset"])}</Offset>
     <AttemptCount>{len(saveData["runs"])}</AttemptCount>
     <AttemptHistory>
 {attemptHistory}
