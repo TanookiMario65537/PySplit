@@ -16,7 +16,8 @@ class Widget(WidgetBase.WidgetBase):
         self.uploadKey = config["uploadKey"]
         if not self.uploadKey and config["enabled"]:
             print("therun.gg plugin is enabled, but no upload key is provided.")
-        self.enabled = config["enabled"] and self.uploadKey != ""
+        self.liveEnabled = config["enabled"] and config["liveEnabled"] and self.uploadKey != ""
+        self.splitEnabled = config["enabled"] and config["splitEnabled"] and self.uploadKey != ""
         self.wasJustResumed = False
         self.headers = {
             "Content-Type": "application/json",
@@ -31,7 +32,7 @@ class Widget(WidgetBase.WidgetBase):
               else "Live status post failed")
 
     def post_run_status(self):
-        if not self.enabled:
+        if not self.liveEnabled:
             return
         thread = threading.Thread(target=self._post_run_status)
         thread.start()
@@ -53,6 +54,8 @@ class Widget(WidgetBase.WidgetBase):
               else "Split upload failed")
 
     def post_splits(self):
+        if not self.splitEnabled:
+            return
         thread = threading.Thread(target=self._post_splits)
         thread.start()
 
