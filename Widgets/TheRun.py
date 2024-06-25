@@ -75,7 +75,7 @@ class Widget(WidgetBase.WidgetBase):
         bestRun = self.state.getComparison("default", "bestRun")
         for i, name in enumerate(self.state.splitnames):
             runData.append({
-                "name": name,
+                "name": convert.convertName(name),
                 "splitTime": self.clean_time_to_therun_api(self.state.currentRun.totals[i]) if len(self.state.currentRun.totals) > i and not is_reset else None,
                 "pbSplitTime": self.clean_time_to_therun_api(bestRun.times.totals[i]),
                 "bestPossible": self.clean_time_to_therun_api(bestSegments.times.segments[i]),
