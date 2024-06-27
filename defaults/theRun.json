@@ -1,4 +1,6 @@
 {
     "uploadKey": "",
-    "enabled": false
+    "enabled": true,
+    "liveEnabled": true,
+    "splitEnabled": true
 }

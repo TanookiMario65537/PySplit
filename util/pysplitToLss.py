@@ -16,6 +16,13 @@ def splitTimeToLss(timestring):
     return zerostring[:14-len(cleaned)] + cleaned + "0000"
 
 
+def convertName(name):
+    if "{" in name and "}" in name and name.startswith("- "):
+        parts = name.split("{")
+        return "{" + parts[1].split("}")[0] + "}" + parts[0][2:].strip()
+    return name
+
+
 def attemptTag(run, id):
     if run["totals"][-1] != "-":
         return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
@@ -42,7 +49,7 @@ def combineTagList(tagList):
 def segmentTag(saveData, index):
     comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate([saveData["defaultComparisons"]["bestRun"]] + saveData["customComparisons"])])
     segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate([STL.SyncedTimeList(totals=r["totals"])for r in saveData["runs"]])])
-    return f"""        <Segment><Name>{saveData["splitNames"][index]}</Name><Icon/>
+    return f"""        <Segment><Name>{convertName(saveData["splitNames"][index])}</Name><Icon/>
             <SplitTimes>
 {comparisons}
             </SplitTimes>
