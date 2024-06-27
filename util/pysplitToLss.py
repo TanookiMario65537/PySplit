@@ -25,9 +25,9 @@ def convertName(name):
 
 def attemptTag(run, id):
     if run["totals"][-1] != "-":
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][-1]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
     else:
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"/>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][-1]["endTime"])}" isEndedSynced="False"/>"""
 
 
 def segmentHistoryTag(run, index, splitIndex):
