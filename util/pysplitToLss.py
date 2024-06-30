@@ -38,7 +38,7 @@ def segmentHistoryTag(run, index, splitIndex):
 
 def comparisonTag(comparison, splitIndex):
     if comparison["totals"][splitIndex] == "-":
-        return None
+        return f"""                <SplitTime name="{comparison["name"]}"/>"""
     return f"""                <SplitTime name="{comparison["name"]}"><RealTime>{splitTimeToLss(comparison["totals"][splitIndex])}</RealTime></SplitTime>"""
 
 
