@@ -10,6 +10,13 @@ def isoToLss(isostring):
     return datetime.datetime.fromisoformat(isostring).astimezone(datetime.timezone.utc).strftime("%m/%d/%Y %H:%M:%S")
 
 
+def addPlaytime(isostring, playTimeString):
+    return (
+        datetime.datetime.fromisoformat(isostring) +
+        datetime.timedelta(seconds=timeh.stringToTime(playTimeString))
+    ).isoformat()
+
+
 def splitTimeToLss(timestring):
     zerostring = "00:00:00"
     cleaned = "0.00000" if timestring == "-" else timestring
@@ -24,10 +31,18 @@ def convertName(name):
 
 
 def attemptTag(run, id):
+    """
+    Creates the appropriate LSS tag for a run.
+
+    *Note*: Currently there is no LiveSplit support for multiple sessions, and
+            therun.gg doesn't count runs over 4 days long towards play time.
+            For now, just use `startTime + playTime` as the end time for the
+            run to make stats work.
+    """
     if run["totals"][-1] != "-":
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][-1]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["sessions"]["playTime"]))}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
     else:
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][-1]["endTime"])}" isEndedSynced="False"/>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["sessions"]["playTime"]))}" isEndedSynced="False"/>"""
 
 
 def segmentHistoryTag(run, index, splitIndex):
