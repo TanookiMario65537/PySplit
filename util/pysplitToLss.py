@@ -10,17 +10,39 @@ def isoToLss(isostring):
     return datetime.datetime.fromisoformat(isostring).astimezone(datetime.timezone.utc).strftime("%m/%d/%Y %H:%M:%S")
 
 
+def addPlaytime(isostring, playTimeString):
+    return (
+        datetime.datetime.fromisoformat(isostring) +
+        datetime.timedelta(seconds=timeh.stringToTime(playTimeString))
+    ).isoformat()
+
+
 def splitTimeToLss(timestring):
     zerostring = "00:00:00"
     cleaned = "0.00000" if timestring == "-" else timestring
     return zerostring[:14-len(cleaned)] + cleaned + "0000"
 
 
+def convertName(name):
+    if "{" in name and "}" in name and name.startswith("- "):
+        parts = name.split("{")
+        return "{" + parts[1].split("}")[0] + "}" + parts[0][2:].strip()
+    return name
+
+
 def attemptTag(run, id):
+    """
+    Creates the appropriate LSS tag for a run.
+
+    *Note*: Currently there is no LiveSplit support for multiple sessions, and
+            therun.gg doesn't count runs over 4 days long towards play time.
+            For now, just use `startTime + playTime` as the end time for the
+            run to make stats work.
+    """
     if run["totals"][-1] != "-":
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["playTime"]))}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
     else:
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(run["sessions"][0]["endTime"])}" isEndedSynced="False"/>"""
+        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["playTime"]))}" isEndedSynced="False"/>"""
 
 
 def segmentHistoryTag(run, index, splitIndex):
@@ -31,7 +53,7 @@ def segmentHistoryTag(run, index, splitIndex):
 
 def comparisonTag(comparison, splitIndex):
     if comparison["totals"][splitIndex] == "-":
-        return None
+        return f"""                <SplitTime name="{comparison["name"]}"/>"""
     return f"""                <SplitTime name="{comparison["name"]}"><RealTime>{splitTimeToLss(comparison["totals"][splitIndex])}</RealTime></SplitTime>"""
 
 
@@ -42,7 +64,7 @@ def combineTagList(tagList):
 def segmentTag(saveData, index):
     comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate([saveData["defaultComparisons"]["bestRun"]] + saveData["customComparisons"])])
     segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate([STL.SyncedTimeList(totals=r["totals"])for r in saveData["runs"]])])
-    return f"""        <Segment><Name>{saveData["splitNames"][index]}</Name><Icon/>
+    return f"""        <Segment><Name>{convertName(saveData["splitNames"][index])}</Name><Icon/>
             <SplitTimes>
 {comparisons}
             </SplitTimes>
