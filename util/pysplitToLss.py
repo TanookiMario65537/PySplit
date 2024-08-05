@@ -14,7 +14,7 @@ def addPlaytime(isostring, playTimeString):
     return (
         datetime.datetime.fromisoformat(isostring) +
         datetime.timedelta(seconds=timeh.stringToTime(playTimeString))
-    ).isoformat()
+    ).isoformat(timespec="microseconds")
 
 
 def splitTimeToLss(timestring):

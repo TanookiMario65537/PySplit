@@ -353,8 +353,8 @@ class State(BaseState.State):
 
         self.saveData["runs"].append({
             "sessions": self.sessionTimes + [{
-                "startTime": self.staticStartTime.isoformat(),
-                "endTime": self.staticEndTime.isoformat()
+                "startTime": self.staticStartTime.isoformat(timespec="microseconds"),
+                "endTime": self.staticEndTime.isoformat(timespec="microseconds")
              }],
             "playTime": timeh.timeToString(self.playTime),
             "totals": timeh.timesToStringList(self.currentRun.totals)
@@ -434,8 +434,8 @@ class State(BaseState.State):
     def dataMap(self):
         return {
             "sessions": self.sessionTimes + [{
-                "startTime": self.staticStartTime.isoformat(),
-                "endTime": self.currentTime().isoformat()
+                "startTime": self.staticStartTime.isoformat(timespec="microseconds"),
+                "endTime": self.currentTime().isoformat(timespec="microseconds")
             }],
             "times": {
                 "segment": self.segmentTime,
