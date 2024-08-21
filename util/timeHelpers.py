@@ -5,14 +5,9 @@ def zeroPad(finalLength,string):
         string = "0" + string
     return string
 
-def adjustEnd(fracsecs):
-    if fracsecs:
-        string = str(fracsecs)
-    else:
-        string = "0.0"
-    while (len(string) < 11):
-        string = string + "0"
-    return string
+def adjustEnd(fracsecs, precision):
+    intFrac = round(fracsecs*(10**precision))
+    return "." + str(intFrac).rjust(precision, "0")
 
 def trimTime(time):
     index = time.find(".")
@@ -82,6 +77,7 @@ def timeToString(totalSecs,options={}):
     totalSecs = abs(totalSecs)
     if totalSecs > 60 and options["noPrecisionOnMinute"]:
         options["precision"] = 0
+    totalSecs = round(totalSecs, options["precision"])
     fracsecs = totalSecs - int(totalSecs)
     totalSecs = int(totalSecs)
     secs = totalSecs % 60
@@ -100,7 +96,7 @@ def timeToString(totalSecs,options={}):
     else:
         string = string + "0" 
     if options["precision"]:
-        string = string + adjustEnd(fracsecs)[1:options["precision"]+2]
+        string = string + adjustEnd(fracsecs, options["precision"])
     return string
 
 def timesToStringList(arr,options={}):
