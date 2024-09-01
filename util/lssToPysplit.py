@@ -11,7 +11,7 @@ def realTimeToTime(realTime):
     return lssToSplitTime(realTime.text)
 
 
-def lssToSplitTime(lssTime):
+def truncateFront(lssTime):
     time = lssTime[:14]
     if time[0] != "0":
         return time
@@ -24,6 +24,14 @@ def lssToSplitTime(lssTime):
     if time[6] != "0":
         return time[6:]
     return time[7:]
+
+
+def lssToSplitTime(lssTime):
+    time = truncateFront(lssTime)
+    if "." in time:
+        return time + "0"*(len(time) - time.index("."))
+    else:
+        return time + ".00000"
 
 
 def convertName(name):
@@ -188,7 +196,7 @@ def parseXML(xmlfile, mergeList):
     gold_list = getGoldTimes(names, runs)
 
     defaults["bestSegments"] = {
-        "name": "Best Segment",
+        "name": "Best Segments",
         "segments": gold_list
     }
 
