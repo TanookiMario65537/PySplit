@@ -1,0 +1,10 @@
+{
+    "height": 50,
+    "colours": {
+        "axis": "white",
+        "behind": "red",
+        "ahead": "#45ab2a",
+        "line": "black"
+    },
+    "bufferPercent": 10
+}
