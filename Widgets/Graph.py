@@ -30,7 +30,7 @@ class Widget(WidgetBase.WidgetBase):
         # self.points = [(-10, -5), (-5, -2), (0, 0), (5, 3), (10, 7)]
         self.points = []
         self.configure(height=config["height"])
-        self.canvas = tk.Canvas(self, bg=self.config["ahead"], height=config["height"])
+        self.canvas = tk.Canvas(self, bg=self.config["colours"]["ahead"], height=config["height"])
         self.canvas.pack(fill=tk.X, expand=True)
         self.bind("<Configure>", self.doResize)
         self.isResizing = False
@@ -53,11 +53,11 @@ class Widget(WidgetBase.WidgetBase):
 
     def initGraph(self):
         self.canvas.create_rectangle(0, 0, self.width, 0.5 * self.height,
-                                     fill=self.config["behind"])
+                                     fill=self.config["colours"]["behind"])
         self.canvas.create_rectangle(0, 0.5 * self.height, self.width,
-                                     self.height, fill=self.config["ahead"])
+                                     self.height, fill=self.config["colours"]["ahead"])
         self.canvas.create_line(0, 0.5 * self.height, self.width, 0.5 *
-            self.height, fill=self.config["axis"], width=2)
+            self.height, fill=self.config["colours"]["axis"], width=2)
 
     def drawGraph(self):
         self.width = self.winfo_width()
@@ -85,13 +85,15 @@ class Widget(WidgetBase.WidgetBase):
 
         if max_y > 0:
             self.canvas.create_rectangle(0, 0, self.width, (max_y / (max_y -
-                min_y)) * self.height, fill=self.config["behind"])
+                min_y)) * self.height, fill=self.config["colours"]["behind"])
         if min_y < 0:
             self.canvas.create_rectangle(0, (max_y / (max_y - min_y)) *
-                self.height, self.width, self.height, fill=self.config["ahead"])
+                self.height, self.width, self.height,
+                                         fill=self.config["colours"]["ahead"])
 
         x_axis_y = (max_y / (max_y - min_y)) * self.height
-        self.canvas.create_line(0, x_axis_y, self.width, x_axis_y, fill=self.config["axis"], width=2)
+        self.canvas.create_line(0, x_axis_y, self.width, x_axis_y,
+                                fill=self.config["colours"]["axis"], width=2)
 
         scaled_points = [
             (
@@ -99,7 +101,7 @@ class Widget(WidgetBase.WidgetBase):
                 self.height - (y - min_y) * y_scale
             ) for x, y in self.points
         ]
-        self.canvas.create_line(scaled_points, fill=self.config["line"], width=2)
+        self.canvas.create_line(scaled_points, fill=self.config["colours"]["line"], width=2)
 
     def resetUI(self):
         self.drawGraph()
