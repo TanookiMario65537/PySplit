@@ -3,32 +3,9 @@ from util import timeHelpers as timeh
 from Widgets import WidgetBase
 
 class Widget(WidgetBase.WidgetBase):
-    # game = None
-    # category = None
-    # sessions = None
-    # completion = None
-
     def __init__(self, parent, state, config):
         super().__init__(parent, state, config)
-        # bg = config["colours"]["bg"]
-        # font = config["font"]
-        # textColour = config["colours"]["text"]
-
-        # self.configure(bg=bg)
-        # self.game = tk.Label(self, bg=bg, font=font, fg=textColour)
-        # self.category = tk.Label(self, bg=bg, font=font, fg=textColour)
-        # self.sessions = tk.Label(self, bg=bg, font=font, fg=textColour)
-        # self.completion = tk.Label(self, bg=bg, font=font, fg=textColour)
-
-        # self.game.grid(row=0,column=0,columnspan=12,sticky='WE')
-        # self.category.grid(row=1,column=0,columnspan=12,sticky='WE')
-        # self.completion.grid(row=1,column=10,columnspan=2,sticky='E',ipadx=10)
-        # self.sessions.grid(row=0,column=10,columnspan=2,sticky='E',ipadx=10)
-
-        # self.resetUI()
-
-        # self.points = [(-10, -5), (-5, -2), (0, 0), (5, 3), (10, 7)]
-        self.points = []
+        self.generatePoints()
         self.configure(height=config["height"])
         self.canvas = tk.Canvas(self, bg=self.config["colours"]["ahead"], height=config["height"])
         self.canvas.pack(fill=tk.X, expand=True)
