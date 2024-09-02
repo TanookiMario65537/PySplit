@@ -80,6 +80,11 @@ class Widget(WidgetBase.WidgetBase):
         if min_y == max_y:
             min_y, max_y = min_y - 1, max_y + 1
 
+        if min_y < 0:
+            min_y *= 1 + self.config["bufferPercent"]*0.01
+        if max_y > 0:
+            max_y *= 1 + self.config["bufferPercent"]*0.01
+
         x_scale = self.width / (max_x - min_x)
         y_scale = self.height / (max_y - min_y)
 
