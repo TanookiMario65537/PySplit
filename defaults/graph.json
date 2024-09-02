@@ -1,3 +1,9 @@
 {
-    "height": 50
+    "height": 50,
+    "colours": {
+        "axis": "white",
+        "behind": "red",
+        "ahead": "#45ab2a",
+        "line": "black"
+    }
 }
