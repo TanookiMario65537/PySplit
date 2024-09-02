@@ -96,11 +96,14 @@ class Widget(WidgetBase.WidgetBase):
         ]
         self.canvas.create_line(scaled_points, fill="black", width=2)
 
-    # def resetUI(self):
-    #     self.drawGraph()
+    def resetUI(self):
+        self.drawGraph()
 
-    # def onSplit(self):
-    #     self.drawGraph()
+    def onSplit(self):
+        self.drawGraph()
 
-    # def onReset(self):
-    #     self.drawGraph()
+    def onComparisonChanged(self):
+        self.drawGraph()
+
+    def onRestart(self):
+        self.drawGraph()
