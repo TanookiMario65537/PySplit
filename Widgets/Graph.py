@@ -57,7 +57,6 @@ class Widget(WidgetBase.WidgetBase):
         self.canvas.create_line(0, 0.5 * self.height, self.width, 0.5 * self.height, fill='white', width=2)
 
     def drawGraph(self):
-        # Clear the canvas before redrawing
         self.width = self.winfo_width()
         self.height = self.winfo_height()
         self.canvas.delete("all")
