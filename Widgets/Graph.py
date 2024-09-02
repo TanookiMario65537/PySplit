@@ -43,7 +43,13 @@ class Widget(WidgetBase.WidgetBase):
             self.isResizing = False
 
     def generatePoints(self):
-        self.points = list(filter(lambda x: not timeh.isBlank(x), self.state.currentComparison.diffs.totals))
+        comparisons = [i for i, diff in
+                       enumerate(self.state.currentComparison.diffs.totals) if
+                       not timeh.isBlank(diff)]
+        self.points = ([] if not len(comparisons) else [(0, 0)]) + [
+            (self.state.currentRun.totals[index], self.state.currentComparison.diffs.totals[index])
+            for index in comparisons
+        ]
 
     def initGraph(self):
         self.canvas.create_rectangle(0, 0, self.width, 0.5 * self.height, fill='red')
