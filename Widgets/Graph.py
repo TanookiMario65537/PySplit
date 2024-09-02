@@ -69,44 +69,44 @@ class Widget(WidgetBase.WidgetBase):
             self.initGraph()
             return
 
-        x_values = [x for x, y in self.points]
-        y_values = [y for x, y in self.points]
+        xValues = [x for x, y in self.points]
+        yValues = [y for x, y in self.points]
 
-        min_x, max_x = min(x_values), max(x_values)
-        min_y, max_y = min(y_values), max(y_values)
+        minX, maxX = min(xValues), max(xValues)
+        minY, maxY = min(yValues), max(yValues)
 
-        if min_x == max_x:
-            min_x, max_x = min_x - 1, max_x + 1
-        if min_y == max_y:
-            min_y, max_y = min_y - 1, max_y + 1
+        if minX == maxX:
+            minX, maxX = minX - 1, maxX + 1
+        if minY == maxY:
+            minY, maxY = minY - 1, maxY + 1
 
-        if min_y < 0:
-            min_y *= 1 + self.config["bufferPercent"]*0.01
-        if max_y > 0:
-            max_y *= 1 + self.config["bufferPercent"]*0.01
+        if minY < 0:
+            minY *= 1 + self.config["bufferPercent"]*0.01
+        if maxY > 0:
+            maxY *= 1 + self.config["bufferPercent"]*0.01
 
-        x_scale = self.width / (max_x - min_x)
-        y_scale = self.height / (max_y - min_y)
+        xScale = self.width / (maxX - minX)
+        yScale = self.height / (maxY - minY)
 
-        if max_y > 0:
-            self.canvas.create_rectangle(0, 0, self.width, (max_y / (max_y -
-                min_y)) * self.height, fill=self.config["colours"]["behind"])
-        if min_y < 0:
-            self.canvas.create_rectangle(0, (max_y / (max_y - min_y)) *
+        if maxY > 0:
+            self.canvas.create_rectangle(0, 0, self.width, (maxY / (maxY -
+                minY)) * self.height, fill=self.config["colours"]["behind"])
+        if minY < 0:
+            self.canvas.create_rectangle(0, (maxY / (maxY - minY)) *
                 self.height, self.width, self.height,
                                          fill=self.config["colours"]["ahead"])
 
-        x_axis_y = (max_y / (max_y - min_y)) * self.height
-        self.canvas.create_line(0, x_axis_y, self.width, x_axis_y,
+        xAxisY = (maxY / (maxY - minY)) * self.height
+        self.canvas.create_line(0, xAxisY, self.width, xAxisY,
                                 fill=self.config["colours"]["axis"], width=2)
 
-        scaled_points = [
+        scaledPoints = [
             (
-                (x - min_x) * x_scale,
-                self.height - (y - min_y) * y_scale
+                (x - minX) * xScale,
+                self.height - (y - minY) * yScale
             ) for x, y in self.points
         ]
-        self.canvas.create_line(scaled_points, fill=self.config["colours"]["line"], width=2)
+        self.canvas.create_line(scaledPoints, fill=self.config["colours"]["line"], width=2)
 
     def resetUI(self):
         self.drawGraph()
