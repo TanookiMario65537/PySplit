@@ -77,7 +77,7 @@ def timeToString(totalSecs,options={}):
     totalSecs = abs(totalSecs)
     if totalSecs > 60 and options["noPrecisionOnMinute"]:
         options["precision"] = 0
-    totalSecs = round(totalSecs, options["precision"])
+    totalSecs = int(totalSecs*(10**options["precision"]))/10**options["precision"]
     fracsecs = totalSecs - int(totalSecs)
     totalSecs = int(totalSecs)
     secs = totalSecs % 60
