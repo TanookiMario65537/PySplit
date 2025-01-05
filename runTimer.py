@@ -46,6 +46,9 @@ while not app or exitCode:
 
     for component in session.layout["components"]:
         try:
+            if not component.get("enabled", True):
+                print(f"Component \"{component['type']}\" is disabled.")
+                continue
             if "config" in component.keys():
                 app.addWidget(loader.loadWidget(component["type"],component["config"]))
             else:
