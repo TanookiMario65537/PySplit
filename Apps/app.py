@@ -75,7 +75,8 @@ class App(threading.Thread):
             "reset": component.onReset,
             "restart": component.onRestart,
             "runChanged": component.runChanged,
-            "resize": component.onResize
+            "resize": component.onResize,
+            "shutdown": component.onShutdown
         }
         signals.get(signalType,component.frameUpdate)(**kwargs)
 
@@ -441,6 +442,8 @@ class App(threading.Thread):
     def close(self):
         if self.updater:
             self.root.after_cancel(self.updater)
+
+        self.updateWidgets("shutdown")
         self.root.destroy()
 
     ##########################################################
