@@ -61,12 +61,15 @@ class State(BaseState.State):
 
         self.comparisons.extend(self.generateComparisons())
 
-        for i in range(len(self.saveData["customComparisons"])):
-            self.comparisons.append(STL.Comparison(
-                self.saveData["customComparisons"][i]["name"],
-                self.saveData["customComparisons"][i]["totals"],
-                "custom"
-             ))
+        for comparison in self.saveData["customComparisons"]:
+            if len(comparison["totals"]) == len(self.splitnames):
+                self.comparisons.append(STL.Comparison(
+                    comparison["name"],
+                    comparison["totals"],
+                    "custom"))
+            else:
+                print(f"""Comparison \"{comparison["name"]}\" is invalid.
+    It has {len(comparison["totals"])} splits, but this run has {len(self.splitnames)} splits.""")
 
         self.numComparisons = len(self.comparisons)
         if self.compareNum >= self.numComparisons:
