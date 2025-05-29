@@ -1,14 +1,51 @@
-BASE="/usr/local/bin"
-echo "Choose a directory to install in. Enter nothing to use /usr/local/bin"
+# Create the virtual environment
+
+PYS_BASE="$HOME/.local/pysplit"
+PYS_NEWBASE=""
+echo "Choose a directory to create the Python virtual environment in. Enter nothing to use $PYS_BASE"
+read PYS_NEWBASE
+if [ -n "$PYS_NEWBASE" ]; then
+    PYS_BASE=$PYS_NEWBASE
+fi
+
+python3 -m venv $PYS_BASE/venv
+$PYS_BASE/venv/bin/pip3 install -r requirements.txt
+
+# Install all the binaries
+
+BASE="$HOME/.local/bin"
+NEWBASE=""
+echo "Choose a directory to install in. Enter nothing to use $BASE"
 read NEWBASE
-if [[ $NEWBASE ]]; then
+if [ -n "$NEWBASE" ]; then
     BASE=$NEWBASE
 fi
 
-echo -e "cd $PWD\npython3 $PWD/runTimer.py" | sudo sed -n "1,2w $BASE/runTimer"
-echo -e "cd $PWD\npython3 $PWD/practice.py" | sudo sed -n "1,2w $BASE/practiceTimer"
-echo -e "cd $PWD\npython3 $PWD/variance.py" | sudo sed -n "1,2w $BASE/timeVariance"
+echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
+echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
+echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
 
-sudo chmod +x $BASE/runTimer
-sudo chmod +x $BASE/practiceTimer
-sudo chmod +x $BASE/timeVariance
+chmod +x $BASE/pysplit
+chmod +x $BASE/practiceTimer
+chmod +x $BASE/timeVariance
+
+# Default the base save directory to the directory with the venv
+cat > config/global.json << EOF
+{
+    "baseDir": "$PYS_BASE/splits",
+}
+EOF
+
+# Create the desktop app
+cp $PWD/icon.png $PYS_BASE/icon.png
+cat > $HOME/.local/share/applications/pysplit.desktop << EOF
+[Desktop Entry]
+Name=PySplit
+Comment=Segmented Timer Written in Python
+Exec=$BASE/pysplit
+Icon=$PYS_BASE/icon.png
+Terminal=false
+Type=Application
+Categories=Utility;
+EOF
+update-desktop-database $HOME/.local/share/applications
