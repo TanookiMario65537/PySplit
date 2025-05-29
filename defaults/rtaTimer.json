@@ -1,0 +1,9 @@
+{
+    "position": "right",
+    "precision": 2,
+    "font": ["Arial Black",24],
+    "colours": {
+        "bg": "black",
+        "main": "green"
+    }
+}

@@ -50,6 +50,9 @@ class WidgetBase(tk.Frame):
     def onResize(self):
         pass
 
+    def onShutdown(self):
+        pass
+
     def runChanged(self,**kwargs):
         self.state = kwargs["state"]
         self.resetUI()

@@ -1,9 +1,7 @@
 # Dependencies
 
-1. `tkinter`
-2. `pydantic`
-
-These can be installed using `pip3 install tk` and `pip3 install pydantic`.
+Dependencies can be found in `requirements.txt`, and installed with `pip3
+install -r requirements.txt`.
 
 # Setup
 
@@ -192,7 +190,8 @@ user configuration.
 If you are using this timer on a Linux machine, there is a simple
 install script to add this program to a `bin` folder for easier
 use. To install the program, run `./install` in the home directory,
-and choose where to install the program. The three executables
+and choose where to install the program. This also creates a virtual environment
+and installs the dependencies in that environment. The three executables
 created in this case are `runTimer`, `practiceTimer`, and
 `timeVariance`. Note that this won't work with the default
 configuration, since the default base data directory is a relative path.
