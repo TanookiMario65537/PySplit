@@ -15,7 +15,6 @@ class LayoutDialog(BaseDialog.Dialog):
 
         self.layouts = LayoutSelector.Selector(self.root)
         self.layouts.pack()
-        print(self.session.layoutName)
         self.retVal["layoutName"] = self.session.layoutName
         self.layouts.layoutVar.set(self.session.layoutName)
 

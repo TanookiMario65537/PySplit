@@ -1,6 +1,9 @@
 import os
 from util import fileio
 import errors as Errors
+import logging
+
+logger = logging.getLogger(__name__)
 
 letters = [
     'a','b','c','d','e','f','g','h','i','j','k','l','m',\
@@ -53,7 +56,7 @@ def mergeConfigs(original,override):
                     raise Errors.ConfigValueError(key,override[key],original[key])
                 new[key] = override[key]
             except Errors.ConfigValueError as e:
-                print(e)
+                logger.error(e)
         else:
             new[key] = mergeConfigs(original[key], override[key])
     return new
@@ -64,5 +67,5 @@ def validateHotkeys(config):
             if not config["hotkeys"][key] in validHotkeys:
                 raise Errors.HotKeyTypeError(config["hotkeys"][key],defaultHotkeys[key],key)
         except Errors.HotKeyTypeError as e:
-            print(e)
+            logger.error(e)
             config["hotkeys"][key] = defaultHotkeys[key]

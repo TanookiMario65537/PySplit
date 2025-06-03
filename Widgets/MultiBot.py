@@ -6,6 +6,9 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.helper import AuthScope
 from twitchAPI.chat import Chat, EventData, ChatEvent
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 USER_SCOPE = [AuthScope.CHAT_READ, AuthScope.CHAT_EDIT]
 
@@ -22,7 +25,7 @@ class Widget(WidgetBase.WidgetBase):
             if self.config[key] == "":
                 missing.append(key)
         if len(missing):
-            print(f"""Multi-Mario bot configuration is missing keys:
+            logger.warning(f"""Multi-Mario bot configuration is missing keys:
 {'\n'.join(missing)}
 
 For information on creating and registering a Twitch bot account (or adding bot
@@ -71,7 +74,7 @@ in the developer account settings.""")
         This will be called when the event READY is triggered, which will be on
         bot start.
         """
-        print('Bot is ready for work, joining channels')
+        logger.info(f"Multi-Mario bot is ready for work, joining channel {self.config["targetChannel"]}")
         await ready_event.chat.join_room(self.config["targetChannel"])
 
     async def run(self):
