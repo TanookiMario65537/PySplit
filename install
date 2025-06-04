@@ -33,6 +33,7 @@ chmod +x $BASE/timeVariance
 cat > config/global.json << EOF
 {
     "baseDir": "$PYS_BASE/splits",
+    "logFile": "$PYS_BASE/log",
 }
 EOF
 

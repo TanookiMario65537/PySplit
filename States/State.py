@@ -5,6 +5,10 @@ from util import fileio
 from util import timeHelpers as timeh
 from DataClasses import SyncedTimeList as STL
 from States import BaseState
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class State(BaseState.State):
     pauseTime = 0
@@ -68,8 +72,7 @@ class State(BaseState.State):
                     comparison["totals"],
                     "custom"))
             else:
-                print(f"""Comparison \"{comparison["name"]}\" is invalid.
-    It has {len(comparison["totals"])} splits, but this run has {len(self.splitnames)} splits.""")
+                logger.warning(f"""Comparison \"{comparison["name"]}\" is invalid. It has {len(comparison["totals"])} splits, but this run has {len(self.splitnames)} splits.""")
 
         self.numComparisons = len(self.comparisons)
         if self.compareNum >= self.numComparisons:
@@ -455,5 +458,5 @@ class State(BaseState.State):
     def partialSave(self):
         if self.loadingPartial:
             return
-        print("Writing partial save to", self.partialSaveFile())
+        logger.info(f"Writing partial save to {self.partialSaveFile()}")
         fileio.writeJson(self.partialSaveFile(), self.dataMap())

@@ -2,6 +2,9 @@ import os, csv, json
 from util import validation
 from pydantic import ValidationError
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 def resolveFilename(arr):
     return "/".join(arr)
@@ -58,13 +61,12 @@ def writeSplitFile(filepath, data):
     try:
         validation.validateSave(data)
         writeJson(filepath, data)
-        print("Saved data to " + filepath)
+        logger.info("Saved data to " + filepath)
     except ValidationError as err:
         filepath = filepath + ".error"
-        print(err)
-        print()
+        logger.error(err)
         writeJson(filepath, data)
-        print("Saved data to " + filepath)
+        logger.info("Saved data to " + filepath)
 
 def readCsv(filepath):
     if not os.path.exists(filepath):

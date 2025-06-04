@@ -4,6 +4,9 @@ import requests
 import threading
 import json
 from util import pysplitToLss as convert
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Widget(WidgetBase.WidgetBase):
@@ -15,7 +18,7 @@ class Widget(WidgetBase.WidgetBase):
         self.fileUploadBaseUrl = "https://2uxp372ks6nwrjnk6t7lqov4zu0solno.lambda-url.eu-west-1.on.aws/"
         self.uploadKey = config["uploadKey"]
         if not self.uploadKey and config["enabled"]:
-            print("therun.gg plugin is enabled, but no upload key is provided.")
+            logger.warning("therun.gg plugin is enabled, but no upload key is provided.")
         self.liveEnabled = config["enabled"] and config["liveEnabled"] and self.uploadKey != ""
         self.splitEnabled = config["enabled"] and config["splitEnabled"] and self.uploadKey != ""
         self.wasJustResumed = False
@@ -27,9 +30,10 @@ class Widget(WidgetBase.WidgetBase):
 
     def _post_run_status(self):
         postSplits = requests.post(self.splitWebhook, json=self.jsonify(), headers=self.headers)
-        print("Live status posted to therun.gg"
-              if postSplits.status_code == 200
-              else "Live status post failed")
+        if postSplits.status_code == 200:
+            logger.info("Live status posted to therun.gg")
+        else:
+            logger.error("Live status post failed")
 
     def post_run_status(self):
         if not self.liveEnabled:
@@ -42,16 +46,17 @@ class Widget(WidgetBase.WidgetBase):
             return
         fileUploadUrl = f"{self.fileUploadBaseUrl}?filename={self.state.game}%20-%20{self.state.category}.lss&uploadKey={self.uploadKey}"
 
-        print("Converted XML:")
-        print(convert.pysplitToLss(self.state.saveData))
+        logger.debug("Converted XML:")
+        logger.debug(convert.pysplitToLss(self.state.saveData))
         urlGetRequest = requests.get(fileUploadUrl, headers=self.headers)
         lssPut = requests.put(
             json.loads(urlGetRequest.content.decode("utf8"))["url"],
             convert.pysplitToLss(self.state.saveData),
             headers=self.headers)
-        print("Splits uploaded to therun.gg"
-              if lssPut.status_code == 200
-              else "Split upload failed")
+        if lssPut.status_code == 200:
+            logger.info("Splits uploaded to therun.gg")
+        else:
+            logger.error("Split upload failed")
 
     def post_splits(self):
         if not self.splitEnabled:
