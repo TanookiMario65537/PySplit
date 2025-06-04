@@ -62,7 +62,11 @@ def combineTagList(tagList):
 
 
 def segmentTag(saveData, index):
-    comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate([saveData["defaultComparisons"]["bestRun"]] + saveData["customComparisons"])])
+    comparisonList = [saveData["defaultComparisons"]["bestRun"]]
+    for comparison in saveData["customComparisons"]:
+        if len(comparison["totals"]) == len(saveData["splitNames"]):
+            comparisonList.append(comparison)
+    comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate(comparisonList)])
     segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate([STL.SyncedTimeList(totals=r["totals"])for r in saveData["runs"]])])
     return f"""        <Segment><Name>{convertName(saveData["splitNames"][index])}</Name><Icon/>
             <SplitTimes>
