@@ -23,7 +23,8 @@ class LayoutDialog(BaseDialog.Dialog):
             fg="black",
             bg="steel blue",
             text="Confirm Selection",
-            command=self.accept)
+            command=self.accept
+        )
         confirm.pack(fill="x")
 
     def accept(self):
@@ -38,8 +39,8 @@ class LayoutPopup(Popup.Popup):
     layoutVar = None
     session = None
 
-    def __init__(self,master,callback,session):
-        super().__init__(master,{"accepted": callback})
+    def __init__(self, master, callback, session):
+        super().__init__(master, {"accepted": callback})
         self.session = session
 
         self.window.configure(bg="black")
@@ -50,7 +51,13 @@ class LayoutPopup(Popup.Popup):
         self.retVal["layoutName"] = self.session.layoutName
         self.layouts.layoutVar.set(self.session.layoutName)
 
-        confirm = tk.Button(self.window,fg="black",bg="steel blue",text="Confirm Selection",command=self.accept)
+        confirm = tk.Button(
+            self.window,
+            fg="black",
+            bg="steel blue",
+            text="Confirm Selection",
+            command=self.accept
+        )
         confirm.pack(fill="x")
 
     def setReturn(self):

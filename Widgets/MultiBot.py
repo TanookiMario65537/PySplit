@@ -74,7 +74,10 @@ in the developer account settings.""")
         This will be called when the event READY is triggered, which will be on
         bot start.
         """
-        logger.info(f"Multi-Mario bot is ready for work, joining channel {self.config["targetChannel"]}")
+        logger.info(
+            "Multi-Mario bot is ready for work, "
+            f"joining channel {self.config["targetChannel"]}"
+        )
         await ready_event.chat.join_room(self.config["targetChannel"])
 
     async def run(self):

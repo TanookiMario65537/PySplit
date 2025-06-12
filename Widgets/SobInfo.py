@@ -1,9 +1,10 @@
 from Widgets import InfoBase
 from util import timeHelpers as timeh
 
+
 class Widget(InfoBase.InfoBase):
-    def __init__(self,parent,state,config):
-        super().__init__(parent,state,config)
+    def __init__(self, parent, state, config):
+        super().__init__(parent, state, config)
         self.resetUI()
 
     def resetUI(self):
@@ -14,4 +15,9 @@ class Widget(InfoBase.InfoBase):
         self.updateTime()
 
     def updateTime(self):
-        self.info.configure(text=timeh.timeToString(self.state.currentBests.totals[-1],{"precision":self.config["precision"]}))
+        self.info.configure(
+            text=timeh.timeToString(
+                self.state.currentBests.totals[-1],
+                {"precision": self.config["precision"]}
+            )
+        )

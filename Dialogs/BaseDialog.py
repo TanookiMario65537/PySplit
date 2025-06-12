@@ -3,6 +3,7 @@
 
 import tkinter as tk
 
+
 class Dialog():
     # root = None
     # retVal = None

@@ -1,24 +1,28 @@
 import re
 
-def zeroPad(finalLength,string):
+
+def zeroPad(finalLength, string):
     while len(string) < finalLength:
         string = "0" + string
     return string
+
 
 def adjustEnd(fracsecs, precision):
     intFrac = round(fracsecs*(10**precision))
     return "." + str(intFrac).rjust(precision, "0")
 
+
 def trimTime(time):
     index = time.find(".")
     if index < 0:
         return time
-    return time[:min([index+3,len(time)])]
+    return time[:min([index+3, len(time)])]
+
 
 def validTime(time, allowNegative=False):
-    if not type(time) in [float,str]:
+    if not type(time) in [float, str]:
         return False
-    if type(time) == float:
+    if isinstance(time, float):
         return True
     if time == "-":
         return True
@@ -29,7 +33,11 @@ def validTime(time, allowNegative=False):
     secs = re.compile(r'^[1-5]?\d{1}\.\d{1,5}$')
     mins = re.compile(r'^[1-5]?\d{1}:[0-5]\d{1}\.\d{1,5}$')
     hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
-    return secs.match(timechecker) or mins.match(timechecker) or hours.match(timechecker)
+    return (
+        secs.match(timechecker)
+        or mins.match(timechecker)
+        or hours.match(timechecker)
+    )
 
 
 def isStringTime(time):
@@ -45,20 +53,24 @@ def isStringTime(time):
     secs = re.compile(r'^[1-5]?\d{1}\.\d{1,5}$')
     mins = re.compile(r'^[1-5]?\d{1}:[0-5]\d{1}\.\d{1,5}$')
     hours = re.compile(r'^\d{1,10}:[0-5]\d{1}:[0-5]\d{1}\.\d{1,5}$')
-    return (secs.match(time) or mins.match(time) or hours.match(time)) is not None
+    return (
+        (secs.match(time) or mins.match(time) or hours.match(time)) is not None
+    )
+
 
 def parseOptions(options):
-    newOptions = {\
-        "showSign": False, \
-        "blankToDash": True, \
-        "precision": 5,\
-        "noPrecisionOnMinute": False\
+    newOptions = {
+        "showSign": False,
+        "blankToDash": True,
+        "precision": 5,
+        "noPrecisionOnMinute": False
     }
 
     newOptions.update(options)
     return newOptions
 
-def timeToString(totalSecs,options={}):
+
+def timeToString(totalSecs, options={}):
     options = parseOptions(options)
     if isBlank(totalSecs):
         if options["blankToDash"]:
@@ -72,12 +84,14 @@ def timeToString(totalSecs,options={}):
     if options["showSign"]:
         if totalSecs > 0:
             string = "+"
-        else: 
+        else:
             string = '-'
     totalSecs = abs(totalSecs)
     if totalSecs > 60 and options["noPrecisionOnMinute"]:
         options["precision"] = 0
-    totalSecs = int(totalSecs*(10**options["precision"]))/10**options["precision"]
+    totalSecs = (
+        int(totalSecs*(10**options["precision"]))/10**options["precision"]
+    )
     fracsecs = totalSecs - int(totalSecs)
     totalSecs = int(totalSecs)
     secs = totalSecs % 60
@@ -86,31 +100,33 @@ def timeToString(totalSecs,options={}):
     hours = int((totalSecs - mins)/60)
     if hours:
         string = string + str(hours) + ":"
-        string = string + zeroPad(2,str(mins)) + ":"
-        string = string + zeroPad(2,str(secs))
+        string = string + zeroPad(2, str(mins)) + ":"
+        string = string + zeroPad(2, str(secs))
     elif mins:
         string = string + str(mins) + ":"
-        string = string + zeroPad(2,str(secs))
+        string = string + zeroPad(2, str(secs))
     elif secs:
         string = string + str(secs)
     else:
-        string = string + "0" 
+        string = string + "0"
     if options["precision"]:
         string = string + adjustEnd(fracsecs, options["precision"])
     return string
 
-def timesToStringList(arr,options={}):
+
+def timesToStringList(arr, options={}):
     newarr = []
     for thing in arr:
-        newarr.append(timeToString(thing,options))
+        newarr.append(timeToString(thing, options))
     return newarr
+
 
 def stringToTime(timestring):
     if timestring == "-":
         return blank()
     isNeg = timestring.startswith("-")
-    parts1 = re.split("\.", timestring[1:] if isNeg else timestring)
-    parts2 = re.split(":",parts1[0])
+    parts1 = re.split(r"\.", timestring[1:] if isNeg else timestring)
+    parts2 = re.split(":", parts1[0])
     hours = 0
     mins = 0
     secs = 0
@@ -128,42 +144,47 @@ def stringToTime(timestring):
         secs = int(parts2[0])
     return (-1 if isNeg else 1)*(3600*hours + 60*mins + secs + fracsecs)
 
+
 def stringListToTimes(arr):
-    times = []
-    for string in arr:
-        times.append(stringToTime(string))
-    return times
+    return [stringToTime(string) for string in arr]
+
 
 def isBlank(time):
     return time == blank()
 
+
 def blank():
     return "BLANK"
+
 
 def sumTimeList(arr):
     if not len(arr):
         return blank()
     total = arr[0]
-    for i in range(1,len(arr)):
-        total = add(total,arr[i])
+    for i in range(1, len(arr)):
+        total = add(total, arr[i])
     return total
 
-def difference(time1,time2):
+
+def difference(time1, time2):
     if isBlank(time1) or isBlank(time2):
         return blank()
     return time1 - time2
 
-def add(time1,time2):
+
+def add(time1, time2):
     if isBlank(time1) or isBlank(time2):
         return blank()
     return time1 + time2
 
-def greater(time1,time2):
+
+def greater(time1, time2):
     if isBlank(time1) or isBlank(time2):
         return blank()
     return time1 > time2
 
-def equal(time1,time2):
+
+def equal(time1, time2):
     if isBlank(time1) or isBlank(time2):
         return blank()
     return time1 == time2

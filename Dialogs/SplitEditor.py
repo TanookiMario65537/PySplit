@@ -19,11 +19,13 @@ class SplitEditor(Popup.Popup):
         check1 = len(self.editor.entries.rows) > 0
         check2 = self.editor.entries.leftFrame.isValid()
         if not check1:
-            self.editor.saveButton.options["invalidMsg"] =\
+            self.editor.saveButton.options["invalidMsg"] = (
                 "This run has no splits."
+            )
         elif not check2:
-            self.editor.saveButton.options["invalidMsg"] =\
+            self.editor.saveButton.options["invalidMsg"] = (
                 "All split names\nmust be non-empty."
+            )
         elif self.editor.entries.shouldWarn():
             self.editor.saveWarning.pack(side="bottom", fill="both")
 
@@ -45,5 +47,6 @@ class SplitEditor(Popup.Popup):
         self.retVal = saveData
         fileio.writeSplitFile(
             self.state.splitFile,
-            saveData)
+            saveData
+        )
         self.callbacks["accepted"](self.retVal)

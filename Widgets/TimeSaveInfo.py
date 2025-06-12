@@ -1,9 +1,10 @@
 from Widgets import InfoBase
 from util import timeHelpers as timeh
 
+
 class Widget(InfoBase.InfoBase):
-    def __init__(self,parent,state,config):
-        super().__init__(parent,state,config)
+    def __init__(self, parent, state, config):
+        super().__init__(parent, state, config)
         self.resetUI()
 
     def resetUI(self):
@@ -18,7 +19,7 @@ class Widget(InfoBase.InfoBase):
 
     def onSplit(self):
         self.updateIfNecessary()
-    
+
     def onComparisonChanged(self):
         self.updateIfNecessary()
 
@@ -37,8 +38,10 @@ class Widget(InfoBase.InfoBase):
         self.info.configure(
             text=timeh.timeToString(
                 timeh.difference(
-                    self.state.currentComparison.times.segments[self.state.splitnum],
-                    self.state.getComparison("default", "bestSegments").times.segments[self.state.splitnum]
+                    self.state.currentComparison
+                        .times.segments[self.state.splitnum],
+                    self.state.getComparison("default", "bestSegments")
+                        .times.segments[self.state.splitnum]
                 ),
                 {
                     "precision": self.config["precision"],

@@ -2,14 +2,15 @@ import tkinter as tk
 from util import timeHelpers as timeh
 from Widgets import WidgetBase
 
+
 class Widget(WidgetBase.WidgetBase):
     # game = None
     # category = None
     # sessions = None
     # completion = None
 
-    def __init__(self,parent,state,config):
-        super().__init__(parent,state,config)
+    def __init__(self, parent, state, config):
+        super().__init__(parent, state, config)
         bg = config["colours"]["bg"]
         font = config["font"]
         textColour = config["colours"]["text"]
@@ -20,10 +21,22 @@ class Widget(WidgetBase.WidgetBase):
         self.sessions = tk.Label(self, bg=bg, font=font, fg=textColour)
         self.completion = tk.Label(self, bg=bg, font=font, fg=textColour)
 
-        self.game.grid(row=0,column=0,columnspan=12,sticky='WE')
-        self.category.grid(row=1,column=0,columnspan=12,sticky='WE')
-        self.completion.grid(row=1,column=10,columnspan=2,sticky='E',ipadx=10)
-        self.sessions.grid(row=0,column=10,columnspan=2,sticky='E',ipadx=10)
+        self.game.grid(row=0, column=0, columnspan=12, sticky='WE')
+        self.category.grid(row=1, column=0, columnspan=12, sticky='WE')
+        self.completion.grid(
+            row=1,
+            column=10,
+            columnspan=2,
+            sticky='E',
+            ipadx=10
+        )
+        self.sessions.grid(
+            row=0,
+            column=10,
+            columnspan=2,
+            sticky='E',
+            ipadx=10
+        )
 
         self.resetUI()
 
@@ -45,7 +58,9 @@ class Widget(WidgetBase.WidgetBase):
         if not self.config["showSessions"]:
             return
         if len(self.state.sessionTimes):
-            self.sessions.configure(text="Session "+str(len(self.state.sessionTimes)+1))
+            self.sessions.configure(
+                text="Session "+str(len(self.state.sessionTimes)+1)
+            )
         else:
             self.sessions.configure(text="")
 
@@ -54,6 +69,16 @@ class Widget(WidgetBase.WidgetBase):
         if not self.config["showAttempts"]:
             return
         if self.config["showCompletions"]:
-            text += str(len([run for run in self.state.saveData["runs"] if not timeh.isBlank(timeh.stringToTime(run["totals"][-1]))]))+"/"
+            text += str(
+                len(
+                    [
+                        run
+                        for run in self.state.saveData["runs"]
+                        if not timeh.isBlank(
+                            timeh.stringToTime(run["totals"][-1])
+                        )
+                    ]
+                )
+            )+"/"
         text += str(len(self.state.saveData["runs"]))
         self.completion.configure(text=text)

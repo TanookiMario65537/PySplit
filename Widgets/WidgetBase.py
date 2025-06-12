@@ -1,24 +1,28 @@
 import tkinter as tk
 
+
 class WidgetBase(tk.Frame):
     # state = None
     # config = None
 
-    def __init__(self,parent,state,config):
+    def __init__(self, parent, state, config):
         super().__init__(parent)
         self.state = state
         self.config = config
         self.configureColumns()
 
     def configureColumns(self):
-        self.rowconfigure(0,weight=1)
+        self.rowconfigure(0, weight=1)
         for i in range(12):
-            self.columnconfigure(i,minsize=27,weight=1)
+            self.columnconfigure(i, minsize=27, weight=1)
 
     def shouldHide(self):
-        if not "hideOnBlank" in self.config.keys():
+        if "hideOnBlank" not in self.config.keys():
             return False
-        return self.state.currentComparison.title == "Blank" and self.config["hideOnBlank"]
+        return (
+            self.state.currentComparison.title == "Blank"
+            and self.config["hideOnBlank"]
+        )
 
     def hide(self):
         pass
@@ -53,7 +57,7 @@ class WidgetBase(tk.Frame):
     def onShutdown(self):
         pass
 
-    def runChanged(self,**kwargs):
+    def runChanged(self, **kwargs):
         self.state = kwargs["state"]
         self.resetUI()
 

@@ -8,7 +8,13 @@ versionList = ["1.0", "1.1", "1.2", "1.3"]
 Time = Annotated[str, Field(pattern=r'^(((\d+:)?(\d?\d:))?\d)?\d.\d{5}$|^-$')]
 DateTime = Annotated[
     str,
-    Field(pattern=r'^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])T([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d.\d{6}([-+]\d{2}:\d{2})?$')]
+    Field(
+        pattern=(
+            r'^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])T([0-1]\d|2[0-3]):'
+            r'[0-5]\d:[0-5]\d.\d{6}([-+]\d{2}:\d{2})?$'
+        )
+    )
+]
 
 
 class Comparison(BaseModel):
@@ -85,7 +91,9 @@ def updateVersion(saveData, version):
             del newSave["runs"][i]["startTime"]
             del newSave["runs"][i]["endTime"]
             all_times = list(filter(lambda x: x != "-", run["totals"]))
-            newSave["runs"][i]["playTime"] = all_times[-1] if len(all_times) else timeh.timeToString(0)
+            newSave["runs"][i]["playTime"] = (
+                all_times[-1] if len(all_times) else timeh.timeToString(0)
+            )
     return newSave
 
 
