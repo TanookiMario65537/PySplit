@@ -8,7 +8,8 @@ def chooseRun(config):
         title="Choose a Split File",
         filetypes=(
             ("PySplit Files", "*.pysplit"),
-        ))
+        )
+    )
 
 
 def addNewRun(config, default):
@@ -25,4 +26,5 @@ def addNewRun(config, default):
             ("PySplit Files", "*.pysplit"),
         ),
         defaultextension=".pysplit",
-        initialfile=initialFile)
+        initialfile=initialFile
+    )

@@ -1,7 +1,8 @@
 import copy
 
+
 class SplitList:
-    def __init__(self,state):
+    def __init__(self, state):
         self.splits, self.groups = self.parseSplits(state.splitnames)
         self.visibleSplits = 0
         self.visuallyActive = 0
@@ -12,7 +13,7 @@ class SplitList:
         self.state = state
         self.setOpenOnEnd = True
 
-    def parseSplits(self,names):
+    def parseSplits(self, names):
         """
         Parses all the splits and split groups from the list of split names.
         """
@@ -25,16 +26,22 @@ class SplitList:
                 if groupStart < 0:
                     groupStart = i
                 if "{" in names[i] and "}" in names[i]:
-                    groups.append(SplitGroup(groupStart,i,names[i].split("{")[1].split("}")[0]))
+                    groups.append(
+                        SplitGroup(
+                            groupStart,
+                            i,
+                            names[i].split("{")[1].split("}")[0]
+                        )
+                    )
                     truename = truename.split("{")[0]
                     groupStart = -1
-                splits.append(Split(i,truename,True))
+                splits.append(Split(i, truename, True))
             else:
-                splits.append(Split(i,names[i]))
+                splits.append(Split(i, names[i]))
                 groupStart = -1
         return splits, groups
 
-    def setVisualConfig(self,numSplits,visuallyActive,setOpenOnEnd):
+    def setVisualConfig(self, numSplits, visuallyActive, setOpenOnEnd):
         """
         Sets information needed for choosing how many splits to show, the ideal
         location for the current split, and whether to leave the current group
@@ -44,7 +51,7 @@ class SplitList:
         self.visuallyActive = visuallyActive
         self.setOpenOnEnd = setOpenOnEnd
 
-    def updateCurrent(self,currentSplit):
+    def updateCurrent(self, currentSplit):
         """
         Updates the current split list and the index of the current active
         split. The split list is a mix of SplitGroups, Splits, and EmptySplits.
@@ -56,7 +63,11 @@ class SplitList:
             None
         """
         self.setOpen(currentSplit)
-        if currentSplit == self.numSplits and len(self.groups) and self.groups[-1].end == self.numSplits - 1:
+        if (
+            currentSplit == self.numSplits
+            and len(self.groups)
+            and self.groups[-1].end == self.numSplits - 1
+        ):
             if self.setOpenOnEnd:
                 group = copy.deepcopy(self.groups[-1])
             else:
@@ -70,34 +81,56 @@ class SplitList:
         if currentSplit == self.numSplits:
             self.activeIndex = self.numSplits
             if group and group.count >= self.visibleSplits:
-                self.currentSplits = [group] + available[len(available)-self.visibleSplits+1:]
+                self.currentSplits = (
+                    [group]
+                    + available[len(available)-self.visibleSplits+1:]
+                )
             else:
-                self.currentSplits = available[len(available)-self.visibleSplits:]
+                self.currentSplits = (
+                    available[len(available)-self.visibleSplits:]
+                )
         else:
-            availableIndex = self.findSplit(available,currentSplit)
-            topSplitIndex = self.trueTopSplitIndex(availableIndex,len(available))
+            availableIndex = self.findSplit(available, currentSplit)
+            topSplitIndex = (
+                self.trueTopSplitIndex(availableIndex, len(available))
+            )
             if group:
-                groupIndex = self.groupIndex(available,group)
+                groupIndex = self.groupIndex(available, group)
                 if groupIndex < topSplitIndex:
                     subActiveIndex = self.visuallyActive
                     if subActiveIndex > self.visibleSplits/2:
                         subActiveIndex = subActiveIndex - 1
                     count = group.count
-                    if self.groupIndex(self.groups,group) == len(self.groups) - 1:
+                    if (
+                        self.groupIndex(self.groups, group)
+                        == len(self.groups) - 1
+                    ):
                         count = count - 1
-                    subTopIndex = self.subTopIndex(\
-                        availableIndex-groupIndex,\
+                    subTopIndex = self.subTopIndex(
+                        availableIndex-groupIndex,
                         count,
-                        self.visibleSplits-2,\
-                        subActiveIndex\
+                        self.visibleSplits-2,
+                        subActiveIndex
                     )
-                    self.activeIndex = availableIndex - (groupIndex + subTopIndex - 1)
-                    self.currentSplits = [group] + available[groupIndex+subTopIndex:groupIndex+subTopIndex+self.visibleSplits-1] + [available[-1]]
+                    self.activeIndex = (
+                        availableIndex - (groupIndex + subTopIndex - 1)
+                    )
+                    self.currentSplits = (
+                        [group]
+                        + available[
+                            groupIndex + subTopIndex:
+                            groupIndex + subTopIndex + self.visibleSplits-1
+                        ]
+                        + [available[-1]]
+                    )
                     return
             self.activeIndex = availableIndex - topSplitIndex
-            self.currentSplits = available[topSplitIndex:topSplitIndex+self.visibleSplits-1] + [available[-1]]
+            self.currentSplits = (
+                available[topSplitIndex:topSplitIndex+self.visibleSplits-1]
+                + [available[-1]]
+            )
 
-    def findGroup(self,index):
+    def findGroup(self, index):
         """
         Finds the SplitGroup at the given index.
 
@@ -110,7 +143,7 @@ class SplitList:
                 return group
         return None
 
-    def findSplit(self,available,index):
+    def findSplit(self, available, index):
         """
         Finds the index of the given split in the list of available splits.
 
@@ -129,7 +162,7 @@ class SplitList:
                 return i
         return -1
 
-    def groupIndex(self,available,group):
+    def groupIndex(self, available, group):
         """
         Finds the index of a group in the list of available splits.
 
@@ -138,8 +171,8 @@ class SplitList:
             group - The group.
 
         Returns:
-            The index of the group in the list of splits. -1 if the group is not
-            in the list.
+            The index of the group in the list of splits. -1 if the group is
+            not in the list.
         """
         for i in range(len(available)):
             split = available[i]
@@ -149,7 +182,7 @@ class SplitList:
                 return i
         return -1
 
-    def setOpen(self,index):
+    def setOpen(self, index):
         """
         Sets the group at the given index to be open and all other groups to be
         closed. If there is no group at this index, all groups will be set to
@@ -161,7 +194,7 @@ class SplitList:
             else:
                 group.open = False
 
-    def synthesizeSplits(self,openSubsplits):
+    def synthesizeSplits(self, openSubsplits):
         """
         Adds the open subsplits to the top level splits to generate a list of
         possibly visible splits. Fills out empty splits if there is more space
@@ -179,7 +212,7 @@ class SplitList:
         topLevel = self.getTopLevelSplits()
         if not len(openSubsplits):
             while len(topLevel) < self.visibleSplits:
-                topLevel.insert(len(topLevel)-1,EmptySplit())
+                topLevel.insert(len(topLevel)-1, EmptySplit())
             return topLevel
 
         i = 0
@@ -187,14 +220,14 @@ class SplitList:
             split = topLevel[i]
             if self.typeChecker.isNormal(split):
                 if openSubsplits[0].index < split.index:
-                    topLevel.insert(i,copy.deepcopy(openSubsplits.pop(0)))
+                    topLevel.insert(i, copy.deepcopy(openSubsplits.pop(0)))
             elif self.typeChecker.isGroup(split):
                 if openSubsplits[0].index < split.start:
-                    topLevel.insert(i,copy.deepcopy(openSubsplits.pop(0)))
+                    topLevel.insert(i, copy.deepcopy(openSubsplits.pop(0)))
             i = i + 1
         topLevel = topLevel + copy.deepcopy(openSubsplits)
         while len(topLevel) < self.visibleSplits:
-            topLevel.insert(len(topLevel)-1,EmptySplit())
+            topLevel.insert(len(topLevel)-1, EmptySplit())
         return topLevel
 
     def getTopLevelSplits(self):
@@ -217,7 +250,7 @@ class SplitList:
             i = i + 1
         return topLevel
 
-    def trueTopSplitIndex(self,current,available):
+    def trueTopSplitIndex(self, current, available):
         """
         Determines the index of the split that should be at the top of the
         window.
@@ -234,9 +267,10 @@ class SplitList:
             current,
             available,
             self.visibleSplits,
-            self.visuallyActive)
+            self.visuallyActive
+        )
 
-    def subTopIndex(self,current,available,visible,visuallyActive):
+    def subTopIndex(self, current, available, visible, visuallyActive):
         """
         Determines the index of the split that should be at the top of the
         window, given an explicit number of visible splits and the index of the
@@ -268,8 +302,9 @@ class SplitList:
             string = string + str(group) + "\n"
         return string
 
+
 class Split:
-    def __init__(self,index,name,isSub=False):
+    def __init__(self, index, name, isSub=False):
         self.index = index
         self.name = name
         self.subsplit = isSub
@@ -277,8 +312,9 @@ class Split:
     def __str__(self):
         return "Name: " + self.name + " | Index: " + str(self.index)
 
+
 class SplitGroup:
-    def __init__(self,start,end,name):
+    def __init__(self, start, end, name):
         self.start = start
         self.end = end
         self.name = name
@@ -286,7 +322,12 @@ class SplitGroup:
         self.open = False
 
     def __str__(self):
-        return "Name: " + self.name + " | Indexes: " + str(self.start) + "-" + str(self.end) + " | Open: " + str(self.open)
+        return (
+            f"Name: {self.name} "
+            f"| Indexes: {self.start}-{self.end} "
+            f"| Open: {self.open}"
+        )
+
 
 class EmptySplit:
     def __init__(self):
@@ -295,15 +336,16 @@ class EmptySplit:
     def __str__(self):
         return "Empty split"
 
+
 class TypeChecker():
     def __init__(self):
         pass
 
-    def isNormal(self,obj):
-        return type(obj) == Split
+    def isNormal(self, obj):
+        return isinstance(obj, Split)
 
-    def isGroup(self,obj):
-        return type(obj) == SplitGroup
+    def isGroup(self, obj):
+        return isinstance(obj, SplitGroup)
 
-    def isEmpty(self,obj):
-        return type(obj) == EmptySplit
+    def isEmpty(self, obj):
+        return isinstance(obj, EmptySplit)

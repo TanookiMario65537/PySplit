@@ -1,9 +1,10 @@
 from Widgets import InfoBase
 from util import timeHelpers as timeh
 
+
 class Widget(InfoBase.InfoBase):
-    def __init__(self,parent,state,config):
-        super().__init__(parent,state,config)
+    def __init__(self, parent, state, config):
+        super().__init__(parent, state, config)
         self.resetUI()
 
     def hide(self):
@@ -16,15 +17,22 @@ class Widget(InfoBase.InfoBase):
             self.hide()
             return
         bestSegments = self.state.getComparison("default", "bestSegments")
-        if not timeh.greater(bestSegments.times.segments[self.state.splitnum],self.state.segmentTime):
+        if not timeh.greater(
+            bestSegments.times.segments[self.state.splitnum],
+            self.state.segmentTime
+        ):
             self.info.configure(
                 text=timeh.timeToString(
                     timeh.add(
-                        timeh.difference(self.state.segmentTime, bestSegments.times.segments[self.state.splitnum]),
+                        timeh.difference(
+                            self.state.segmentTime,
+                            bestSegments.times.segments[self.state.splitnum]
+                        ),
                         self.state.bptList.total
                     ),
                     {"precision": self.config["precision"]}
-                ))
+                )
+            )
 
     def onSplit(self):
         self.updateTime()
@@ -43,12 +51,11 @@ class Widget(InfoBase.InfoBase):
         if self.shouldHide():
             self.hide()
             return
-        self.info.configure(\
-            text=\
-                timeh.timeToString(\
-                    self.state.bptList.total,\
-                    {\
-                        "precision": self.config["precision"]\
-                    }\
-                )\
+        self.info.configure(
+            text=timeh.timeToString(
+                self.state.bptList.total,
+                {
+                    "precision": self.config["precision"]
+                }
+            )
         )

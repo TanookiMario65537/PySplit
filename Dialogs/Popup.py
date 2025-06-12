@@ -3,6 +3,7 @@
 
 import tkinter as tk
 
+
 class Popup:
     # master = None
     # callback = None
@@ -10,7 +11,7 @@ class Popup:
     # retVal = None
     # closeAction = None
 
-    def __init__(self,master,callbacks,closeAction="rejected"):
+    def __init__(self, master, callbacks, closeAction="rejected"):
         self.master = master
         self.callbacks = callbacks
         self.window = tk.Toplevel(self.master)
@@ -21,22 +22,22 @@ class Popup:
     def show(self):
         pass
 
-    def accept(self,_=None):
+    def accept(self, _=None):
         self.setReturn()
         self.retVal["exitCode"] = "accepted"
         self.finish()
 
-    def close(self,_=None):
+    def close(self, _=None):
         self.setReturn()
         self.retVal["exitCode"] = self.closeAction
         self.finish()
 
-    def reject(self,_=None):
+    def reject(self, _=None):
         self.setReturn()
         self.retVal["exitCode"] = "rejected"
         self.finish()
 
-    def finish(self,_=None):
+    def finish(self, _=None):
         self.setReturn()
         self.window.destroy()
         if self.retVal["exitCode"] in self.callbacks.keys():

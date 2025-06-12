@@ -1,13 +1,14 @@
 from Widgets import InfoBase
 from util import timeHelpers as timeh
 
+
 class Widget(InfoBase.InfoBase):
-    def __init__(self,parent,state,config):
-        super().__init__(parent,state,config)
+    def __init__(self, parent, state, config):
+        super().__init__(parent, state, config)
         self.resetUI()
 
     def hide(self):
-        self.info.configure(text="-",fg=self.config["colours"]["text"])
+        self.info.configure(text="-", fg=self.config["colours"]["text"])
 
     def frameUpdate(self):
         if self.state.runEnded:
@@ -17,17 +18,40 @@ class Widget(InfoBase.InfoBase):
             return
         bestSegments = self.state.getComparison("default", "bestSegments")
         bestExits = self.state.getComparison("generated", "Best Exit")
-        if (not timeh.greater(bestSegments.times.segments[self.state.splitnum], self.state.segmentTime)
-            and not timeh.isBlank(bestSegments.times.segments[self.state.splitnum]))\
-            or (not timeh.greater(bestExits.times.totals[self.state.splitnum], self.state.totalTime)
-            and not timeh.isBlank(bestExits.times.totals[self.state.splitnum]))\
-            and not (self.state.splitnum and timeh.isBlank(self.state.currentRun.totals[self.state.splitnum-1])):
+        if (
+            (
+                not timeh.greater(
+                    bestSegments.times.segments[self.state.splitnum],
+                    self.state.segmentTime
+                )
+                and not timeh.isBlank(
+                    bestSegments.times.segments[self.state.splitnum]
+                )
+            )
+            or
+            (
+                not timeh.greater(
+                    bestExits.times.totals[self.state.splitnum],
+                    self.state.totalTime
+                )
+                and not timeh.isBlank(
+                    bestExits.times.totals[self.state.splitnum]
+                )
+            )
+            and not
+            (
+                self.state.splitnum
+                and timeh.isBlank(
+                    self.state.currentRun.totals[self.state.splitnum-1]
+                )
+            )
+        ):
 
             if self.shouldHide():
                 self.hide()
                 return
 
-            self.setTimes(self.state.totalTime,previous=False)
+            self.setTimes(self.state.totalTime, previous=False)
 
     def onSplit(self):
         self.splitEndUpdate()
@@ -58,7 +82,7 @@ class Widget(InfoBase.InfoBase):
         self.header.configure(text="Vs Best Exit:")
         self.setTimes(self.state.currentRun.totals[self.state.splitnum-1])
 
-    def setTimes(self,time,previous=True):
+    def setTimes(self, time, previous=True):
         if previous:
             splitnum = self.state.splitnum - 1
         else:
@@ -71,7 +95,9 @@ class Widget(InfoBase.InfoBase):
                     "showSign": True,
                     "precision": self.config["precision"],
                     "noPrecisionOnMinute": self.config["noPrecisionOnMinute"]
-                }))
+                }
+            )
+        )
         if previous:
             self.info.configure(fg=self.setPreviousColour())
         else:
@@ -83,22 +109,35 @@ class Widget(InfoBase.InfoBase):
             return self.config["colours"]["skipped"]
 
         else:
-            return self.setColour(self.state.segmentTime,self.state.totalTime,split)
+            return self.setColour(
+                self.state.segmentTime,
+                self.state.totalTime,
+                split
+            )
 
     def setPreviousColour(self):
         split = self.state.splitnum-1
         bestExits = self.state.getComparison("generated", "Best Exit")
-        if timeh.isBlank(bestExits.times.totals[split])\
-            or timeh.isBlank(self.state.currentRun.totals[split])\
-            or timeh.isBlank(self.state.currentComparison.times.totals[split]):
+        if (
+            timeh.isBlank(bestExits.times.totals[split])
+            or timeh.isBlank(self.state.currentRun.totals[split])
+            or timeh.isBlank(self.state.currentComparison.times.totals[split])
+        ):
             return self.config["colours"]["skipped"]
 
-        if timeh.greater(bestExits.times.totals[split], self.state.currentRun.totals[split]):
+        if timeh.greater(
+            bestExits.times.totals[split],
+            self.state.currentRun.totals[split]
+        ):
             return self.config["colours"]["gold"]
         else:
-            return self.setColour(self.state.currentRun.segments[split],self.state.currentRun.totals[split],split)
+            return self.setColour(
+                self.state.currentRun.segments[split],
+                self.state.currentRun.totals[split],
+                split
+            )
 
-    def setColour(self,segment,total,split):
+    def setColour(self, segment, total, split):
         bestExits = self.state.getComparison("generated", "Best Exit")
         if timeh.greater(bestExits.times.totals[split], total):
 

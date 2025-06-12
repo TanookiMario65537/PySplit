@@ -56,7 +56,7 @@ class Session:
     def _setLayout(self, retVal):
         self.setLayout(retVal["layoutName"])
 
-    def setLayout(self,layoutName):
+    def setLayout(self, layoutName):
         if not layoutName:
             return
         self.layoutName = layoutName

@@ -14,13 +14,29 @@ class Widget(WidgetBase.WidgetBase):
         super().__init__(parent, state, config)
         self.configure(bg="black")
 
-        self.splitWebhook = "https://dspc6ekj2gjkfp44cjaffhjeue0fbswr.lambda-url.eu-west-1.on.aws/"
-        self.fileUploadBaseUrl = "https://2uxp372ks6nwrjnk6t7lqov4zu0solno.lambda-url.eu-west-1.on.aws/"
+        self.splitWebhook = (
+            "https://dspc6ekj2gjkfp44cjaffhjeue0fbswr"
+            ".lambda-url.eu-west-1.on.aws/"
+        )
+        self.fileUploadBaseUrl = (
+            "https://2uxp372ks6nwrjnk6t7lqov4zu0solno"
+            ".lambda-url.eu-west-1.on.aws/"
+        )
         self.uploadKey = config["uploadKey"]
         if not self.uploadKey and config["enabled"]:
-            logger.warning("therun.gg plugin is enabled, but no upload key is provided.")
-        self.liveEnabled = config["enabled"] and config["liveEnabled"] and self.uploadKey != ""
-        self.splitEnabled = config["enabled"] and config["splitEnabled"] and self.uploadKey != ""
+            logger.warning(
+                "therun.gg plugin is enabled, but no upload key is provided."
+            )
+        self.liveEnabled = (
+            config["enabled"]
+            and config["liveEnabled"]
+            and self.uploadKey != ""
+        )
+        self.splitEnabled = (
+            config["enabled"]
+            and config["splitEnabled"]
+            and self.uploadKey != ""
+        )
         self.wasJustResumed = False
         self.headers = {
             "Content-Type": "application/json",
@@ -29,7 +45,11 @@ class Widget(WidgetBase.WidgetBase):
         }
 
     def _post_run_status(self):
-        postSplits = requests.post(self.splitWebhook, json=self.jsonify(), headers=self.headers)
+        postSplits = requests.post(
+            self.splitWebhook,
+            json=self.jsonify(),
+            headers=self.headers
+        )
         if postSplits.status_code == 200:
             logger.info("Live status posted to therun.gg")
         else:
@@ -44,7 +64,11 @@ class Widget(WidgetBase.WidgetBase):
     def _post_splits(self):
         if not self.uploadKey:
             return
-        fileUploadUrl = f"{self.fileUploadBaseUrl}?filename={self.state.game}%20-%20{self.state.category}.lss&uploadKey={self.uploadKey}"
+        fileUploadUrl = (
+            f"{self.fileUploadBaseUrl}"
+            f"?filename={self.state.game}%20-%20{self.state.category}.lss"
+            f"&uploadKey={self.uploadKey}"
+        )
 
         logger.debug("Converted XML:")
         logger.debug(convert.pysplitToLss(self.state.saveData))
@@ -68,12 +92,19 @@ class Widget(WidgetBase.WidgetBase):
         return int(1000 * time) if type(time) in [float, int] else None
 
     def jsonify(self):
-        is_reset = self.state.runEnded and self.state.splitnum < self.state.numSplits
-        starttime = int((
-            datetime.datetime.fromisoformat(self.state.sessionTimes[0]["startTime"])
-            if len(self.state.sessionTimes)
-            else self.state.staticStartTime
-        ).timestamp() * 1000)
+        is_reset = (
+            self.state.runEnded and self.state.splitnum < self.state.numSplits
+        )
+        starttime = int(
+            (
+                datetime.datetime.fromisoformat(
+                    self.state.sessionTimes[0]["startTime"]
+                )
+                if len(self.state.sessionTimes)
+                else self.state.staticStartTime
+            )
+            .timestamp() * 1000
+        )
         endtime = int(self.state.currentTime().timestamp() * 1000)
         runData = []
         bestSegments = self.state.getComparison("default", "bestSegments")
@@ -81,12 +112,23 @@ class Widget(WidgetBase.WidgetBase):
         for i, name in enumerate(self.state.splitnames):
             runData.append({
                 "name": convert.convertName(name),
-                "splitTime": self.clean_time_to_therun_api(self.state.currentRun.totals[i]) if len(self.state.currentRun.totals) > i and not is_reset else None,
-                "pbSplitTime": self.clean_time_to_therun_api(bestRun.times.totals[i]),
-                "bestPossible": self.clean_time_to_therun_api(bestSegments.times.segments[i]),
+                "splitTime":
+                    self.clean_time_to_therun_api(
+                        self.state.currentRun.totals[i]
+                    )
+                    if len(self.state.currentRun.totals) > i and not is_reset
+                    else None,
+                "pbSplitTime": self.clean_time_to_therun_api(
+                    bestRun.times.totals[i]
+                ),
+                "bestPossible": self.clean_time_to_therun_api(
+                    bestSegments.times.segments[i]
+                ),
                 "comparisons": [{
                     "name": comparison.title,
-                    "time": self.clean_time_to_therun_api(comparison.times.totals[i])
+                    "time": self.clean_time_to_therun_api(
+                        comparison.times.totals[i]
+                    )
                 } for comparison in self.state.comparisons]
             })
         return {
@@ -95,7 +137,10 @@ class Widget(WidgetBase.WidgetBase):
               "category": self.state.category
             },
             "currentTime": self.clean_time_to_therun_api(self.state.totalTime),
-            "currentSplitName": self.state.splitnames[self.state.splitnum] if self.state.splitnum < self.state.numSplits else "",
+            "currentSplitName":
+                self.state.splitnames[self.state.splitnum]
+                if self.state.splitnum < self.state.numSplits
+                else "",
             "currentSplitIndex": self.state.splitnum if not is_reset else -1,
             "currentComparison": self.state.currentComparison.title,
             "startTime": f"/Date({starttime})/",
