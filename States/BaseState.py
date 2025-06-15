@@ -1,6 +1,7 @@
 from util import fileio
 from util import readConfig as rc
 
+
 class State:
     started = False
     staticStartTime = None
@@ -56,7 +57,7 @@ class State:
     def onSplit(self):
         pass
 
-    def onComparisonChanged(self,_):
+    def onComparisonChanged(self, _):
         pass
 
     def onPaused(self):
@@ -67,7 +68,7 @@ class State:
 
     def onReset(self):
         pass
-        
+
     def onRestart(self):
         pass
 

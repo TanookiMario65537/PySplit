@@ -2,17 +2,18 @@ import importlib
 from util import readConfig as rc
 import errors as Errors
 
+
 class WidgetLoader:
     # app = None
     # state = None
     # rootWindow = None
 
-    def __init__(self,app,state,rootWindow):
+    def __init__(self, app, state, rootWindow):
         self.app = app
         self.state = state
         self.rootWindow = rootWindow
 
-    def loadWidget(self,ctype,configFileName=""):
+    def loadWidget(self, ctype, configFileName=""):
         filename = ctype[0].upper() + ctype[1:]
 
         try:
@@ -32,8 +33,8 @@ class WidgetLoader:
             """
             raise Errors.WidgetTypeError(ctype)
 
-        config = rc.getCUserConfig(ctype,configFileName)
+        config = rc.getCUserConfig(ctype, configFileName)
         if ctype == "controlButtons":
-            return myClass(self.rootWindow,self.state,config,self.app)
+            return myClass(self.rootWindow, self.state, config, self.app)
         else:
-            return myClass(self.rootWindow,self.state,config)
+            return myClass(self.rootWindow, self.state, config)

@@ -6,7 +6,9 @@ global varianceList
 
 def getRows(saveData):
     rows = []
-    runs = [STL.SyncedTimeList(totals=run["totals"]) for run in saveData["runs"]]
+    runs = [
+        STL.SyncedTimeList(totals=run["totals"]) for run in saveData["runs"]
+    ]
     for i in range(len(saveData["splitNames"])):
         timeList = []
         for j in range(len(saveData["runs"])):

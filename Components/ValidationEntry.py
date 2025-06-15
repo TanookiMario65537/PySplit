@@ -1,19 +1,21 @@
 import tkinter as tk
 
+
 class Entry(tk.Entry):
     followup = None
-    def __init__(self,parent,val,cbs,**kwargs):
-        super().__init__(parent,**kwargs)
-        self.var = tk.StringVar(self,val)
+
+    def __init__(self, parent, val, cbs, **kwargs):
+        super().__init__(parent, **kwargs)
+        self.var = tk.StringVar(self, val)
         self["textvariable"] = self.var
-        self.trace = self.var.trace('w',self.doValidation)
+        self.trace = self.var.trace('w', self.doValidation)
         self.val = val
         self.validate = cbs["validate"]
         self.doValidation()
         if "followup" in cbs.keys():
             self.followup = cbs["followup"]
 
-    def doValidation(self,*_):
+    def doValidation(self, *_):
         val = self.var.get()
         if self.validate(val):
             self.val = val
@@ -26,13 +28,13 @@ class Entry(tk.Entry):
     def getText(self):
         return self.var.get()
 
-    def setText(self,text,validate=False):
+    def setText(self, text, validate=False):
         self.val = text
         if not validate:
-            self.var.trace_vdelete("w",self.trace)
+            self.var.trace_vdelete("w", self.trace)
         self.var.set(text)
         if not validate:
-            self.trace = self.var.trace('w',self.doValidation)
+            self.trace = self.var.trace('w', self.doValidation)
 
     def isValid(self):
         return self.validate(self.var.get())

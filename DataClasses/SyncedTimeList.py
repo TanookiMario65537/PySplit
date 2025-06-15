@@ -110,7 +110,10 @@ class Comparison:
         self.diffs = SyncedTimeList(totals=[timeh.blank() for _ in totals])
 
     def update(self, totaltime, index):
-        self.diffs.update(timeh.difference(totaltime, self.times.totals[index]), index)
+        self.diffs.update(
+            timeh.difference(totaltime, self.times.totals[index]),
+            index
+        )
 
     def lastNonBlank(self):
         return self.times.lastNonBlank()

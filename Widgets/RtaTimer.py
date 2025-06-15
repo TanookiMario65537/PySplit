@@ -11,12 +11,14 @@ class Widget(WidgetBase.WidgetBase):
         super().__init__(parent, state, config)
         self.configure(
             bg=config["colours"]["bg"],
-            padx=state.config["padx"])
+            padx=state.config["padx"]
+        )
         self.main = tk.Label(
             self,
             bg=config["colours"]["bg"],
             fg=config["colours"]["main"],
-            font=config["font"])
+            font=config["font"]
+        )
         m = config["position"]
         if m == "left":
             self.main.grid(row=0, column=0, columnspan=12, sticky="W")

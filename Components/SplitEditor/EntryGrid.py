@@ -45,7 +45,12 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
             initData = {}
             initData[saveKey] = saveData["defaultComparisons"][key][saveKey]
             self.comparisons.append(STL.SyncedTimeList(**initData))
-        self.comparisons.extend([STL.SyncedTimeList(totals=cmp["totals"]) for cmp in saveData["customComparisons"]])
+        self.comparisons.extend(
+            [
+                STL.SyncedTimeList(totals=cmp["totals"])
+                for cmp in saveData["customComparisons"]
+            ]
+        )
         for i in range(len(saveData["splitNames"])):
             cmpRow = []
             for cmp in self.comparisons:
@@ -141,7 +146,9 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         self.headerRow.addHeaders(["New Comparison", "New Comparison Totals"])
         for row in self.rows:
             row.addComparison()
-        self.comparisons.append(STL.SyncedTimeList(totals=[timeh.blank() for _ in self.rows]))
+        self.comparisons.append(
+            STL.SyncedTimeList(totals=[timeh.blank() for _ in self.rows])
+        )
 
     def removeComparison(self):
         if len(self.comparisons) <= len(self.defaultComparisonOrder):
@@ -191,8 +198,15 @@ class EntryGrid(ScrollableFrame.ScrollableFramePin):
         }
         for i in range(len(self.defaultComparisonOrder)):
             key = self.defaultComparisonOrder[i]
-            newSaveData["defaultComparisons"][key] = self.createBestSegmentSave(i) if key == "bestSegments" else self.createComparisonSave(i)
-        for i in range(len(self.defaultComparisonOrder), len(self.comparisons)):
+            newSaveData["defaultComparisons"][key] = (
+                self.createBestSegmentSave(i)
+                if key == "bestSegments"
+                else self.createComparisonSave(i)
+            )
+        for i in range(
+            len(self.defaultComparisonOrder),
+            len(self.comparisons)
+        ):
             newSaveData["customComparisons"].append(
                 self.createComparisonSave(i))
         newSaveData["splitNames"] = self.leftFrame.splitNames()
