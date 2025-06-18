@@ -21,14 +21,18 @@ class Session:
         self.split = ""
         self.exit = False
         if os.path.exists(self.saveFile):
-            self.loadSave()
+            if not self.loadSave():
+                self.getSession()
         else:
             self.getSession()
 
     def loadSave(self):
         saved = fileio.readJson(self.saveFile)
+        if ("splitFile" not in saved.keys()) or ("split" not in saved.keys()):
+            return False
         self.setRun(saved["splitFile"])
         self.setSplit(saved["split"])
+        return True
 
     def save(self):
         fileio.writeJson(self.saveFile, {
