@@ -7,8 +7,9 @@ from States import State
 from util import fileio
 from util import readConfig as rc
 
+
 class SplitEditor(tk.Frame):
-    def __init__(self,master):
+    def __init__(self, master):
         super().__init__(master)
         self.config = rc.getUserConfig()
         self.splitFile = ""
@@ -35,11 +36,19 @@ class SplitEditor(tk.Frame):
 
         self.editor = MainEditor.Editor(
             self,
-            State.State(""))
+            State.State("")
+        )
         self.editor.pack(side="bottom")
         self.editor.saveButton.options["save"] = self.save
         self.editor.saveButton.options["valid"] = self.validSave
-        self.localEntries = EntryGrid.EntryGrid(self.editor, fileio.newComparisons(),self.editor) 
+        self.localEntries = EntryGrid.EntryGrid(
+            self.editor,
+            fileio.newComparisons(),
+            self.editor
+        )
+
+        self.game = ""
+        self.category = ""
 
         self.savedGame = ""
         self.savedCategory = ""
@@ -50,7 +59,7 @@ class SplitEditor(tk.Frame):
     def setCategory(self, *_):
         self.category = self.cateVar.get()
 
-    def hasSaved(self,game,category):
+    def hasSaved(self, game, category):
         return game == self.savedGame and category == self.savedCategory
 
     def validSave(self):
@@ -59,13 +68,19 @@ class SplitEditor(tk.Frame):
         check2 = self.editor.entries.leftFrame.isValid()
         check3 = len(self.editor.entries.rows) > 0
         if not check1:
-            self.editor.saveButton.options["invalidMsg"] = "Runs must have a\nnon-empty game and\ncategory."
+            self.editor.saveButton.options["invalidMsg"] = (
+                "Runs must have a\nnon-empty game and\ncategory."
+            )
         elif not check2:
-            self.editor.saveButton.options["invalidMsg"] = "All split names\nmust be non-empty."
+            self.editor.saveButton.options["invalidMsg"] = (
+                "All split names\nmust be non-empty."
+            )
         elif not check3:
-            self.editor.saveButton.options["invalidMsg"] = "This run has no splits."
+            self.editor.saveButton.options["invalidMsg"] = (
+                "This run has no splits."
+            )
         elif self.editor.entries.shouldWarn():
-            self.editor.saveWarning.pack(side="bottom",fill="both")
+            self.editor.saveWarning.pack(side="bottom", fill="both")
 
         return check1 and check2 and check3
 
@@ -81,12 +96,14 @@ class SplitEditor(tk.Frame):
         defaultFile = os.path.join(
             self.config["baseDir"],
             game,
-            category + ".pysplit")
+            category + ".pysplit"
+        )
         self.splitFile = fileDialogs.addNewRun(self.config, defaultFile)
         if not self.splitFile:
             return
         fileio.writeSplitFile(
             self.splitFile,
-            saveData)
+            saveData
+        )
         self.savedGame = game
         self.savedCategory = category

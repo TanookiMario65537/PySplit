@@ -1,19 +1,20 @@
 import datetime
-import sys
-import os
-sys.path.insert(0, os.getcwd())
 from DataClasses import SyncedTimeList as STL
 from util import timeHelpers as timeh
 
 
 def isoToLss(isostring):
-    return datetime.datetime.fromisoformat(isostring).astimezone(datetime.timezone.utc).strftime("%m/%d/%Y %H:%M:%S")
+    return (
+        datetime.datetime
+        .fromisoformat(isostring)
+        .astimezone(datetime.timezone.utc).strftime("%m/%d/%Y %H:%M:%S")
+    )
 
 
 def addPlaytime(isostring, playTimeString):
     return (
-        datetime.datetime.fromisoformat(isostring) +
-        datetime.timedelta(seconds=timeh.stringToTime(playTimeString))
+        datetime.datetime.fromisoformat(isostring)
+        + datetime.timedelta(seconds=timeh.stringToTime(playTimeString))
     ).isoformat(timespec="microseconds")
 
 
@@ -40,21 +41,66 @@ def attemptTag(run, id):
             run to make stats work.
     """
     if run["totals"][-1] != "-":
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["playTime"]))}" isEndedSynced="False"><RealTime>{splitTimeToLss(run["totals"][-1])}</RealTime></Attempt>"""
+        return (
+            '        '
+            '<Attempt '
+            f'id="{id}" '
+            f'started="{isoToLss(run["sessions"][0]["startTime"])}" '
+            'isStartedSynced="False" '
+            f'ended="{isoToLss(
+                addPlaytime(
+                    run["sessions"][0]["startTime"], run["playTime"]
+                )
+            )}" '
+            'isEndedSynced="False"'
+            '>'
+            '<RealTime>'
+            f'{splitTimeToLss(run["totals"][-1])}'
+            '</RealTime>'
+            '</Attempt>'
+        )
     else:
-        return f"""        <Attempt id="{id}" started="{isoToLss(run["sessions"][0]["startTime"])}" isStartedSynced="False" ended="{isoToLss(addPlaytime(run["sessions"][0]["startTime"], run["playTime"]))}" isEndedSynced="False"/>"""
+        return (
+            '        '
+            '<Attempt '
+            f'id="{id}" '
+            f'started="{isoToLss(run["sessions"][0]["startTime"])}" '
+            'isStartedSynced="False" '
+            f'ended="{isoToLss(
+                addPlaytime(
+                    run["sessions"][0]["startTime"],
+                    run["playTime"]
+                )
+            )}" '
+            'isEndedSynced="False"'
+            '/>'
+        )
 
 
 def segmentHistoryTag(run, index, splitIndex):
     if timeh.isBlank(run.segments[splitIndex]):
         return None
-    return f"""                <Time id="{index+1}"><RealTime>{splitTimeToLss(timeh.timeToString(run.segments[splitIndex]))}</RealTime></Time>"""
+    return (
+        '                '
+        f'<Time id="{index+1}">'
+        '<RealTime>'
+        f'{splitTimeToLss(timeh.timeToString(run.segments[splitIndex]))}'
+        '</RealTime>'
+        '</Time>'
+    )
 
 
 def comparisonTag(comparison, splitIndex):
     if comparison["totals"][splitIndex] == "-":
-        return f"""                <SplitTime name="{comparison["name"]}"/>"""
-    return f"""                <SplitTime name="{comparison["name"]}"><RealTime>{splitTimeToLss(comparison["totals"][splitIndex])}</RealTime></SplitTime>"""
+        return f'                <SplitTime name="{comparison["name"]}"/>'
+    return (
+        '                '
+        f'<SplitTime name="{comparison["name"]}">'
+        '<RealTime>'
+        f'{splitTimeToLss(comparison["totals"][splitIndex])}'
+        '</RealTime>'
+        '</SplitTime>'
+    )
 
 
 def combineTagList(tagList):
@@ -66,9 +112,32 @@ def segmentTag(saveData, index):
     for comparison in saveData["customComparisons"]:
         if len(comparison["totals"]) == len(saveData["splitNames"]):
             comparisonList.append(comparison)
-    comparisons = combineTagList([comparisonTag(comparison, index) for i, comparison in enumerate(comparisonList)])
-    segmentTimes = combineTagList([segmentHistoryTag(run, i, index) for i, run in enumerate([STL.SyncedTimeList(totals=r["totals"])for r in saveData["runs"]])])
-    return f"""        <Segment><Name>{convertName(saveData["splitNames"][index])}</Name><Icon/>
+    comparisons = combineTagList(
+        [
+            comparisonTag(comparison, index)
+            for i, comparison in enumerate(comparisonList)
+        ]
+    )
+    segmentTimes = combineTagList(
+        [
+            segmentHistoryTag(run, i, index)
+            for i, run in enumerate(
+                [
+                    STL.SyncedTimeList(totals=r["totals"])
+                    for r in saveData["runs"]
+                ]
+            )
+        ]
+    )
+    header = (
+        '        '
+        '<Segment>'
+        '<Name>'
+        f'{convertName(saveData["splitNames"][index])}'
+        '</Name>'
+        '<Icon/>'
+    )
+    return f"""{header}
             <SplitTimes>
 {comparisons}
             </SplitTimes>
@@ -80,14 +149,30 @@ def segmentTag(saveData, index):
 
 
 def pysplitToLss(saveData):
-    attemptHistory = "\n".join([attemptTag(run, i+1) for i, run in enumerate(saveData["runs"])])
-    segments = "\n".join([segmentTag(saveData, i) for i in range(len(saveData["splitNames"]))])
+    attemptHistory = "\n".join(
+        [
+            attemptTag(run, i+1)
+            for i, run in enumerate(saveData["runs"])
+        ]
+    )
+    segments = "\n".join(
+        [
+            segmentTag(saveData, i)
+            for i in range(len(saveData["splitNames"]))
+        ]
+    )
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Run version="1.8.0">
     <GameIcon/>
     <GameName>{saveData["game"]}</GameName>
     <CategoryName>{saveData["category"]}</CategoryName>
-    <Metadata><Run id=""/><Platform usesEmulator="False"/><Region/><SpeedrunComVariables/><CustomVariables/></Metadata>
+    <Metadata>
+        <Run id=""/>
+        <Platform usesEmulator="False"/>
+        <Region/>
+        <SpeedrunComVariables/>
+        <CustomVariables/>
+    </Metadata>
     <LayoutPath/>
     <Offset>{splitTimeToLss(saveData["offset"])}</Offset>
     <AttemptCount>{len(saveData["runs"])}</AttemptCount>
@@ -118,18 +203,21 @@ if __name__ == "__main__":
             writer.write(string)
 
     parser = argparse.ArgumentParser(
-        description="Convert .pysplit files to .lss")
+        description="Convert .pysplit files to .lss"
+    )
     parser.add_argument(
         'infile',
         type=str,
-        help='The input .pysplit file to convert')
+        help='The input .pysplit file to convert'
+    )
     parser.add_argument(
         '-o',
         "--output",
         type=str,
         required=False,
         metavar="outfile",
-        help='The output file for the resulting .lss')
+        help='The output file for the resulting .lss'
+    )
     args = parser.parse_args()
 
     saveData = readJson(args.infile)

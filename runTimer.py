@@ -8,9 +8,15 @@ from util import readConfig as rc
 import logging
 
 
-def setHotkeys(app,state):
-    app.root.bind(state.config["hotkeys"]["decreaseComparison"],app.guiSwitchCompareCCW)
-    app.root.bind(state.config["hotkeys"]["increaseComparison"],app.guiSwitchCompareCW)
+def setHotkeys(app, state):
+    app.root.bind(
+        state.config["hotkeys"]["decreaseComparison"],
+        app.guiSwitchCompareCCW
+    )
+    app.root.bind(
+        state.config["hotkeys"]["increaseComparison"],
+        app.guiSwitchCompareCW
+    )
     app.root.bind(state.config["hotkeys"]["split"], app.onSplitEnd)
     app.root.bind(state.config["hotkeys"]["reset"], app.reset)
     app.root.bind(state.config["hotkeys"]["skip"], app.skip)
@@ -52,13 +58,13 @@ while not app or exitCode:
     state = State.State(session.splitFile)
     rc.validateHotkeys(state.config)
 
-    app = App.App(state,session)
+    app = App.App(state, session)
     app.setupGui(showMenu=session.layout["menu"])
 
-    setHotkeys(app,state)
+    setHotkeys(app, state)
     rootWindow = app.root
 
-    loader = WidgetLoader.WidgetLoader(app,state,rootWindow)
+    loader = WidgetLoader.WidgetLoader(app, state, rootWindow)
 
     for component in session.layout["components"]:
         try:
@@ -66,7 +72,9 @@ while not app or exitCode:
                 logging.info(f"Component \"{component['type']}\" is disabled.")
                 continue
             if "config" in component.keys():
-                app.addWidget(loader.loadWidget(component["type"],component["config"]))
+                app.addWidget(
+                    loader.loadWidget(component["type"], component["config"])
+                )
             else:
                 app.addWidget(loader.loadWidget(component["type"]))
         except Errors.WidgetTypeError as e:

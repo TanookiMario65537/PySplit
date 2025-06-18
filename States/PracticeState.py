@@ -16,7 +16,9 @@ class State(BaseState.State):
         self.splitName = session.split
         self.splitnum = self.splitnames.index(session.split)
         self.bestTime = timeh.stringToTime(
-            self.saveData["defaultComparisons"]["bestSegments"]["segments"][self.splitnum])
+            self.saveData["defaultComparisons"]["bestSegments"]
+            ["segments"][self.splitnum]
+        )
         self.unSaved = False
 
     def frameUpdate(self):
@@ -57,12 +59,15 @@ class State(BaseState.State):
     # Save the times when we close the window.
     ##########################################################
     def saveTimes(self):
-        self.saveData["defaultComparisons"]["bestSegments"]["segments"][self.splitnum] =\
-            timeh.timeToString(self.bestTime)
+        (
+            self.saveData["defaultComparisons"]["bestSegments"]
+            ["segments"][self.splitnum]
+        ) = timeh.timeToString(self.bestTime)
 
         fileio.writeSplitFile(
             self.splitFile,
-            self.saveData)
+            self.saveData
+        )
         self.unSaved = False
 
     def hasPartialSave(self):
