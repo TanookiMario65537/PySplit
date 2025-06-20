@@ -6,33 +6,49 @@ from DataClasses import Session
 from States import State
 from util import readConfig as rc
 import logging
+from hotkeys import HotkeyHandler as HH
+from pathlib import Path
+import threading
 
 
-def setHotkeys(app, state):
-    app.root.bind(
-        state.config["hotkeys"]["decreaseComparison"],
-        app.guiSwitchCompareCCW
+def threadExceptionHandler(args):
+    logging.error(
+        "Uncaught exception",
+        exc_info=(args.exc_type, args.exc_value, args.exc_traceback)
     )
-    app.root.bind(
-        state.config["hotkeys"]["increaseComparison"],
-        app.guiSwitchCompareCW
+
+
+def logUncaughtExceptions(excType, excValue, excTraceback):
+    if issubclass(excType, KeyboardInterrupt):
+        # Don't log keyboard interrupt
+        sys.__excepthook__(excType, excValue, excTraceback)
+        return
+    logging.error(
+        "Uncaught exception",
+        exc_info=(excType, excValue, excTraceback)
     )
-    app.root.bind(state.config["hotkeys"]["split"], app.onSplitEnd)
-    app.root.bind(state.config["hotkeys"]["reset"], app.reset)
-    app.root.bind(state.config["hotkeys"]["skip"], app.skip)
-    app.root.bind(state.config["hotkeys"]["start"], app.start)
-    app.root.bind(state.config["hotkeys"]["pause"], app.togglePause)
-    app.root.bind(state.config["hotkeys"]["restart"], app.restart)
-    app.root.bind(state.config["hotkeys"]["finish"], app.finish)
-    app.root.bind(state.config["hotkeys"]["save"], app.save),
-    app.root.bind(state.config["hotkeys"]["partialSave"], app.partialSave),
-    app.root.bind("<Control-L>", app.partialLoad),
-    app.root.bind(state.config["hotkeys"]["chooseLayout"], app.chooseLayout)
-    app.root.bind(state.config["hotkeys"]["chooseRun"], app.chooseRun)
 
 
 def setupLogging():
+    # Make sure the error is logged if we can't read the global config.
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%c",
+        handlers=[
+            logging.FileHandler("pysplit.log")
+        ]
+    )
+    sys.excepthook = logUncaughtExceptions
+    threading.excepthook = threadExceptionHandler
     userConfig = rc.getUserConfig()
+
+    # At this point, there's a user configured log file. Switching the logger
+    # to use it requires removing the old one.
+    rootLogger = logging.getLogger()
+    for handler in rootLogger.handlers[:]:
+        rootLogger.removeHandler(handler)
+
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(message)s",
@@ -61,7 +77,7 @@ while not app or exitCode:
     app = App.App(state, session)
     app.setupGui(showMenu=session.layout["menu"])
 
-    setHotkeys(app, state)
+    hotkeyHandler = HH.HotkeyHandler(app, state)
     rootWindow = app.root
 
     loader = WidgetLoader.WidgetLoader(app, state, rootWindow)

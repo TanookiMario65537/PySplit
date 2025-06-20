@@ -101,7 +101,7 @@ locally from this directory.
 
 ## runTimer.py
 
-Usage: `python3 runTimer.py` (`runTimer` with installation)
+Usage: `python3 runTimer.py` (`pysplit` with installation)
 
 This is a segmented timer which keeps track of segments and stores
 them in a `.pysplit` file when the program is completed (either when the
@@ -188,12 +188,26 @@ user configuration.
 # Installation (Linux-only)
 
 If you are using this timer on a Linux machine, there is a simple
-install script to add this program to a `bin` folder for easier
-use. To install the program, run `./install` in the home directory,
-and choose where to install the program. This also creates a virtual environment
-and installs the dependencies in that environment. The three executables
-created in this case are `runTimer`, `practiceTimer`, and
-`timeVariance`. Note that this won't work with the default
-configuration, since the default base data directory is a relative path.
-Instead, set the base data directory in the user config to a static
-path.
+install script to install the program. To run it, run `./install` in
+the home directory. This script does the following:
+
+1. Installs a Python virtual environment using `requirements.txt`. The script
+   prompts for a location to install it, defaulting to
+   `~/.local/bin/pysplit/`.
+2. Creates and installs 4 programs:
+   1. `pysplit`.
+   2. `practiceTimer`.
+   3. `timeVariance`.
+   4. `pysplitHotkeys`.
+   These are the 3 programs noted above, plus an additional program that can be
+   used to forward global keyboard events from Wayland to PySplit. The 3 main
+   programs are set up to run using the virtual environment created in step 1.
+3. Adds a user configuration file at `config/global.json` to indicate location
+   of the log file, the default location for save files, and the install
+   directory. Logs default to `<pysplit base>/log` and save files default to
+   `<pysplit base>/splits`, where `<pysplit base>` the same directory where the
+   virtual environment.
+4. Installs a desktop app called `PySplit` which is linked to `pysplit`. This
+   should be immediately visible when searching using the Super key, but may
+   require a restart to become visible due to the app registry not always
+   updating properly.

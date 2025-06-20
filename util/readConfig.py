@@ -2,23 +2,9 @@ import os
 from util import fileio
 import errors as Errors
 import logging
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
-
-letters = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
-]
-
-validHotkeys = (
-    letters
-    + ["<Control-"+letter+">" for letter in letters]
-    + [
-        '<space>', '<Return>', '<Left>', '<Right>', '<Up>', '<Down>'
-    ]
-)
 
 validPositions = ["left", "center-left", "center", "center-right", "right"]
 
@@ -72,10 +58,33 @@ def mergeConfigs(original, override):
     return new
 
 
+def validHotkey(key: str) -> bool:
+    if key[0] == "<" or key[-1] == ">":
+        parts = key[1:-1].split("-")
+    else:
+        parts = [key]
+    for i, part in enumerate(parts[:-1]):
+        if not validModifier(part, i):
+            return False
+    return validKey(parts[-1])
+
+
+def validKey(key: str) -> bool:
+    return key in validKeysyms
+
+
+def validModifier(mod: str, index: int) -> bool:
+    if mod in ["Control", "Alt", "Super"]:
+        return True
+    if mod == "Key":
+        return index == 0
+    return False
+
+
 def validateHotkeys(config):
     for key in config["hotkeys"].keys():
         try:
-            if not config["hotkeys"][key] in validHotkeys:
+            if not validHotkey(config["hotkeys"][key]):
                 raise Errors.HotKeyTypeError(
                     config["hotkeys"][key],
                     defaultHotkeys[key],
@@ -84,3 +93,8 @@ def validateHotkeys(config):
         except Errors.HotKeyTypeError as e:
             logger.error(e)
             config["hotkeys"][key] = defaultHotkeys[key]
+
+
+validKeysyms = fileio.readJson(
+    Path(__file__).parent.parent / "hotkeys" / "validTkinterKeysyms.json"
+)
