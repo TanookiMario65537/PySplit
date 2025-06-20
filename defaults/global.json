@@ -2,6 +2,7 @@
     "baseDir": "..",
     "padx": 10,
     "logFile": "pysplit.log",
+    "globalHotkeys": false,
     "hotkeys": {
         "decreaseComparison": "<Left>",
         "split": "<Return>",
