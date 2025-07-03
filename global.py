@@ -40,7 +40,11 @@ def readKeyboardEvents(keyboard: InputDevice, socket: socket.socket) -> None:
         if event.type == ecodes.EV_KEY:
             key_event = categorize(event)
             msg = f"{key_event.keycode},{key_event.keystate}"
-            socket.sendall((msg + "\n").encode())
+            try:
+                socket.sendall((msg + "\n").encode())
+            except BrokenPipeError:
+                logging.info("Socket has been destroyed")
+                return
 
 
 def configure() -> None:
