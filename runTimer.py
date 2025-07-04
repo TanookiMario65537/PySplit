@@ -71,21 +71,27 @@ class HotkeyHandler:
         app.root.bind(state.config["hotkeys"]["chooseRun"], app.chooseRun)
 
     def handle_global_hotkeys(self):
-        socketPath = Path(Path.cwd().anchor, "tmp", "pysplit.sock")
         logging.info("Creating socket")
-        with unixSocket(socketPath) as s:
-            s.bind(str(socketPath))
-            logging.debug("Bound to local socket")
-            s.listen()
-            subprocess.Popen(
-                ["pkexec", (Path.home()/".local"/"bin"/"pysplitHotkeys")],
-                start_new_session=True,
+        socketPath = Path(Path.cwd().anchor, "tmp", "pysplit.sock")
+        try:
+            with unixSocket(socketPath) as s:
+                s.bind(str(socketPath))
+                logging.debug("Bound to local socket")
+                s.listen()
+                subprocess.Popen(
+                    ["pkexec", (Path.home()/".local"/"bin"/"pysplitHotkeys")],
+                    start_new_session=True,
+                )
+                conn, _ = s.accept()
+                with conn:
+                    for line in conn.makefile():
+                        ls = line.strip()
+                        logging.info(ls.split(","))
+        except Exception as e:
+            logging.info(
+                "Socket error: " + str(e) + ". Falling back to local hotkeys."
             )
-            conn, _ = s.accept()
-            with conn:
-                for line in conn.makefile():
-                    ls = line.strip()
-                    logging.info(ls.split(","))
+            self.create_local_hotkeys()
 
 
 def setupLogging():
