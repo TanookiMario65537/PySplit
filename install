@@ -21,13 +21,15 @@ if [ -n "$NEWBASE" ]; then
     BASE=$NEWBASE
 fi
 
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/global_hotkeys.py" > "$BASE/pysplit_hotkeys"
 
 chmod +x $BASE/pysplit
 chmod +x $BASE/practiceTimer
 chmod +x $BASE/timeVariance
+chmod +x $BASE/pysplit_hotkeys
 
 # Default the base save directory to the directory with the venv
 cat > config/global.json << EOF

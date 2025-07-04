@@ -9,6 +9,21 @@ import logging
 import threading
 import socket
 from pathlib import Path
+import subprocess
+from contextlib import contextmanager
+
+
+@contextmanager
+def unixSocket(path):
+    if path.exists():
+        path.unlink()
+    sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        yield sock
+    finally:
+        sock.close()
+        if path.exists():
+            path.unlink()
 
 
 class HotkeyHandler:
@@ -57,21 +72,20 @@ class HotkeyHandler:
 
     def handle_global_hotkeys(self):
         socketPath = Path(Path.cwd().anchor, "tmp", "pysplit.sock")
-        try:
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-                s.bind(str(socketPath))
-                logging.debug("Bound to local socket")
-                s.listen()
-                conn, _ = s.accept()
-                with conn:
-                    for line in conn.makefile():
-                        ls = line.strip()
-                        logging.info(ls.split(","))
-        except BaseException as e:
-            logging.info(e)
-        finally:
-            if socketPath.exists():
-                socketPath.unlink()
+        logging.info("Creating socket")
+        with unixSocket(socketPath) as s:
+            s.bind(str(socketPath))
+            logging.debug("Bound to local socket")
+            s.listen()
+            subprocess.Popen(
+                ["pkexec", (Path.home()/".local"/"bin"/"pysplitHotkeys")],
+                start_new_session=True,
+            )
+            conn, _ = s.accept()
+            with conn:
+                for line in conn.makefile():
+                    ls = line.strip()
+                    logging.info(ls.split(","))
 
 
 def setupLogging():
