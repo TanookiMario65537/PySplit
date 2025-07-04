@@ -8,6 +8,7 @@ from util import readConfig as rc
 import logging
 import threading
 import socket
+from pathlib import Path
 
 
 class HotkeyHandler:
@@ -55,14 +56,22 @@ class HotkeyHandler:
         app.root.bind(state.config["hotkeys"]["chooseRun"], app.chooseRun)
 
     def handle_global_hotkeys(self):
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-            s.bind("/tmp/keyboard.sock")
-            logging.debug("Bound to local socket")
-            s.listen()
-            conn, _ = s.accept()
-            with conn:
-                for line in conn.makefile():
-                    logging.info(line.strip())
+        socketPath = Path(Path.cwd().anchor, "tmp", "pysplit.sock")
+        try:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+                s.bind(str(socketPath))
+                logging.debug("Bound to local socket")
+                s.listen()
+                conn, _ = s.accept()
+                with conn:
+                    for line in conn.makefile():
+                        ls = line.strip()
+                        logging.info(ls.split(","))
+        except BaseException as e:
+            logging.info(e)
+        finally:
+            if socketPath.exists():
+                socketPath.unlink()
 
 
 def setupLogging():

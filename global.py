@@ -3,12 +3,14 @@ import logging
 import socket
 import evdev
 from evdev import InputDevice, categorize, ecodes
+from pathlib import Path
 
 
 def createSocket() -> socket.socket:
     try:
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        sock.connect("/tmp/keyboard.sock")
+        socketPath = Path(Path.cwd().anchor, "tmp", "pysplit.sock")
+        sock.connect(str(socketPath))
     except ConnectionRefusedError as e:
         logging.error("Could not connect to comms socket. Aborting.")
         logging.error(e)
