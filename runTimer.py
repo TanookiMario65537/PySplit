@@ -87,6 +87,8 @@ class HotkeyHandler:
                     for line in conn.makefile():
                         ls = line.strip()
                         logging.info(ls.split(","))
+                        if ls.startswith("ERROR"):
+                            raise Exception(ls)
         except Exception as e:
             logging.info(
                 "Socket error: " + str(e) + ". Falling back to local hotkeys."

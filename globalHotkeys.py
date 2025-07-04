@@ -21,7 +21,7 @@ def createSocket() -> socket.socket:
     return sock
 
 
-def findKeyboardDevice() -> InputDevice:
+def findKeyboardDevice(socket: socket.socket) -> InputDevice:
     devices = [InputDevice(path) for path in evdev.list_devices()]
     keyboard = None
     for i, dev in enumerate(devices):
@@ -33,6 +33,7 @@ def findKeyboardDevice() -> InputDevice:
         logging.error(
             "Could not find a keyboard. Cannot create global hotkeys."
         )
+        socket.sendall("ERROR: Keyboard not found\n".encode())
         exit(1)
     return keyboard
 
@@ -70,5 +71,5 @@ def setupLogging(userConfig: dict) -> None:
 
 configure()
 socket = createSocket()
-keyboard = findKeyboardDevice()
+keyboard = findKeyboardDevice(socket)
 readKeyboardEvents(keyboard, socket)
