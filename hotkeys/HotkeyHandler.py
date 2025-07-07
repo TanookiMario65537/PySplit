@@ -122,7 +122,7 @@ class LinuxGlobalRunner(HotkeyRunner):
     def isModifier(self, key_name: str):
         modifierToTkinter = {
             "CTRL": "Control",
-            "META": "Meta",
+            "META": "Super",
             "ALT": "Alt",
             "SHIFT": "Shift"
         }
@@ -135,7 +135,7 @@ class LinuxGlobalRunner(HotkeyRunner):
         info = hotkeyList.split("/")
         if info[0] != "1":
             return
-        modifierList = ["Control", "Shift", "Alt", "Meta"]
+        modifierList = ["Control", "Shift", "Alt", "Super"]
         modifiers = {key: False for key in modifierList}
         hasModifier = False
         for key in info[2]:
