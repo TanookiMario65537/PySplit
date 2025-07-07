@@ -153,25 +153,21 @@ class LinuxGlobalRunner(HotkeyRunner):
             return
         modifierList = ["Control", "Shift", "Alt", "Super"]
         modifiers = {key: False for key in modifierList}
-        hasModifier = False
         for key in info[2].split(","):
             modifier = self.isModifier(key)
             if modifier:
-                if modifier != "Shift":
-                    hasModifier = True
                 modifiers[modifier] = True
         specialKey = self.isSpecial(info[1])
-        keyText = "<" if hasModifier or specialKey else ""
+        keyText = "<"
         for modifier in modifierList:
             if modifier == "Shift":
                 continue
             if not modifiers[modifier]:
                 continue
             keyText += modifier + "-"
-        # logging.info(str(modifiers))
         pressedKey = specialKey if specialKey else info[1].split("_")[1].lower()
         keyText += pressedKey if specialKey or not modifiers["Shift"] else pressedKey.upper()
-        keyText += ">" if hasModifier or specialKey else ""
+        keyText += ">"
         return keyText
 
     def fireHotkey(self, hotkeyList):
