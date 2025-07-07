@@ -193,6 +193,8 @@ class LinuxGlobalRunner(HotkeyRunner):
             if not modifiers[modifier]:
                 continue
             keyText += modifier + "-"
+        if keyText == "<":
+            keyText += "Key-"
         pressedKey = (
             specialKey
             if specialKey
