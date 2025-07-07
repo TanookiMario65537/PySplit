@@ -11,6 +11,7 @@ import socket
 from pathlib import Path
 import subprocess
 from contextlib import contextmanager
+from hotkeys import HotkeyHandler as HH
 
 
 @contextmanager
@@ -126,7 +127,7 @@ while not app or exitCode:
     app = App.App(state, session)
     app.setupGui(showMenu=session.layout["menu"])
 
-    hotkeyHandler = HotkeyHandler(app, state)
+    hotkeyHandler = HH.HotkeyHandler(app, state)
     rootWindow = app.root
 
     loader = WidgetLoader.WidgetLoader(app, state, rootWindow)
