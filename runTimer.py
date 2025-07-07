@@ -6,11 +6,6 @@ from DataClasses import Session
 from States import State
 from util import readConfig as rc
 import logging
-import threading
-import socket
-from pathlib import Path
-import subprocess
-from contextlib import contextmanager
 from hotkeys import HotkeyHandler as HH
 
 

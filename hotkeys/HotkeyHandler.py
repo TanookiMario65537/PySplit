@@ -44,21 +44,48 @@ class LocalRunner(HotkeyRunner):
             self.state.config["hotkeys"]["increaseComparison"],
             self.app.guiSwitchCompareCW
         )
-        self.app.root.bind(self.state.config["hotkeys"]["split"], self.app.onSplitEnd)
-        self.app.root.bind(self.state.config["hotkeys"]["reset"], self.app.reset)
+        self.app.root.bind(
+            self.state.config["hotkeys"]["split"],
+            self.app.onSplitEnd
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["reset"],
+            self.app.reset
+        )
         self.app.root.bind(self.state.config["hotkeys"]["skip"], self.app.skip)
-        self.app.root.bind(self.state.config["hotkeys"]["start"], self.app.start)
-        self.app.root.bind(self.state.config["hotkeys"]["pause"], self.app.togglePause)
-        self.app.root.bind(self.state.config["hotkeys"]["restart"], self.app.restart)
-        self.app.root.bind(self.state.config["hotkeys"]["finish"], self.app.finish)
-        self.app.root.bind(self.state.config["hotkeys"]["save"], self.app.save),
-        self.app.root.bind(self.state.config["hotkeys"]["partialSave"], self.app.partialSave),
-        self.app.root.bind("<Control-L>", self.app.partialLoad),
+        self.app.root.bind(
+            self.state.config["hotkeys"]["start"],
+            self.app.start
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["pause"],
+            self.app.togglePause
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["restart"],
+            self.app.restart
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["finish"],
+            self.app.finish
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["save"],
+            self.app.save
+        )
+        self.app.root.bind(
+            self.state.config["hotkeys"]["partialSave"],
+            self.app.partialSave
+        )
+        self.app.root.bind("<Control-L>", self.app.partialLoad)
         self.app.root.bind(
             self.state.config["hotkeys"]["chooseLayout"],
             self.app.chooseLayout
         )
-        self.app.root.bind(self.state.config["hotkeys"]["chooseRun"], self.app.chooseRun)
+        self.app.root.bind(
+            self.state.config["hotkeys"]["chooseRun"],
+            self.app.chooseRun
+        )
 
 
 class LinuxGlobalRunner(HotkeyRunner):
@@ -127,7 +154,7 @@ class LinuxGlobalRunner(HotkeyRunner):
             "SHIFT": "Shift"
         }
         for ending in modifierToTkinter.keys():
-            if key_name.endswith(ending):
+            if keyName.endswith(ending):
                 return modifierToTkinter[ending]
         return ""
 
@@ -166,8 +193,16 @@ class LinuxGlobalRunner(HotkeyRunner):
             if not modifiers[modifier]:
                 continue
             keyText += modifier + "-"
-        pressedKey = specialKey if specialKey else info[1].split("_")[1].lower()
-        keyText += pressedKey if specialKey or not modifiers["Shift"] else pressedKey.upper()
+        pressedKey = (
+            specialKey
+            if specialKey
+            else info[1].split("_")[1].lower()
+        )
+        keyText += (
+            pressedKey
+            if specialKey or not modifiers["Shift"]
+            else pressedKey.upper()
+        )
         keyText += ">"
         return keyText
 
@@ -175,8 +210,10 @@ class LinuxGlobalRunner(HotkeyRunner):
         logging.info(hotkeyList)
         keyString = self.evdevToTkinter(hotkeyList)
         funcMap = {
-            self.state.config["hotkeys"]["decreaseComparison"]: self.app.guiSwitchCompareCCW,
-            self.state.config["hotkeys"]["increaseComparison"]: self.app.guiSwitchCompareCW,
+            self.state.config["hotkeys"]["decreaseComparison"]:
+                self.app.guiSwitchCompareCCW,
+            self.state.config["hotkeys"]["increaseComparison"]:
+                self.app.guiSwitchCompareCW,
             self.state.config["hotkeys"]["split"]: self.app.onSplitEnd,
             self.state.config["hotkeys"]["reset"]: self.app.reset,
             self.state.config["hotkeys"]["skip"]: self.app.skip,
@@ -186,7 +223,8 @@ class LinuxGlobalRunner(HotkeyRunner):
             self.state.config["hotkeys"]["finish"]: self.app.finish,
             self.state.config["hotkeys"]["save"]: self.app.save,
             self.state.config["hotkeys"]["partialSave"]: self.app.partialSave,
-            self.state.config["hotkeys"]["chooseLayout"]: self.app.chooseLayout,
+            self.state.config["hotkeys"]["chooseLayout"]:
+                self.app.chooseLayout,
             "<Control-L>": self.app.partialLoad,
             self.state.config["hotkeys"]["chooseRun"]: self.app.chooseRun,
         }
@@ -203,7 +241,9 @@ class HotkeyHandler:
         self.state = state
         if self.state.config.get("globalHotkeys", False):
             if platform.system() != "Linux":
-                logging.warn(f"Global hotkeys not supported for {platform.system()}")
+                logging.warn(
+                    f"Global hotkeys not supported for {platform.system()}"
+                )
                 self.runner = LocalRunner(self.app, self.state, self)
             else:
                 self.runner = LinuxGlobalRunner(self.app, self.state, self)
