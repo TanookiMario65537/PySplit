@@ -109,7 +109,6 @@ class LinuxGlobalRunner(HotkeyRunner):
                 with conn:
                     for i, line in enumerate(conn.makefile()):
                         ls = line.strip()
-                        logging.info(ls)
                         if ls.startswith("ERROR"):
                             raise Exception(ls)
                         self.fireHotkey(ls)
@@ -119,7 +118,7 @@ class LinuxGlobalRunner(HotkeyRunner):
             )
             self.handler.update_runner("local")
 
-    def isModifier(self, key_name: str):
+    def isModifier(self, keyName: str) -> str:
         modifierToTkinter = {
             "CTRL": "Control",
             "META": "Super",
@@ -131,29 +130,74 @@ class LinuxGlobalRunner(HotkeyRunner):
                 return modifierToTkinter[ending]
         return ""
 
-    def fireHotkey(self, hotkeyList):
+    def isSpecial(self, keyName: str) -> str:
+        specialCodes = {
+            "KEY_BREAK":     "Cancel",
+            "KEY_ENTER":     "Return",
+            "KEY_ESC":       "Escape",
+            "KEY_SPACE":     "space",
+            "KEY_TAB":       "Tab",
+            "KEY_BACKSPACE": "BackSpace",
+            "KEY_UP":        "Up",
+            "KEY_DOWN":      "Down",
+            "KEY_LEFT":      "Left",
+            "KEY_RIGHT":     "Right",
+        }
+        for i in range(1, 13):
+            specialCodes[f"KEY_F{i}"] = f"F{i}"
+        return specialCodes.get(keyName, "")
+
+    def evdevToTkinter(self, hotkeyList) -> str:
         info = hotkeyList.split("/")
         if info[0] != "1":
             return
         modifierList = ["Control", "Shift", "Alt", "Super"]
         modifiers = {key: False for key in modifierList}
         hasModifier = False
-        for key in info[2]:
+        for key in info[2].split(","):
             modifier = self.isModifier(key)
             if modifier:
                 if modifier != "Shift":
                     hasModifier = True
                 modifiers[modifier] = True
-        keyText = "<" if hasModifier else ""
+        specialKey = self.isSpecial(info[1])
+        keyText = "<" if hasModifier or specialKey else ""
         for modifier in modifierList:
             if modifier == "Shift":
                 continue
             if not modifiers[modifier]:
                 continue
             keyText += modifier + "-"
-        pressedKey = info[1].split("_")[1].lower()
-        keyText += pressedKey if not modifiers["Shift"] else pressedKey.upper()
-        keyText += ">" if hasModifier else ""
+        # logging.info(str(modifiers))
+        pressedKey = specialKey if specialKey else info[1].split("_")[1].lower()
+        keyText += pressedKey if specialKey or not modifiers["Shift"] else pressedKey.upper()
+        keyText += ">" if hasModifier or specialKey else ""
+        return keyText
+
+    def fireHotkey(self, hotkeyList):
+        logging.info(hotkeyList)
+        keyString = self.evdevToTkinter(hotkeyList)
+        funcMap = {
+            self.state.config["hotkeys"]["decreaseComparison"]: self.app.guiSwitchCompareCCW,
+            self.state.config["hotkeys"]["increaseComparison"]: self.app.guiSwitchCompareCW,
+            self.state.config["hotkeys"]["split"]: self.app.onSplitEnd,
+            self.state.config["hotkeys"]["reset"]: self.app.reset,
+            self.state.config["hotkeys"]["skip"]: self.app.skip,
+            self.state.config["hotkeys"]["start"]: self.app.start,
+            self.state.config["hotkeys"]["pause"]: self.app.togglePause,
+            self.state.config["hotkeys"]["restart"]: self.app.restart,
+            self.state.config["hotkeys"]["finish"]: self.app.finish,
+            self.state.config["hotkeys"]["save"]: self.app.save,
+            self.state.config["hotkeys"]["partialSave"]: self.app.partialSave,
+            self.state.config["hotkeys"]["chooseLayout"]: self.app.chooseLayout,
+            "<Control-L>": self.app.partialLoad,
+            self.state.config["hotkeys"]["chooseRun"]: self.app.chooseRun,
+        }
+        func = funcMap.get(keyString, None)
+        logging.info(keyString)
+        if func is None:
+            return
+        func()
 
 
 class HotkeyHandler:
