@@ -119,17 +119,41 @@ class LinuxGlobalRunner(HotkeyRunner):
             )
             self.handler.update_runner("local")
 
-    def is_modifier(self, key_name: str):
-        endings = ["CTRL", "META", "ALT", "SHIFT"]
-        for ending in endings:
+    def isModifier(self, key_name: str):
+        modifierToTkinter = {
+            "CTRL": "Control",
+            "META": "Meta",
+            "ALT": "Alt",
+            "SHIFT": "Shift"
+        }
+        for ending in modifierToTkinter.keys():
             if key_name.endswith(ending):
-                return True
-        return False
+                return modifierToTkinter[ending]
+        return ""
 
     def fireHotkey(self, hotkeyList):
         info = hotkeyList.split("/")
         if info[0] != "1":
             return
+        modifierList = ["Control", "Shift", "Alt", "Meta"]
+        modifiers = {key: False for key in modifierList}
+        hasModifier = False
+        for key in info[2]:
+            modifier = self.isModifier(key)
+            if modifier:
+                if modifier != "Shift":
+                    hasModifier = True
+                modifiers[modifier] = True
+        keyText = "<" if hasModifier else ""
+        for modifier in modifierList:
+            if modifier == "Shift":
+                continue
+            if not modifiers[modifier]:
+                continue
+            keyText += modifier + "-"
+        pressedKey = info[1].split("_")[1].lower()
+        keyText += pressedKey if not modifiers["Shift"] else pressedKey.upper()
+        keyText += ">" if hasModifier else ""
 
 
 class HotkeyHandler:
