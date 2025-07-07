@@ -75,12 +75,12 @@ class LinuxGlobalRunner(HotkeyRunner):
         while True:
             code = self.bgProcess.poll()
             if code is not None:
-                logging.error(f"Subprocess exited with code {code}")
+                logging.info(f"Subprocess exited with code {code}")
                 if code != 0:
                     logging.error("Subprocess error — closing socket")
                     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
                     sock.connect(str(self.socketPath))
-                    sock.sendall("ERROR: Background process failed.\n".encode())
+                    sock.sendall("ERROR: Background process failed\n".encode())
                     sock.close()
                 break
             time.sleep(0.5)
