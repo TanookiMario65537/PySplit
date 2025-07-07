@@ -42,7 +42,11 @@ def readKeyboardEvents(keyboard: InputDevice, socket: socket.socket) -> None:
     for event in keyboard.read_loop():
         if event.type == ecodes.EV_KEY:
             key_event = categorize(event)
-            msg = f"{key_event.keycode},{key_event.keystate}"
+            msg = (
+                f"{key_event.keystate}/"
+                f"{key_event.keycode}/"
+                f"{",".join([key[0] for key in keyboard.active_keys(verbose=True)])}"
+            )
             try:
                 socket.sendall((msg + "\n").encode())
             except BrokenPipeError:
