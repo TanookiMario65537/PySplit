@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 import subprocess
 import time
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +202,11 @@ class HotkeyHandler:
         self.app = app
         self.state = state
         if self.state.config.get("globalHotkeys", False):
-            self.runner = LinuxGlobalRunner(self.app, self.state, self)
+            if platform.system() != "Linux":
+                logging.warn(f"Global hotkeys not supported for {platform.system()}")
+                self.runner = LocalRunner(self.app, self.state, self)
+            else:
+                self.runner = LinuxGlobalRunner(self.app, self.state, self)
         else:
             self.runner = LocalRunner(self.app, self.state, self)
         self.runner.run()
