@@ -24,7 +24,7 @@ fi
 echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
 echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
 echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
-echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/hotkeys/globalHotkeys.py" > "$BASE/pysplitHotkeys"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 -m hotkeys.globalHotkeys" > "$BASE/pysplitHotkeys"
 
 chmod +x $BASE/pysplit
 chmod +x $BASE/practiceTimer
