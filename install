@@ -21,19 +21,22 @@ if [ -n "$NEWBASE" ]; then
     BASE=$NEWBASE
 fi
 
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
-echo -e "cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/runTimer.py" > "$BASE/pysplit"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/practice.py" > "$BASE/practiceTimer"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 $PWD/variance.py" > "$BASE/timeVariance"
+echo -e "#!/usr/bin/bash cd $PWD\n$PYS_BASE/venv/bin/python3 -m hotkeys.globalHotkeys" > "$BASE/pysplitHotkeys"
 
 chmod +x $BASE/pysplit
 chmod +x $BASE/practiceTimer
 chmod +x $BASE/timeVariance
+chmod +x $BASE/pysplitHotkeys
 
 # Default the base save directory to the directory with the venv
 cat > config/global.json << EOF
 {
     "baseDir": "$PYS_BASE/splits",
     "logFile": "$PYS_BASE/log",
+    "installDirectory": "$BASE"
 }
 EOF
 
