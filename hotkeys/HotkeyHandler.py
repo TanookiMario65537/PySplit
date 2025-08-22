@@ -186,6 +186,10 @@ class HotkeyHandler:
                 self.app.partialLoad,
             self.state.config["hotkeys"]["chooseRun"]:
                 self.app.chooseRun,
+            self.state.config["hotkeys"]["viewUp"]:
+                self.app.guiMoveViewUp,
+            self.state.config["hotkeys"]["viewDown"]:
+                self.app.guiMoveViewDown,
         }
         if self.state.config.get("globalHotkeys", False):
             if platform.system() != "Linux":

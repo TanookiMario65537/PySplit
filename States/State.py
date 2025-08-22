@@ -497,6 +497,8 @@ class State(BaseState.State):
         self.staticStartTime = self.currentTime()
         self.starttime = self.pauseTime - loadedState["times"]["total"]
         self.splitstarttime = self.pauseTime - loadedState["times"]["segment"]
+        self.totalTime = loadedState["times"]["total"]
+        self.segmentTime = loadedState["times"]["segment"]
         self.sessionTimes = loadedState["sessions"]
         self.loadingPartial = False
         return loadedState

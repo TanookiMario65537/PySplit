@@ -19,6 +19,8 @@
         "partialLoad": "<Control-L>",
         "chooseLayout": "<Control-l>",
         "chooseRun": "<Control-r>",
-        "chooseSplit": "<Control-i>"
+        "chooseSplit": "<Control-i>",
+        "viewUp": "<Key-Up>",
+        "viewDown": "<Key-Down>"
     }
 }

@@ -41,14 +41,21 @@ class SegmentRow(tk.Frame):
                 current = low + int((high-low)/2)
         return text[:low] + ellipsis
 
-    def setHeaderText(self, text):
-        self.update()
+    def setHeaderText(self, text, cached=False):
+        if cached:
+            self.header["text"] = text
+            return
         frameLength = self.winfo_width()
         maxLength = 7*(frameLength - 2*self.padding)/12
         textLength = self.font.measure(text)
         if textLength <= maxLength:
             self.header["text"] = text
         else:
+            # Leaving this heuristic here in case performance gets bad again
+            # later.
+            # self.header["text"] = (
+            #     text[:int(len(text)*maxLength/textLength)-3] + "..."
+            # )
             self.header["text"] = self.adjustTextLength(maxLength, text)
 
     def setHeader(self, **kwargs):

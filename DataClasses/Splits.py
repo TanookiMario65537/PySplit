@@ -10,6 +10,7 @@ class SplitList:
         self.typeChecker = TypeChecker()
         self.currentSplits = []
         self.activeIndex = 0
+        self.currentSplitIndex = 0
         self.state = state
         self.setOpenOnEnd = True
 
@@ -51,20 +52,21 @@ class SplitList:
         self.visuallyActive = visuallyActive
         self.setOpenOnEnd = setOpenOnEnd
 
-    def updateCurrent(self, currentSplit):
+    def updateCurrent(self, viewSplit, currentSplit):
         """
         Updates the current split list and the index of the current active
         split. The split list is a mix of SplitGroups, Splits, and EmptySplits.
 
         Parameters:
+            viewSplit - The index of the split is active in the view
             currentSplit - The index of the current split
 
         Returns:
             None
         """
-        self.setOpen(currentSplit)
+        self.setOpen(viewSplit)
         if (
-            currentSplit == self.numSplits
+            viewSplit == self.numSplits
             and len(self.groups)
             and self.groups[-1].end == self.numSplits - 1
         ):
@@ -73,12 +75,12 @@ class SplitList:
             else:
                 group = None
         else:
-            group = copy.deepcopy(self.findGroup(currentSplit))
+            group = copy.deepcopy(self.findGroup(viewSplit))
         subs = []
         if group:
             subs = self.splits[group.start:group.end+1]
         available = self.synthesizeSplits(subs)
-        if currentSplit == self.numSplits:
+        if viewSplit == self.numSplits:
             self.activeIndex = self.numSplits
             if group and group.count >= self.visibleSplits:
                 self.currentSplits = (
@@ -90,7 +92,7 @@ class SplitList:
                     available[len(available)-self.visibleSplits:]
                 )
         else:
-            availableIndex = self.findSplit(available, currentSplit)
+            availableIndex = self.findSplit(available, viewSplit)
             topSplitIndex = (
                 self.trueTopSplitIndex(availableIndex, len(available))
             )
@@ -129,6 +131,15 @@ class SplitList:
                 available[topSplitIndex:topSplitIndex+self.visibleSplits-1]
                 + [available[-1]]
             )
+        self.currentSplitIndex = self.findSplit(
+            self.currentSplits,
+            currentSplit
+        )
+        self.openGroupIndex = (
+            self.groupIndex(self.currentSplits, group)
+            if group is not None
+            else -1
+        )
 
     def findGroup(self, index):
         """
@@ -278,11 +289,11 @@ class SplitList:
 
         Parameters:
             current - The current split index within the available splits
-                (returned by trueTopSplitIndex).
+                (returned by trueTopSplitIndex). 0-indexed.
             available - The list of available splits.
             visible - The number of visible splits.
             visuallyActive - The ideal location of the current split within the
-                window.
+                window. 1-indexed.
 
         Returns:
             The index that should be at the top of the window.
@@ -290,7 +301,7 @@ class SplitList:
         if current <= visuallyActive - 1:
             return 0
         elif current >= available - (visible-visuallyActive):
-            return available - (visible - 1)
+            return available - visible
         else:
             return current - (visuallyActive - 1)
 
