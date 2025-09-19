@@ -79,7 +79,8 @@ class App(threading.Thread):
             "restart": component.onRestart,
             "runChanged": component.runChanged,
             "resize": component.onResize,
-            "shutdown": component.onShutdown
+            "shutdown": component.onShutdown,
+            "view": component.moveView
         }
         signals.get(signalType, component.frameUpdate)(**kwargs)
 
@@ -195,6 +196,12 @@ class App(threading.Thread):
         Move the comparison clockwise (forwards)
         """
         self.rotateCompare(1)
+
+    def guiMoveViewUp(self, _=None):
+        self.moveSplitWindow(-1)
+
+    def guiMoveViewDown(self, _=None):
+        self.moveSplitWindow(1)
 
     def reset(self, _=None):
         """
@@ -329,6 +336,9 @@ class App(threading.Thread):
         """
         if not self.state.onComparisonChanged(rotation):
             self.updateWidgets("comp")
+
+    def moveSplitWindow(self, movement):
+        self.updateWidgets("view", **{"movement": movement})
 
     """
     Dialogs

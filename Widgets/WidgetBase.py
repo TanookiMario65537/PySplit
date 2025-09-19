@@ -57,6 +57,9 @@ class WidgetBase(tk.Frame):
     def onShutdown(self):
         pass
 
+    def moveView(self, **kwargs):
+        pass
+
     def runChanged(self, **kwargs):
         self.state = kwargs["state"]
         self.resetUI()
