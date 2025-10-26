@@ -7,6 +7,7 @@
     "hotkeys": {
         "decreaseComparison": "<Key-Left>",
         "split": "<Key-Return>",
+        "undo": "<Key-u>",
         "increaseComparison": "<Key-Right>",
         "pause": "<Key-p>",
         "reset": "<Key-r>",

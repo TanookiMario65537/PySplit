@@ -185,6 +185,16 @@ class App(threading.Thread):
                 self.menu.updateMenuState("last")
         self.updateWidgets("split")
 
+    def onUndoSegment(self, event=None):
+        exitCode = self.state.onUndoSegment()
+        if exitCode == 1:
+            return
+        if exitCode & 2:
+            self.menu.updateMenuState("last")
+        else:
+            self.menu.updateMenuState("during")
+        self.updateWidgets("split")
+
     def guiSwitchCompareCCW(self, _=None):
         """
         Move the comparison counter-clockwise (backwards)

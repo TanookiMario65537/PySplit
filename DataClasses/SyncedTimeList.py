@@ -4,6 +4,8 @@ from util import timeHelpers as timeh
 class SyncedTimeList:
     segments: list
     totals: list
+    _initSegments: list
+    _initTotals: list
     default_type: str
 
     def __init__(self, segments=None, totals=None):
@@ -21,6 +23,9 @@ class SyncedTimeList:
             self.totals = totals
             self.segments = [0 for _ in range(len(totals))]
             self.setSegments()
+
+        self._initSegments = [segment for segment in self.segments]
+        self._initTotals = [total for total in self.totals]
 
     def insert(self, time, index, ltype=""):
         if not ltype:
@@ -76,6 +81,14 @@ class SyncedTimeList:
                 return i
         return -1
 
+    def resetValue(self, index):
+        self.update(
+            self._initSegments[index]
+            if self.default_type == "segment"
+            else self._initTotals[index],
+            index
+        )
+
 
 class BptList(SyncedTimeList):
     def __init__(self, segments=None, totals=None):
@@ -85,6 +98,11 @@ class BptList(SyncedTimeList):
     def update(self, time, index, ltype=""):
         self.totals[index] = time
         self.setFutureTotals(index)
+
+    def resetValue(self, index):
+        super().resetValue(index)
+        if index > 0:
+            self.setFutureTotals(index-1)
 
     def setFutureTotals(self, index):
         for i in range(index+1, len(self.segments)):
@@ -114,6 +132,10 @@ class Comparison:
             timeh.difference(totaltime, self.times.totals[index]),
             index
         )
+
+    def resetValue(self, index):
+        self.times.resetValue(index)
+        self.diffs.resetValue(index)
 
     def lastNonBlank(self):
         return self.times.lastNonBlank()
