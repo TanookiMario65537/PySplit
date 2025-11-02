@@ -75,6 +75,8 @@ class Widget(WidgetBase.WidgetBase):
         self.segment.configure(text=self.formatTime(time, "segment"))
 
     def formatTime(self, time, ttype):
+        if timeh.isBlank(time):
+            return ""
         if ttype == "main":
             precision = self.config["mainTimer"]["precision"]
         else:

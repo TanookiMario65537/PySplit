@@ -1,6 +1,7 @@
 import os
 import datetime
 from timeit import default_timer as timer
+import copy
 from util import fileio
 from util import timeHelpers as timeh
 from DataClasses import SyncedTimeList as STL
@@ -215,8 +216,36 @@ class State(BaseState.State):
         Parameter: time - the current time according to the
                           system clock
         """
-        self.segmentTime = time - self.splitstarttime
+        self.segmentTime = timeh.difference(
+            time,
+            self.splitstarttime
+        )
         self.totalTime = time - self.starttime
+
+    def undoSegment(self):
+        """
+        Does all the state updates necessary to undo a split.
+        """
+        self.currentRun.resetValue(self.splitnum-1)
+        self.bptList.resetValue(self.splitnum-1)
+
+        for i in range(self.numComparisons):
+            self.comparisons[i].resetValue(self.splitnum-1)
+        self.currentBests.resetValue(self.splitnum-1)
+        self.bestExits.resetValue(self.splitnum-1)
+        self.splitnum = self.splitnum - 1
+        self.splitstarttime = timeh.add(
+            self.starttime,
+            self.currentRun.totals[self.splitnum - 1]
+            if self.splitnum > 0
+            else 0
+        )
+        if self.splitnum == len(self.splitnames) - 1:
+            self.playTime = 0
+            self.staticEndTime = 0
+            self.runEnded = False
+            self.saveData = self.oldSaveData
+        self.partialSave()
 
     def completeSegment(self, total, system_time):
         """
@@ -252,6 +281,7 @@ class State(BaseState.State):
             or not timeh.greater(total, self.bestExits.totals[self.splitnum])
         ):
             self.bestExits.update(total, self.splitnum)
+        self.splitstarttime = system_time
         self.segmentFollowup(system_time)
 
     def skipSegment(self, system_time):
@@ -263,6 +293,7 @@ class State(BaseState.State):
         self.currentRun.update(timeh.blank(), self.splitnum)
         for i in range(self.numComparisons):
             self.comparisons[i].update(timeh.blank(), self.splitnum)
+        self.splitstarttime = timeh.blank()
         self.segmentFollowup(system_time)
 
     def segmentFollowup(self, system_time):
@@ -280,7 +311,6 @@ class State(BaseState.State):
                 split-ending function.
         """
         self.splitnum = self.splitnum + 1
-        self.splitstarttime = system_time
         if self.splitnum >= len(self.splitnames):
             self.playTime = system_time - self.starttime
             self.staticEndTime = self.currentTime()
@@ -375,6 +405,17 @@ class State(BaseState.State):
             retVal = retVal + 5
         return retVal
 
+    def onUndoSegment(self):
+        if not self.started or self.paused or self.splitnum == 0:
+            return 1
+
+        retVal = 0
+
+        self.undoSegment()
+        if self.splitnum == len(self.splitnames) - 1:
+            retVal = retVal | 2
+        return retVal
+
     def onComparisonChanged(self, rotation):
         self.compareNum = (self.compareNum+rotation) % self.numComparisons
         self.currentComparison = self.comparisons[self.compareNum]
@@ -424,6 +465,7 @@ class State(BaseState.State):
         """
         Updates the local versions of the data files.
         """
+        self.oldSaveData = copy.deepcopy(self.saveData)
         self.saveData["splitNames"] = self.splitnames
         self.saveData["defaultComparisons"]["bestSegments"]["segments"] = (
             timeh.timesToStringList(self.currentBests.segments)
@@ -553,5 +595,11 @@ class State(BaseState.State):
         """
         if self.loadingPartial:
             return
+        # This ensures the segment and total times are always correct when we
+        # make a partial save, instead of relying on frame updates to ensure
+        # these times are correct. Don't update if paused because it
+        # effectively negates the pause.
+        if not self.paused:
+            self.setTimes(timer())
         logger.info(f"Writing partial save to {self.partialSaveFile()}")
         fileio.writeJson(self.partialSaveFile(), self.dataMap())

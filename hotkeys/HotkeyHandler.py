@@ -164,6 +164,8 @@ class HotkeyHandler:
                 self.app.guiSwitchCompareCW,
             self.state.config["hotkeys"]["split"]:
                 self.app.onSplitEnd,
+            self.state.config["hotkeys"]["undo"]:
+                self.app.onUndoSegment,
             self.state.config["hotkeys"]["reset"]:
                 self.app.reset,
             self.state.config["hotkeys"]["skip"]:
