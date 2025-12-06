@@ -31,34 +31,15 @@ class State:
         self.config = rc.getUserConfig()
         self.splitFile = splitFile
         self.saveData = fileio.readSplitFile(splitFile)
-        self._loadedSplits = [SaveData.SaveData("", splitFile, 0)]
+        self._loadedSplits = SaveData.SaveData("", splitFile, 0)
 
     def loadSplits(self, saveData):
         self.saveData = saveData
-        self._loadedSplits = self._loadedSplits[:1]
-        self._loadedSplits[0].updateSaveData(saveData)
+        self._loadedSplits.updateSaveData(saveData)
         self.game = saveData["game"]
         self.category = saveData["category"]
-
-        self.splitnames = []
-        splitCount = 0
-        for splitName in self._loadedSplits[0].splitNames:
-            mdMatch = re.match(r'^\(([^\)]+)\)\[([^]]+)\]$', splitName)
-            if mdMatch is not None:
-                self._loadedSplits.append(
-                    SaveData.SaveData(
-                        mdMatch.group(1),
-                        mdMatch.group(2),
-                        splitCount
-                    )
-                )
-                self.splitnames.extend(self._loadedSplits[-1].splitNames)
-                splitCount += self._loadedSplits[-1].count
-            else:
-                self.splitnames.append(splitName)
-                splitCount += 1
-
-        self.numSplits = splitCount
+        self.splitnames = self._loadedSplits.splitNames
+        self.numSplits = len(self.splitnames)
 
     def _cleanState(self):
         self.started = False
