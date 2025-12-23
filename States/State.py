@@ -107,7 +107,7 @@ class State(BaseState.State):
             self.compareNum = self.numComparisons - 1
         self.currentComparison = self.comparisons[self.compareNum]
 
-        self.currentRun = STL.SyncedTimeList(
+        self.currentRun = STL.CurrentRun(
             totals=[timeh.blank() for _ in range(self.numSplits)]
         )
 
@@ -263,7 +263,7 @@ class State(BaseState.State):
             if self.splitnum > 0
             else total
         )
-        self.currentRun.update(total, self.splitnum)
+        self.currentRun.update(total, self.currentTime(), self.splitnum)
         self.bptList.update(total, self.splitnum)
 
         for i in range(self.numComparisons):
@@ -290,7 +290,11 @@ class State(BaseState.State):
 
         Parameters: system_time - the current system time
         """
-        self.currentRun.update(timeh.blank(), self.splitnum)
+        self.currentRun.update(
+            timeh.blank(),
+            self.currentTime(),
+            self.splitnum
+        )
         for i in range(self.numComparisons):
             self.comparisons[i].update(timeh.blank(), self.splitnum)
         self.splitstarttime = timeh.blank()

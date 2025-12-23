@@ -113,6 +113,20 @@ class BptList(SyncedTimeList):
         self.total = self.totals[-1] if len(self.totals) else timeh.blank()
 
 
+class CurrentRun(SyncedTimeList):
+    def __init__(self, segments=None, totals=None):
+        super().__init__(segments, totals)
+        self.isoTimes = ["" for _ in range(len(self.segments))]
+
+    def update(self, time, isoTime, index, ltype=""):
+        super().update(time, index, ltype)
+        self.isoTimes[index] = isoTime
+
+    def resetValue(self, index):
+        super().resetValue(index)
+        self.isoTimes[index] = ""
+
+
 class Comparison:
     times: SyncedTimeList
     diffs: SyncedTimeList
