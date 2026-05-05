@@ -56,13 +56,13 @@ class Widget(WidgetBase.WidgetBase):
         self.currentViewSplit = max(
             min(
                 self.currentViewSplit + kwargs["movement"],
-                self.state.numSplits - 1
+                self.state.saveData.count - 1
             ),
             0
         )
         self.viewMoved = True
         self.updateCompleteView()
-        if self.state.splitnum < self.state.numSplits - 1:
+        if self.state.splitnum < self.state.saveData.count - 1:
             self.setLastDiff()
 
     def onRestart(self):

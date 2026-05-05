@@ -1,7 +1,6 @@
 import os
 import datetime
 from timeit import default_timer as timer
-import copy
 from util import fileio
 from util import timeHelpers as timeh
 from DataClasses import SyncedTimeList as STL
@@ -30,16 +29,15 @@ class State(BaseState.State):
     def __init__(self, splitFile):
         super().__init__(splitFile)
         self.loadingPartial = False
-        if self.saveData:
-            self.loadSplits(self.saveData)
+        self.loadSplits(self.saveData)
         self.sessionTimes = []
 
     def loadSplits(self, saveData):
-        super().loadSplits(saveData)
-        self.offset = saveData["offset"]
+        self.offset = self.saveData.data["offset"]
         self.currentBests = STL.SyncedTimeList(
             segments=timeh.stringListToTimes(
-                self.saveData["defaultComparisons"]["bestSegments"]["segments"]
+                self.saveData.data
+                ["defaultComparisons"]["bestSegments"]["segments"]
             )
         )
         self.bestExits = STL.SyncedTimeList(
@@ -47,10 +45,10 @@ class State(BaseState.State):
                 timeh.listMin(
                     [
                         timeh.stringToTime(run["totals"][i])
-                        for run in self.saveData["runs"]
+                        for run in self.saveData.data["runs"]
                     ]
                 )
-                for i in range(len(self.splitnames))
+                for i in range(self.saveData.count)
             ]
         )
         self.comparisons = []
@@ -62,142 +60,25 @@ class State(BaseState.State):
         """
         self.bptList = STL.BptList(
             segments=timeh.stringListToTimes(
-                self.saveData["defaultComparisons"]["bestSegments"]["segments"]
+                self.saveData.data
+                ["defaultComparisons"]["bestSegments"]["segments"]
             )
         )
 
-        for key in self.saveData["defaultComparisons"].keys():
-            if key == "bestRun":
-                self.pb_index = len(self.comparisons)
-            saveKey = list(self.saveData["defaultComparisons"][key].keys())[1]
-            initData = {}
-            initData[saveKey] = (
-                self.saveData["defaultComparisons"][key][saveKey]
-            )
-            cmp = STL.SyncedTimeList(**initData)
-            self.comparisons.append(
-                STL.Comparison(
-                    self.saveData["defaultComparisons"][key]["name"],
-                    cmp.totals,
-                    "default",
-                    name=key
-                 )
-            )
+        self.currentRun = STL.CurrentRun(
+            totals=[timeh.blank() for _ in range(self.saveData.count)]
+        )
+        self.updateComparisons()
 
-        self.comparisons.extend(self.generateComparisons())
-
-        for comparison in self.saveData["customComparisons"]:
-            if len(comparison["totals"]) == len(self.splitnames):
-                self.comparisons.append(
-                    STL.Comparison(
-                        comparison["name"],
-                        comparison["totals"],
-                        "custom"
-                    )
-                )
-            else:
-                logger.warning(
-                    f"Comparison \"{comparison["name"]}\" is invalid."
-                    f"It has {len(comparison["totals"])} splits,"
-                    f"but this run has {len(self.splitnames)} splits."
-                )
-
+    def updateComparisons(self):
+        self.comparisons = self.saveData.getComparisons(
+            self,
+            self.splitnum
+        )
         self.numComparisons = len(self.comparisons)
         if self.compareNum >= self.numComparisons:
             self.compareNum = self.numComparisons - 1
         self.currentComparison = self.comparisons[self.compareNum]
-
-        self.currentRun = STL.SyncedTimeList(
-            totals=[timeh.blank() for _ in range(self.numSplits)]
-        )
-
-    def generateComparisons(self):
-        """
-        Generates the following comparisons:
-          Balanced
-          Last Run
-          Average
-          Best Exit
-          Blank
-        """
-        comparison_list = []
-
-        # Balanced
-        if (
-            len(self.splitnames)
-            and not timeh.isBlank(self.bestExits.totals[-1])
-            and not timeh.isBlank(self.bptList.total)
-        ):
-            pbTime = timeh.stringToTime(
-                self.saveData["defaultComparisons"]["bestRun"]["totals"][-1]
-            )
-            comparison_list.append(
-                STL.Comparison(
-                    "Balanced",
-                    [
-                        timeh.blank()
-                        if timeh.isBlank(time)
-                        else time*pbTime/self.bptList.total
-                        for time in self.currentBests.totals
-                    ],
-                    "generated"
-                )
-            )
-
-        # Last Run
-        if len(self.saveData["runs"]):
-            comparison_list.append(
-                STL.Comparison(
-                    "Last Run",
-                    self.saveData["runs"][-1]["totals"],
-                    "run"
-                )
-            )
-
-        # Compute averages
-        computedAverage = []
-        for i in range(len(self.splitnames)):
-            average = []
-            for j in range(len(self.saveData["runs"])):
-                time = timeh.stringToTime(
-                    self.saveData["runs"][j]["totals"][i]
-                )
-                if not timeh.isBlank(time):
-                    average.append(time)
-            averageTime = timeh.sumTimeList(average)
-            computedAverage.append(
-                timeh.blank()
-                if timeh.isBlank(averageTime)
-                else averageTime/len(average)
-            )
-
-        comparison_list.append(
-            STL.Comparison(
-                "Average",
-                computedAverage,
-                "generated"
-            )
-        )
-
-        # Add best exits
-        comparison_list.append(
-            STL.Comparison(
-                "Best Exit",
-                self.bestExits.totals,
-                "generated"
-            )
-        )
-
-        # Add blanks
-        comparison_list.append(
-            STL.Comparison(
-                "Blank",
-                [timeh.blank() for _ in self.splitnames],
-                "generated"
-            )
-        )
-
-        return comparison_list
 
     def getComparison(self, ctype: str, name: str) -> STL.Comparison | None:
         """
@@ -240,11 +121,16 @@ class State(BaseState.State):
             if self.splitnum > 0
             else 0
         )
-        if self.splitnum == len(self.splitnames) - 1:
+        if self.splitnum == self.saveData.count - 1:
             self.playTime = 0
             self.staticEndTime = 0
             self.runEnded = False
-            self.saveData = self.oldSaveData
+            self.saveData.undoLastUpdate()
+        elif (
+            self.saveData.splits[self.splitnum].subrunPath
+            != self.saveData.splits[self.splitnum+1].subrunPath
+        ):
+            self.updateComparisons()
         self.partialSave()
 
     def completeSegment(self, total, system_time):
@@ -263,7 +149,11 @@ class State(BaseState.State):
             if self.splitnum > 0
             else total
         )
-        self.currentRun.update(total, self.splitnum)
+        self.currentRun.update(
+            total,
+            self.currentTime().isoformat(timespec="microseconds"),
+            self.splitnum
+        )
         self.bptList.update(total, self.splitnum)
 
         for i in range(self.numComparisons):
@@ -290,7 +180,11 @@ class State(BaseState.State):
 
         Parameters: system_time - the current system time
         """
-        self.currentRun.update(timeh.blank(), self.splitnum)
+        self.currentRun.update(
+            timeh.blank(),
+            self.currentTime().isoformat(timespec="microseconds"),
+            self.splitnum
+        )
         for i in range(self.numComparisons):
             self.comparisons[i].update(timeh.blank(), self.splitnum)
         self.splitstarttime = timeh.blank()
@@ -311,12 +205,17 @@ class State(BaseState.State):
                 split-ending function.
         """
         self.splitnum = self.splitnum + 1
-        if self.splitnum >= len(self.splitnames):
+        if self.splitnum >= self.saveData.count:
             self.playTime = system_time - self.starttime
             self.staticEndTime = self.currentTime()
             self.runEnded = True
             self.localSave()
         else:
+            if (
+                self.saveData.splits[self.splitnum].subrunPath
+                != self.saveData.splits[self.splitnum-1].subrunPath
+            ):
+                self.updateComparisons()
             self.partialSave()
 
     def endPause(self, time):
@@ -339,21 +238,6 @@ class State(BaseState.State):
         """
         self.paused = True
         self.pauseTime = time
-
-    def isPB(self):
-        """
-        Determines whether the current run is a PB or not
-
-        Returns: True if the current run is a PB, False if not
-        """
-        pbcmp = self.comparisons[self.pb_index]
-        if self.currentRun.lastNonBlank() > pbcmp.lastNonBlank():
-            return True
-        if self.currentRun.lastNonBlank() < pbcmp.lastNonBlank():
-            return False
-        if timeh.greater(0, pbcmp.diffs.totals[pbcmp.lastNonBlank()]):
-            return True
-        return False
 
     def cleanState(self):
         """
@@ -391,17 +275,17 @@ class State(BaseState.State):
 
         retVal = 0
         if (
-            self.splitnames[self.splitnum][-3:] == "[P]"
-            and not self.splitnum == len(self.splitnames)
+            self.saveData.splits[self.splitnum].pauseAtEnd
+            and not self.splitnum == self.saveData.count
             and not self.paused
         ):
             retVal = retVal + 3
 
         current = timer()
         self.completeSegment(current - self.starttime, current)
-        if self.splitnum == len(self.splitnames):
+        if self.splitnum == self.saveData.count:
             retVal = retVal + 4
-        elif self.splitnum == len(self.splitnames) - 1:
+        elif self.splitnum == self.saveData.count - 1:
             retVal = retVal + 5
         return retVal
 
@@ -412,7 +296,7 @@ class State(BaseState.State):
         retVal = 0
 
         self.undoSegment()
-        if self.splitnum == len(self.splitnames) - 1:
+        if self.splitnum == self.saveData.count - 1:
             retVal = retVal | 2
         return retVal
 
@@ -465,28 +349,7 @@ class State(BaseState.State):
         """
         Updates the local versions of the data files.
         """
-        self.oldSaveData = copy.deepcopy(self.saveData)
-        self.saveData["splitNames"] = self.splitnames
-        self.saveData["defaultComparisons"]["bestSegments"]["segments"] = (
-            timeh.timesToStringList(self.currentBests.segments)
-        )
-        if self.isPB():
-            self.saveData["defaultComparisons"]["bestRun"]["totals"] = (
-                timeh.timesToStringList(self.currentRun.totals)
-            )
-
-        self.saveData["runs"].append({
-            "sessions": self.sessionTimes + [{
-                "startTime": self.staticStartTime.isoformat(
-                    timespec="microseconds"
-                ),
-                "endTime": self.staticEndTime.isoformat(
-                    timespec="microseconds"
-                )
-             }],
-            "playTime": timeh.timeToString(self.playTime),
-            "totals": timeh.timesToStringList(self.currentRun.totals)
-        })
+        self.saveData.addRun(self)
         self.unSaved = True
 
     def saveTimes(self):
@@ -494,9 +357,7 @@ class State(BaseState.State):
         Export the locally saved data. Only do this after a local
         save.
         """
-        fileio.writeSplitFile(
-            self.splitFile,
-            self.saveData)
+        self.saveData.save()
         self.unSaved = False
 
     def hasPartialSave(self):
@@ -531,11 +392,12 @@ class State(BaseState.State):
         """
         self.loadingPartial = True
         loadedState = fileio.readJson(self.partialSaveFile())
-        for total in loadedState["splits"]["totals"]:
+        for i, total in enumerate(loadedState["splits"]["totals"]):
             if (timeh.isBlank(total)):
                 self.skipSegment(timer())
             else:
                 self.completeSegment(total, timer())
+            self.currentRun.isoTimes[i] = loadedState["splits"]["isoTimes"][i]
         self.staticStartTime = self.currentTime()
         self.starttime = self.pauseTime - loadedState["times"]["total"]
         self.splitstarttime = self.pauseTime - loadedState["times"]["segment"]
@@ -554,8 +416,8 @@ class State(BaseState.State):
         if not self.splitFile.endswith(".pysplit"):
             return os.path.join(
                 self.config["baseDir"],
-                self.game,
-                "." + self.category + ".psave"
+                self.saveData.data["game"],
+                "." + self.saveData.data["category"] + ".psave"
             )
         return os.path.join(
             os.path.dirname(self.splitFile),
@@ -584,6 +446,9 @@ class State(BaseState.State):
             },
             "splits": {
                 "totals": self.currentRun.totals[
+                    :self.currentRun.lastNonBlank()+1
+                ],
+                "isoTimes": self.currentRun.isoTimes[
                     :self.currentRun.lastNonBlank()+1
                 ]
             }

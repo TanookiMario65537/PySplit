@@ -113,19 +113,57 @@ class BptList(SyncedTimeList):
         self.total = self.totals[-1] if len(self.totals) else timeh.blank()
 
 
+class CurrentRun(SyncedTimeList):
+    def __init__(self, segments=None, totals=None):
+        super().__init__(segments, totals)
+        self.isoTimes = ["" for _ in range(len(self.segments))]
+
+    def update(self, time, isoTime, index, ltype=""):
+        super().update(time, index, ltype)
+        self.isoTimes[index] = isoTime
+
+    def resetValue(self, index):
+        self.update(
+            self._initSegments[index]
+            if self.default_type == "segment"
+            else self._initTotals[index],
+            "",
+            index
+        )
+        self.isoTimes[index] = ""
+
+
 class Comparison:
     times: SyncedTimeList
     diffs: SyncedTimeList
     ctype: str
     title: str
     name: str
+    subrunPath: list
 
-    def __init__(self, title, totals, ctype, name=None):
-        self.title = title
+    def __init__(
+        self,
+        title,
+        totals,
+        ctype,
+        name=None,
+        subrunPath=[],
+        timeData=None
+    ):
+        self.title = (
+            (f"[{subrunPath[-1]['name']}] " if len(subrunPath) else "")
+            + title
+        )
         self.name = name if name else title
         self.ctype = ctype
-        self.times = SyncedTimeList(totals=totals)
-        self.diffs = SyncedTimeList(totals=[timeh.blank() for _ in totals])
+        if timeData is not None:
+            self.times = SyncedTimeList(**timeData)
+        else:
+            self.times = SyncedTimeList(totals=totals)
+        self.diffs = SyncedTimeList(
+            totals=[timeh.blank() for _ in self.times.totals]
+        )
+        self.subrunPath = subrunPath
 
     def update(self, totaltime, index):
         self.diffs.update(

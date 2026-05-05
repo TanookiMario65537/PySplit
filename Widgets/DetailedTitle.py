@@ -41,8 +41,8 @@ class Widget(WidgetBase.WidgetBase):
         self.resetUI()
 
     def resetUI(self):
-        self.game.configure(text=self.state.game)
-        self.category.configure(text=self.state.category)
+        self.game.configure(text=self.state.saveData.data["game"])
+        self.category.configure(text=self.state.saveData.data["category"])
         self.setSessions()
         self.setAttemptCounter()
 
@@ -73,12 +73,12 @@ class Widget(WidgetBase.WidgetBase):
                 len(
                     [
                         run
-                        for run in self.state.saveData["runs"]
+                        for run in self.state.saveData.data["runs"]
                         if not timeh.isBlank(
                             timeh.stringToTime(run["totals"][-1])
                         )
                     ]
                 )
             )+"/"
-        text += str(len(self.state.saveData["runs"]))
+        text += str(len(self.state.saveData.data["runs"]))
         self.completion.configure(text=text)

@@ -1,5 +1,5 @@
-from util import fileio
 from util import readConfig as rc
+from DataClasses import SaveData
 
 
 class State:
@@ -13,13 +13,8 @@ class State:
     totalTime = 0
 
     splitnum = 0
-    # splitnames = []
-    # numSplits = 0
 
-    # game = ""
-    # category = ""
-
-    # saveData = SplitJson
+    # saveData = SaveData
 
     # config = None
 
@@ -28,14 +23,7 @@ class State:
     def __init__(self, splitFile):
         self.config = rc.getUserConfig()
         self.splitFile = splitFile
-        self.saveData = fileio.readSplitFile(splitFile)
-
-    def loadSplits(self, saveData):
-        self.saveData = saveData
-        self.game = saveData["game"]
-        self.category = saveData["category"]
-        self.splitnames = saveData["splitNames"]
-        self.numSplits = len(self.splitnames)
+        self.saveData = SaveData.SaveData(splitFile)
 
     def _cleanState(self):
         self.started = False

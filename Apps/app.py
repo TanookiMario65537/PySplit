@@ -479,11 +479,10 @@ class App(threading.Thread):
         self.updateWidgets("shutdown")
         self.root.destroy()
 
-    def newEditedState(self, newSaveData):
+    def newEditedState(self, _):
         """
         Reload the current splits after editing.
         """
-        self.state.loadSplits(newSaveData)
         self.updateWidgets("runChanged", state=self.state)
 
     def addRunState(self, retVal):

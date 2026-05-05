@@ -22,5 +22,5 @@ class Widget(WidgetBase.WidgetBase):
         self.resetUI()
 
     def resetUI(self):
-        self.game.configure(text=self.state.game)
-        self.category.configure(text=self.state.category)
+        self.game.configure(text=self.state.saveData.data["game"])
+        self.category.configure(text=self.state.saveData.data["category"])
