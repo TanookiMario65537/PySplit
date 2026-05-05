@@ -734,3 +734,25 @@ class SaveData:
                 )
             ))
         return comparisons
+
+    # Editing API.
+    # Edits the top-level run only.
+    # This is only used for the practice timer.
+    def updateBest(self, index, time):
+        newSaveData = self.currentSaveDataSafe()
+        (
+            newSaveData["defaultComparisons"]["bestSegments"]
+            ["segments"][index]
+        ) = time
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "bestUpdated",
+            "data": {
+                "index": index,
+                "time": time
+            }
+        })

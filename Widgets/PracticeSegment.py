@@ -35,9 +35,9 @@ class SegmentCompare(WidgetBase.WidgetBase):
     def updateGoldHeader(self):
         self.goldHeader.configure(
             text=(
-                self.state.game
+                self.state.saveData.data["game"]
                 + " - "
-                + self.state.category
+                + self.state.saveData.data["category"]
                 + " - "
                 + self.state.splitName
                 + ":"
