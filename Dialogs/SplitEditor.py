@@ -1,7 +1,5 @@
 from Dialogs import Popup
-from Components.SplitEditor import MainEditor
-from util import fileio
-import copy
+from Components.SplitEditor import CoreSplitEditor
 
 
 class SplitEditor(Popup.Popup):
@@ -9,44 +7,17 @@ class SplitEditor(Popup.Popup):
         super().__init__(master, {"accepted": callback})
         self.state = state
 
-        self.editor = MainEditor.Editor(self.window, state)
+        self.editor = CoreSplitEditor.SplitEditor(
+            self.window,
+            state.saveData,
+            {"save": self.save}
+        )
         self.editor.pack()
-        self.editor.saveButton.options["save"] = self.save
-        self.editor.saveButton.options["valid"] = self.validSave
 
-    def validSave(self):
-        self.editor.saveWarning.pack_forget()
-        check1 = len(self.editor.entries.rows) > 0
-        check2 = self.editor.entries.leftFrame.isValid()
-        if not check1:
-            self.editor.saveButton.options["invalidMsg"] = (
-                "This run has no splits."
-            )
-        elif not check2:
-            self.editor.saveButton.options["invalidMsg"] = (
-                "All split names\nmust be non-empty."
-            )
-        elif self.editor.entries.shouldWarn():
-            self.editor.saveWarning.pack(side="bottom", fill="both")
-
-        return check1 and check2
+    def close(self, _=None):
+        self.state.saveData.removeEdits()
+        super().close()
 
     def save(self):
-        saveData = copy.deepcopy(self.state.saveData)
-        saveData.update(self.editor.entries.generateGrid())
-        saveData["offset"] = self.editor.getOffset()
-        old = self.editor.entries.oldSplitLocations
-        for i, run in enumerate(saveData["runs"]):
-            totals = []
-            for j in range(len(saveData["splitNames"])):
-                if j in old:
-                    totals.append(run["totals"][old.index(j)])
-                else:
-                    totals.append("-")
-            saveData["runs"][i]["totals"] = totals
-        self.retVal = saveData
-        fileio.writeSplitFile(
-            self.state.splitFile,
-            saveData
-        )
+        self.retVal["saveData"] = self.state.saveData.data
         self.callbacks["accepted"](self.retVal)

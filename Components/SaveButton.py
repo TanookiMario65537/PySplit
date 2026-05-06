@@ -10,8 +10,6 @@ class SaveButton(tk.Frame):
             **{
                 "text": "Save",
                 "save": self.save,
-                "valid": self.validSave,
-                "invalidMsg": ""
             },
             **options}
         self.button = tk.Button(self)
@@ -19,9 +17,6 @@ class SaveButton(tk.Frame):
         self.button["text"] = self.options["text"]
         self.button.pack(side="bottom", fill="both")
         self.warning = None
-
-    def validSave(self):
-        return True
 
     def removeWarning(self):
         if not self.warning:
@@ -31,15 +26,6 @@ class SaveButton(tk.Frame):
         self.warning = None
 
     def confirmSave(self, _=None):
-        if not self.options["valid"]():
-            self.removeWarning()
-            self.warning = tk.Label(
-                self,
-                text=self.options["invalidMsg"],
-                fg="red"
-            )
-            self.warning.pack(fill="both")
-            return
         self.removeWarning()
         ConfirmPopup.ConfirmPopup(
             self.parent,

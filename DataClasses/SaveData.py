@@ -196,7 +196,7 @@ class Split:
         self._repr += " {" + self.groupName + "}" if self.isGroupEnd else ""
 
 
-class SaveData:
+class SaveData(Notifier.Notifier):
     # This is a shared cache for all SaveData instances.
     _dataCache = SaveDataCache()
     _topLevelSaveData = None
@@ -737,6 +737,216 @@ class SaveData:
 
     # Editing API.
     # Edits the top-level run only.
+    # For use with the split editor.
+    def addSplit(self, index):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["splitNames"].insert(index, "")
+        for key, cmp in newSaveData["defaultComparisons"].items():
+            timeKey = "segments" if key.endswith("Segments") else "totals"
+            cmp[timeKey].insert(index, "-")
+        for cmp in newSaveData["customComparisons"]:
+            cmp["totals"].insert(index, "-")
+        for run in newSaveData["runs"]:
+            run["totals"].insert(index, "-")
+        self._dataCache.updateSaveData(self._splitFile, newSaveData, "edit")
+        self.parseSplits()
+        self.notifyListeners({
+            "type": "splitAdded",
+            "data": index
+        })
+
+    def removeSplit(self, index):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["splitNames"].pop(index)
+        for key, cmp in newSaveData["defaultComparisons"].items():
+            timeKey = "segments" if key.endswith("Segments") else "totals"
+            cmp[timeKey].pop(index)
+        for cmp in newSaveData["customComparisons"]:
+            cmp["totals"].pop(index)
+        for run in newSaveData["runs"]:
+            run["totals"].pop(index)
+        self._dataCache.updateSaveData(self._splitFile, newSaveData, "edit")
+        self.parseSplits()
+        self.notifyListeners({
+            "type": "splitRemoved",
+            "data": index
+        })
+
+    def addComparison(self):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["customComparisons"].append({
+            "name": "New Comparison",
+            "totals": [
+                "-"
+                for _ in range(self.count)
+            ]
+        })
+        self._dataCache.updateSaveData(self._splitFile, newSaveData, "edit")
+        self.notifyListeners({
+            "type": "comparisonAdded",
+            "data": newSaveData["customComparisons"][-1]
+        })
+
+    def removeComparison(self):
+        newSaveData = self.currentSaveDataSafe()
+        oldCmp = newSaveData["customComparisons"].pop(-1)
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "comparisonRemoved",
+            "data": oldCmp
+        })
+
+    def updateSplitName(self, index, newName):
+        newSaveData = self.currentSaveDataSafe()
+        oldMd = self.parseMarkdown(newSaveData["splitNames"][index])
+        newMd = self.parseMarkdown(newName)
+        shouldUpdateSubruns = (
+            (not oldMd["isMd"] and newMd["isMd"])
+            or (oldMd["isMd"] and not newMd["isMd"])
+            or (
+                (oldMd["isMd"] and newMd["isMd"])
+                and (oldMd["fileName"] != newMd["fileName"])
+            )
+        )
+        oldInfo = self._splitIndexToRunInfo[index]
+        newSaveData["splitNames"][index] = newName
+        collapsedStateChanged = (
+            (
+                oldInfo["collapsed"]
+                and (newMd["isMd"])
+                and (not newMd["collapsed"])
+            ) or (
+                (not oldInfo["collapsed"])
+                and (
+                    (not newMd["isMd"])
+                    or (newMd["collapsed"])
+                )
+            )
+        )
+        if shouldUpdateSubruns:
+            self.parseSplits(newSaveData)
+            newInfo = self._splitIndexToRunInfo[index]
+            if oldInfo["count"] != newInfo["count"]:
+                self.adjustAllTimes(newSaveData, oldInfo, newInfo)
+                self._dataCache.updateSaveData(
+                    self._splitFile,
+                    newSaveData,
+                    "edit"
+                )
+            self.notifyListeners({
+                "type": "subrunChanged",
+                "data": index
+            })
+            if oldInfo["collapsed"] != newInfo["collapsed"]:
+                self.notifyListeners({
+                    "type": "collapsedChanged",
+                    "data": {
+                        "index": index,
+                        "collapsed": newInfo["collapsed"]
+                    },
+                })
+        elif collapsedStateChanged:
+            self.parseSplits(newSaveData)
+            self._dataCache.updateSaveData(
+                self._splitFile,
+                newSaveData,
+                "edit"
+            )
+            self.notifyListeners({
+                "type": "collapsedChanged",
+                "data": {
+                    "index": index,
+                    "collapsed": not oldInfo["collapsed"]
+                },
+            })
+        else:
+            self._dataCache.updateSaveData(
+                self._splitFile,
+                newSaveData,
+                "edit"
+            )
+        self.notifyListeners({
+            "type": "splitNameUpdated",
+            "data": {
+                "index": index,
+                "name": newName
+            }
+        })
+
+    def adjustTotals(self, cmp, oldInfo, newInfo):
+        subrunEndTime = cmp["totals"][oldInfo["startSplit"]+oldInfo["count"]-1]
+        cmp["totals"] = (
+            cmp["totals"][:oldInfo["startSplit"]]
+            + ["-" for _ in range(newInfo["count"]-1)]
+            + [subrunEndTime]
+            + [
+                total
+                for total in cmp["totals"][
+                    oldInfo["startSplit"]+oldInfo["count"]:
+                ]
+            ]
+        )
+
+    def adjustAllTimes(self, saveData, oldInfo, newInfo):
+        for key, cmp in saveData["defaultComparisons"].items():
+            timeKey = (
+                "segments" if key.endswith("Segments") else "totals"
+            )
+            if timeKey == "segments":
+                if newInfo["count"] == 1:
+                    runsAsTimes = [
+                        timeh.stringListToTimes(run["totals"])
+                        for run in saveData["runs"]
+                    ]
+                    best = timeh.listMin([
+                        timeh.difference(
+                            run[oldInfo["startSplit"]+oldInfo["count"]-1],
+                            0 if oldInfo["startSplit"] == 0
+                            else run[oldInfo["startSplit"]-1]
+                        )
+                        for run in runsAsTimes
+                    ])
+                    centralSegments = [timeh.timeToString(best)]
+                else:
+                    centralSegments = ["-" for _ in range(newInfo["count"])]
+                cmp["segments"] = (
+                    cmp["segments"][:oldInfo["startSplit"]]
+                    + centralSegments
+                    + cmp["segments"][oldInfo["startSplit"]+oldInfo["count"]:]
+                )
+            else:
+                self.adjustTotals(cmp, oldInfo, newInfo)
+        for cmp in saveData["customComparisons"]:
+            self.adjustTotals(cmp, oldInfo, newInfo)
+        for run in saveData["runs"]:
+            self.adjustTotals(run, oldInfo, newInfo)
+
+    def updateComparisonName(self, index, newName):
+        newSaveData = self.currentSaveDataSafe()
+        defaultComparisons = self.defaultComparisons(newSaveData)
+        if index < len(defaultComparisons):
+            cmpName = defaultComparisons[index].name
+            newSaveData["defaultComparisons"][cmpName]["name"] = newName
+        else:
+            trueIndex = index-len(defaultComparisons)
+            newSaveData["customComparisons"][trueIndex]["name"] = newName
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "comparisonNameUpdated",
+            "data": {
+                "index": index,
+                "name": newName
+            }
+        })
+
     # This is only used for the practice timer.
     def updateBest(self, index, time):
         newSaveData = self.currentSaveDataSafe()
@@ -755,4 +965,162 @@ class SaveData:
                 "index": index,
                 "time": time
             }
+        })
+
+    def updateComparison(self, _, col_index, comparison):
+        newSaveData = self.currentSaveDataSafe()
+        defaultComparisons = self.defaultComparisons(newSaveData)
+        if col_index < len(defaultComparisons):
+            cmpName = defaultComparisons[col_index].name
+            timeKey = "segments" if cmpName.endswith("Segments") else "totals"
+            if timeKey == "segments":
+                newSaveData["defaultComparisons"][cmpName][timeKey] = (
+                    timeh.timesToStringList(comparison.times.segments)
+                )
+            else:
+                newSaveData["defaultComparisons"][cmpName][timeKey] = (
+                    timeh.timesToStringList(comparison.times.totals)
+                )
+        else:
+            trueIndex = col_index-len(defaultComparisons)
+            newSaveData["customComparisons"][trueIndex]["totals"] = (
+                timeh.timesToStringList(comparison.times.totals)
+            )
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "comparisonUpdated",
+            "data": {
+                "index": col_index,
+                "times": comparison.times.totals
+            }
+        })
+
+    def updateGame(self, game):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["game"] = game
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "gameUpdated",
+            "data": game
+        })
+
+    def updateCategory(self, category):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["category"] = category
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "categoryUpdated",
+            "data": category
+        })
+
+    def updateOffset(self, time):
+        newSaveData = self.currentSaveDataSafe()
+        newSaveData["offset"] = time
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "offsetUpdated",
+            "data": time
+        })
+
+    def setSplitFile(self, splitFile):
+        oldData = self.data
+        oldSplitFile = self.splitFile
+        if splitFile != self._splitFile:
+            self._dataCache.updateSaveData(
+                splitFile,
+                oldData,
+                "rename"
+            )
+            self._dataCache.removeSplitFile(self._splitFile)
+        self._splitFile = splitFile
+        if not oldSplitFile:
+            self._dataCache.clearEmptySplits()
+
+    def updateSubrun(self, index, splitFile):
+        newSaveData = self.currentSaveDataSafe()
+        if splitFile.startswith(self._config["baseDirAbsolute"]):
+            trimmedFile = splitFile.replace(
+                self._config["baseDirAbsolute"] + "/",
+                ""
+            )
+        else:
+            trimmedFile = splitFile
+        oldMd = self.parseMarkdown(newSaveData["splitNames"][index])
+        if oldMd["isMd"]:
+            newSaveData["splitNames"][index] = (
+                f"[{oldMd['groupName']}]({trimmedFile})"
+            )
+        else:
+            newSaveData["splitNames"][index] = f"[placeholder]({trimmedFile})"
+        oldInfo = self._splitIndexToRunInfo[index]
+        self.parseSplits(newSaveData)
+        if not oldMd["isMd"]:
+            newSaveData["splitNames"][index] = (
+                f"[{self._dataCache.getSaveData(splitFile)['game']} "
+                f"{self._dataCache.getSaveData(splitFile)['category']}]"
+                f"({trimmedFile})"
+            )
+        newInfo = self._splitIndexToRunInfo[index]
+        if oldInfo["count"] != newInfo["count"]:
+            self.adjustAllTimes(newSaveData, oldInfo, newInfo)
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.notifyListeners({
+            "type": "subrunChanged",
+            "data": index
+        })
+        self.notifyListeners({
+            "type": "splitNameUpdated",
+            "data": {
+                "index": index,
+                "name": newSaveData["splitNames"][index]
+            }
+        })
+
+    def updateCollapseState(self, index, collapsed):
+        newSaveData = self.currentSaveDataSafe()
+        oldMd = self.parseMarkdown(newSaveData["splitNames"][index])
+        if not oldMd["isMd"]:
+            return
+        if collapsed == oldMd["collapsed"]:
+            return
+        trimmedName = (
+            oldMd['groupName'][:-1]
+            if collapsed
+            else oldMd['groupName'] + '*'
+        )
+        newSaveData["splitNames"][index] = (
+            f"({trimmedName})[{oldMd['fileName']}]"
+        )
+        self._dataCache.updateSaveData(
+            self._splitFile,
+            newSaveData,
+            "edit"
+        )
+        self.parseSplits()
+        self.notifyListeners({
+            "type": "collapsedChanged",
+            "data": {
+                "index": index,
+                "collapsed": collapsed
+            },
         })

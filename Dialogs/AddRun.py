@@ -1,7 +1,8 @@
 import tkinter as tk
 from Dialogs import BaseDialog
 from Dialogs import Popup
-from Components.SplitEditor import AddRunEditor
+from Components.SplitEditor import CoreSplitEditor
+from DataClasses import SaveData
 
 
 class SplitEditorP(Popup.Popup):
@@ -11,20 +12,35 @@ class SplitEditorP(Popup.Popup):
             {"accepted": callback},
             closeAction="accepted"
         )
-        self.editFrame = AddRunEditor.SplitEditor(self.window)
+        self.saveData = SaveData.SaveData("")
+        self.editFrame = CoreSplitEditor.SplitEditor(
+            self.window,
+            self.saveData,
+            {"save": self.save}
+        )
         self.editFrame.pack(fill="both")
 
+    def close(self, _=None):
+        self.state.saveData.removeEdits()
+        super().close()
+
     def setReturn(self):
-        self.retVal = {
-            "splitFile": self.editFrame.splitFile,
-            "exitCode": self.retVal["exitCode"]
-        }
+        self.retVal["splitFile"] = self.editFrame.saveData.splitFile
+
+    def save(self):
+        self.setReturn()
+        self.callbacks["accepted"](self.retVal)
 
 
 class SplitEditorD(BaseDialog.Dialog):
     def __init__(self):
         super().__init__()
-        self.editFrame = AddRunEditor.SplitEditor(self.root)
+        self.saveData = SaveData.SaveData("")
+        self.editFrame = CoreSplitEditor.SplitEditor(
+            self.root,
+            self.saveData,
+            {"save": self.preSave}
+        )
         self.editFrame.pack(side="bottom", fill="both")
         self.editFrame.editor.saveButton.options["save"] = self.preSave
         self.root.protocol("WM_DELETE_WINDOW", self.preFinish)
@@ -33,7 +49,7 @@ class SplitEditorD(BaseDialog.Dialog):
         self.saved = False
 
     def setReturn(self):
-        self.retVal["splitFile"] = self.editFrame.splitFile
+        self.retVal["splitFile"] = self.saveData.splitFile
 
     def preFinish(self):
         if not self.saved:
@@ -49,7 +65,6 @@ class SplitEditorD(BaseDialog.Dialog):
 
     def preSave(self, *_):
         self.saved = True
-        self.editFrame.save()
         if not self.note:
             self.note = tk.Label(
                 self.root,

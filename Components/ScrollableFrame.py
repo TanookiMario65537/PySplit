@@ -139,12 +139,16 @@ class ScrollableFramePin(tk.Frame):
     def insertContent(self, *args):
         self.insertPinnedX(args)
         self.insertPinnedY(args)
+        self.insertFollowup()
         self.canvases[3].unbind("<Configure>")
 
     def insertPinnedX(self, *_):
         pass
 
     def insertPinnedY(self, *_):
+        pass
+
+    def insertFollowup(self):
         pass
 
     def mainArea(self):
