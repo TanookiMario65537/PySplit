@@ -223,6 +223,16 @@ class Widget(WidgetBase.WidgetBase):
                                     .diffs.totals[split.end]
                             )
                     else:
+                        groupChange = timeh.difference(
+                            timeh.difference(
+                                self.state.currentRun.totals[split.end], 0
+                            ),
+                            timeh.difference(
+                                self.state.currentComparison
+                                    .times.totals[split.end],
+                                0
+                            )
+                        )
                         diffColour = self.getCurrentDiffColour(
                             timeh.blank(),
                             self.state.currentComparison
@@ -321,7 +331,7 @@ class Widget(WidgetBase.WidgetBase):
                     )
                     self.rows[i].setComparison(
                         text=self.formatComparison(
-                            totalList[split.end] - startTime
+                            timeh.difference(totalList[split.end], startTime)
                         )
                     )
                 else:
