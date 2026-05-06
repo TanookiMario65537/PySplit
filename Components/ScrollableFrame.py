@@ -116,6 +116,8 @@ class ScrollableFramePin(tk.Frame):
             lambda e: self.insertContent(e)
         )
 
+        self.bindMouseWheel(self.canvases[3])
+
     def corner(self):
         return self.frames[0]
 
@@ -198,3 +200,62 @@ class ScrollableFramePin(tk.Frame):
         self.canvases[1]["width"] = area["width"] - width
         self.canvases[3]["width"] = area["width"] - width
         self.pinWidth = width
+
+    def bindMouseWheel(self, widget):
+        widget.bind("<Enter>", lambda e: self.bindMouseEvents())
+        widget.bind("<Leave>", lambda e: self.unbindMouseEvents())
+
+    def bindMouseEvents(self):
+        self.winfo_toplevel().bind_all("<MouseWheel>", self.onMouseWheel)
+        self.winfo_toplevel().bind_all(
+            "<Shift-MouseWheel>",
+            self.onShiftMouseWheel
+        )
+        self.winfo_toplevel().bind_all("<Button-4>", self.onMouseWheelLinux)
+        self.winfo_toplevel().bind_all("<Button-5>", self.onMouseWheelLinux)
+        self.winfo_toplevel().bind_all(
+            "<Shift-Button-4>",
+            self.onShiftMouseWheelLinux
+        )
+        self.winfo_toplevel().bind_all(
+            "<Shift-Button-5>",
+            self.onShiftMouseWheelLinux
+        )
+
+    def unbindMouseEvents(self):
+        self.winfo_toplevel().unbind_all("<MouseWheel>")
+        self.winfo_toplevel().unbind_all("<Shift-MouseWheel>")
+        self.winfo_toplevel().unbind_all("<Button-4>")
+        self.winfo_toplevel().unbind_all("<Button-5>")
+        self.winfo_toplevel().unbind_all("<Shift-Button-4>")
+        self.winfo_toplevel().unbind_all("<Shift-Button-5>")
+
+    def onMouseWheel(self, event):
+        self.yMouseWheel(int(-event.delta / 120))
+
+    def onShiftMouseWheel(self, event):
+        self.xMouseWheel(int(-event.delta / 120))
+
+    def onMouseWheelLinux(self, event):
+        self.yMouseWheel(-1 if event.num == 4 else 1)
+
+    def onShiftMouseWheelLinux(self, event):
+        self.xMouseWheel(-1 if event.num == 4 else 1)
+
+    def xMouseWheel(self, delta):
+        first, last = self.canvases[3].xview()
+        if delta > 0 and last >= 1:
+            return
+        if delta < 0 and first <= 0:
+            return
+        self.canvases[3].xview_scroll(delta, "units")
+        self.canvases[1].xview_scroll(delta, "units")
+
+    def yMouseWheel(self, delta):
+        first, last = self.canvases[3].yview()
+        if delta > 0 and last >= 1:
+            return
+        if delta < 0 and first <= 0:
+            return
+        self.canvases[3].yview_scroll(delta, "units")
+        self.canvases[2].yview_scroll(delta, "units")
