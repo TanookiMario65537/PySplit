@@ -42,7 +42,8 @@ Time: "(%H:)?(%M:)?%S.xxxxx" | "-"
 IsoTime: iso-formatted time (%Y-%M-%dT%H:%M:%S.%f(%z)?)
 ```
 
-An example is shown in `example.pysplit`.
+A basic example is shown in `example.pysplit`, and a more complex example of a
+run including sub-runs is in `602.pysplit`.
 
 # Layout example
 
