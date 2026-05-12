@@ -19,6 +19,7 @@ def getUserConfig():
     else:
         userConfig = {}
     config = mergeConfigs(defaultConfig, userConfig)
+    config["baseDirAbsolute"] = str(Path(config["baseDir"]).resolve())
     return config
 
 

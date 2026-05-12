@@ -1,6 +1,8 @@
 import datetime
 from DataClasses import SyncedTimeList as STL
 from util import timeHelpers as timeh
+from pathlib import Path
+from DataClasses import SaveData
 
 
 def isoToLss(isostring):
@@ -220,11 +222,11 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    saveData = readJson(args.infile)
-    if not saveData:
+    if not Path(args.infile):
         print(f"File {args.infile} does not exist.")
     else:
+        saveData = SaveData.SaveData(args.infile)
         if args.output:
-            writeXml(args.output, pysplitToLss(saveData))
+            writeXml(args.output, pysplitToLss(saveData.data))
         else:
-            print(pysplitToLss(saveData))
+            print(pysplitToLss(saveData.data))

@@ -1,5 +1,4 @@
 from timeit import default_timer as timer
-from util import fileio
 from util import timeHelpers as timeh
 from States import BaseState
 
@@ -12,11 +11,10 @@ class State(BaseState.State):
 
     def __init__(self, session):
         super().__init__(session.splitFile)
-        super().loadSplits(self.saveData)
         self.splitName = session.split
-        self.splitnum = self.splitnames.index(session.split)
+        self.splitnum = self.saveData.splitNames.index(session.split)
         self.bestTime = timeh.stringToTime(
-            self.saveData["defaultComparisons"]["bestSegments"]
+            self.saveData.data["defaultComparisons"]["bestSegments"]
             ["segments"][self.splitnum]
         )
         self.unSaved = False
@@ -59,15 +57,11 @@ class State(BaseState.State):
     # Save the times when we close the window.
     ##########################################################
     def saveTimes(self):
-        (
-            self.saveData["defaultComparisons"]["bestSegments"]
-            ["segments"][self.splitnum]
-        ) = timeh.timeToString(self.bestTime)
-
-        fileio.writeSplitFile(
-            self.splitFile,
-            self.saveData
+        self.saveData.updateBest(
+            self.splitnum,
+            timeh.timeToString(self.bestTime)
         )
+        self.saveData.save()
         self.unSaved = False
 
     def hasPartialSave(self):

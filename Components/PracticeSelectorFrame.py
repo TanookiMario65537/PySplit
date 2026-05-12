@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from util import fileio
+from DataClasses import SaveData
 
 
 class Frame(tk.Frame):
@@ -9,12 +9,12 @@ class Frame(tk.Frame):
         for i in range(3):
             self.columnconfigure(i, weight=1)
 
-        self.saveData = fileio.readSplitFile(splitFile)
+        self.saveData = SaveData.SaveData(splitFile)
         self.splitVar = tk.StringVar()
         self.splitVar.trace('w', self.setName)
         self.splitCombo = ttk.Combobox(
             self,
-            values=self.saveData["splitNames"],
+            values=self.saveData.splitNames,
             state="readonly",
             textvariable=self.splitVar)
         splitLabel = tk.Label(self, text="Segment Name:")
@@ -35,4 +35,4 @@ class Frame(tk.Frame):
         self.split = self.splitVar.get()
 
     def updateNameCombo(self):
-        self.splitCombo["values"] = self.saveData["splitNames"]
+        self.splitCombo["values"] = self.saveData.splitNames

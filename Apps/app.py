@@ -292,7 +292,10 @@ class App(threading.Thread):
         """
         if self.state.started:
             return
-        self.setRun(fileDialogs.chooseRun(self.state.config))
+        splitFile = fileDialogs.chooseRun(self.state.config)
+        if not splitFile:
+            return
+        self.setRun(splitFile)
 
     def chooseSplit(self, _=None):
         """
@@ -479,11 +482,10 @@ class App(threading.Thread):
         self.updateWidgets("shutdown")
         self.root.destroy()
 
-    def newEditedState(self, newSaveData):
+    def newEditedState(self, _):
         """
         Reload the current splits after editing.
         """
-        self.state.loadSplits(newSaveData)
         self.updateWidgets("runChanged", state=self.state)
 
     def addRunState(self, retVal):

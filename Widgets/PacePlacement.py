@@ -20,9 +20,9 @@ class Widget(StandardInfoBase.StandardInfoBase):
         paceComparisons = []
         splitnum = max([
             i if not timeh.isBlank(self.state.currentRun.totals[i]) else -1
-            for i in range(len(self.state.splitnames))
+            for i in range(self.state.saveData.count)
         ])
-        for i, run in enumerate(self.state.saveData["runs"]):
+        for i, run in enumerate(self.state.saveData.data["runs"]):
             if splitnum == -1:
                 paceComparisons.append(False)
             else:

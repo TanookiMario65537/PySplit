@@ -3,10 +3,10 @@ import copy
 
 class SplitList:
     def __init__(self, state):
-        self.splits, self.groups = self.parseSplits(state.splitnames)
+        self.splits, self.groups = self.parseSplits(state.saveData.splits)
         self.visibleSplits = 0
         self.visuallyActive = 0
-        self.numSplits = len(state.splitnames)
+        self.numSplits = state.saveData.count
         self.typeChecker = TypeChecker()
         self.currentSplits = []
         self.activeIndex = 0
@@ -14,31 +14,29 @@ class SplitList:
         self.state = state
         self.setOpenOnEnd = True
 
-    def parseSplits(self, names):
+    def parseSplits(self, splitList):
         """
         Parses all the splits and split groups from the list of split names.
         """
         splits = []
         groups = []
         groupStart = -1
-        for i in range(len(names)):
-            if names[i][0:2] == "- ":
-                truename = names[i][2:]
+        for i, split in enumerate(splitList):
+            if split.inGroup:
                 if groupStart < 0:
                     groupStart = i
-                if "{" in names[i] and "}" in names[i]:
+                if split.isGroupEnd:
                     groups.append(
                         SplitGroup(
                             groupStart,
                             i,
-                            names[i].split("{")[1].split("}")[0]
+                            split.groupName
                         )
                     )
-                    truename = truename.split("{")[0]
                     groupStart = -1
-                splits.append(Split(i, truename, True))
+                splits.append(Split(i, str(split), True))
             else:
-                splits.append(Split(i, names[i]))
+                splits.append(Split(i, str(split)))
                 groupStart = -1
         return splits, groups
 

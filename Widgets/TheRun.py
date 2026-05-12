@@ -66,16 +66,18 @@ class Widget(WidgetBase.WidgetBase):
             return
         fileUploadUrl = (
             f"{self.fileUploadBaseUrl}"
-            f"?filename={self.state.game}%20-%20{self.state.category}.lss"
+            f"?filename={self.state.saveData.data["game"]}"
+            f"%20-%20"
+            f"{self.state.saveData.data["category"]}.lss"
             f"&uploadKey={self.uploadKey}"
         )
 
         logger.debug("Converted XML:")
-        logger.debug(convert.pysplitToLss(self.state.saveData))
+        logger.debug(convert.pysplitToLss(self.state.saveData.data))
         urlGetRequest = requests.get(fileUploadUrl, headers=self.headers)
         lssPut = requests.put(
             json.loads(urlGetRequest.content.decode("utf8"))["url"],
-            convert.pysplitToLss(self.state.saveData),
+            convert.pysplitToLss(self.state.saveData.data),
             headers=self.headers)
         if lssPut.status_code == 200:
             logger.info("Splits uploaded to therun.gg")
@@ -93,7 +95,8 @@ class Widget(WidgetBase.WidgetBase):
 
     def jsonify(self):
         is_reset = (
-            self.state.runEnded and self.state.splitnum < self.state.numSplits
+            self.state.runEnded and self.state.splitnum
+            < self.state.saveData.count
         )
         starttime = int(
             (
@@ -109,7 +112,7 @@ class Widget(WidgetBase.WidgetBase):
         runData = []
         bestSegments = self.state.getComparison("default", "bestSegments")
         bestRun = self.state.getComparison("default", "bestRun")
-        for i, name in enumerate(self.state.splitnames):
+        for i, name in enumerate(self.state.saveData.splitNames):
             runData.append({
                 "name": convert.convertName(name),
                 "splitTime":
@@ -133,13 +136,13 @@ class Widget(WidgetBase.WidgetBase):
             })
         return {
             "metadata": {
-              "game": self.state.game,
-              "category": self.state.category
+              "game": self.state.saveData.data["game"],
+              "category": self.state.saveData.data["category"]
             },
             "currentTime": self.clean_time_to_therun_api(self.state.totalTime),
             "currentSplitName":
-                self.state.splitnames[self.state.splitnum]
-                if self.state.splitnum < self.state.numSplits
+                self.state.saveData.splitNames[self.state.splitnum]
+                if self.state.splitnum < self.state.saveData.count
                 else "",
             "currentSplitIndex": self.state.splitnum if not is_reset else -1,
             "currentComparison": self.state.currentComparison.title,
@@ -156,7 +159,7 @@ class Widget(WidgetBase.WidgetBase):
 
     def onSplit(self):
         self.post_run_status()
-        if self.state.splitnum == self.state.numSplits:
+        if self.state.splitnum == self.state.saveData.count:
             self.post_splits()
         self.wasJustResumed = False
 
@@ -167,7 +170,7 @@ class Widget(WidgetBase.WidgetBase):
 
     def onSplitSkipped(self):
         self.post_run_status()
-        if self.state.splitnum == self.state.numSplits:
+        if self.state.splitnum == self.state.saveData.count:
             self.post_splits()
         self.wasJustResumed = False
 

@@ -18,7 +18,7 @@ class Widget(InfoBase.InfoBase):
     def resetUI(self):
         self.previousTime = timeh.sumTimeList(
             timeh.stringListToTimes(
-                [run["playTime"] for run in self.state.saveData["runs"]]))
+                [run["playTime"] for run in self.state.saveData.data["runs"]]))
         self.header.configure(text="Total Play Time:")
         self.updateTime()
 

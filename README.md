@@ -91,6 +91,29 @@ the comparisons under "defaultComparisons".
 Alternatively, comparisons can be edited from within PySplit using
 the `Edit Splits` command in the menu.
 
+## Including Sub-Runs
+
+For many multi-game speedruns, the overarching run is essentially
+
+1. Complete Run A
+2. Switch games
+3. Complete Run B
+4. Switch games
+5. etc.
+
+It is useful to be able to define such a run in this way without having to copy
+the save data over from each of the sub-runs. Additionally, if the overarching
+run knows where the data is for each of the sub-runs is, it can display
+comparisons for individual runs based on which of those sub-runs the current
+segment belongs to. It can also save the appropriate data for each of those
+sub-runs at the end of the run, including both best segments and the run itself
+(adjusted to account for the start time within the overarching run).
+
+Such a structure can be defined using a "link" to a file using Markdown-like
+syntax of `[Game Name](Save File)`. The save file can be either an absolute
+file path, or relative to the save location configured in the global settings.
+An example of such a run definition is in the `examples` directory.
+
 # Included Programs
 
 __Note__: If the three programs are not installed (see

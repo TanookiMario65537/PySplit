@@ -41,7 +41,7 @@ cat > config/global.json << EOF
 EOF
 
 # Create the desktop app
-cp $PWD/icon.png $PYS_BASE/icon.png
+cp $PWD/icons/app/icon.png $PYS_BASE/icon.png
 cat > $HOME/.local/share/applications/pysplit.desktop << EOF
 [Desktop Entry]
 Name=PySplit

@@ -5,7 +5,6 @@ from twitchAPI.twitch import Twitch
 from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.helper import AuthScope
 from twitchAPI.chat import Chat, EventData, ChatEvent
-import re
 import logging
 
 logger = logging.getLogger(__name__)
@@ -41,15 +40,10 @@ in the developer account settings.""")
         asyncio.run(self.run())
 
     def sendUpdate(self):
-        split = self.state.splitnames[self.state.splitnum - 1]
-        braces = re.findall(r'\[(.+?)\]', split)
-        count = None
-        for brace in braces:
-            if brace.isdigit():
-                count = brace
-                break
-        if count is None:
+        split = self.state.saveData.splits[self.state.splitnum-1]
+        if not split.showCollectibleCount:
             return
+        count = split.collectibleCount
 
         async def wrapper():
             await self.chat.send_message(

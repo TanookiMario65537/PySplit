@@ -25,6 +25,16 @@
  - `goldDiffInfo`: Shows a comparison of the previous split vs. the best
    previous split, or shows how much time is being lost to the
    current best split if applicable.
+
+ - `multiBot`: Allow for hooking up a Twitch bot to send updates to interact
+    with a race bot. This is designed specifically to work with the
+    MultiMarioEvents bot, and will send a `!set <count>` command for every split
+    that includes a count. This count is defined by including a `[<count>]`
+    anywhere in the split name, and there are examples in the `examples` directory.
+    If a run includes subruns, the count for each split will be adjusted to account
+    for any splits/runs that preceded it. For example, in `examples/602.pysplit`,
+    the counts for "Super Mario Galaxy" will start at 120, "Super Mario Sunshine"
+    will start at 240, and "Super Mario Galaxy 2" will start at 360.
  
  - `pbInfo`: Shows the current personal best for the current game and
    category.

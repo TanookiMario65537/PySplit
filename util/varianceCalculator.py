@@ -1,17 +1,18 @@
-from util import fileio
 from util import timeHelpers as timeh
 from DataClasses import SyncedTimeList as STL
+from DataClasses import SaveData
 global varianceList
 
 
 def getRows(saveData):
     rows = []
     runs = [
-        STL.SyncedTimeList(totals=run["totals"]) for run in saveData["runs"]
+        STL.SyncedTimeList(totals=run["totals"])
+        for run in saveData.data["runs"]
     ]
-    for i in range(len(saveData["splitNames"])):
+    for i in range(saveData.count):
         timeList = []
-        for j in range(len(saveData["runs"])):
+        for j in range(len(runs)):
             time = runs[j].segments[i]
             if not timeh.isBlank(time):
                 timeList.append(time)
@@ -32,7 +33,7 @@ def createTable(names, variances, sort):
 
 def computeVariances(filename):
     global varianceList
-    saveData = fileio.readSplitFile(filename)
+    saveData = SaveData.SaveData(filename)
     timeRows = getRows(saveData)
     varianceList = []
     for row in timeRows:
@@ -49,11 +50,11 @@ def computeVariances(filename):
 
     return {
         "order": createTable(
-            saveData["splitNames"],
+            saveData.splitNames,
             varianceList,
             range(len(varianceList))),
         "sorted": createTable(
-            saveData["splitNames"],
+            saveData.splitNames,
             varianceList,
             sortedRange)
     }
