@@ -1112,7 +1112,7 @@ class SaveData(Notifier.Notifier):
             else oldMd['groupName'] + '*'
         )
         newSaveData["splitNames"][index] = (
-            f"({trimmedName})[{oldMd['fileName']}]"
+            f"[{trimmedName}]({oldMd['fileName']})"
         )
         self._dataCache.updateSaveData(
             self._splitFile,
