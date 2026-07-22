@@ -213,7 +213,10 @@ class SaveData(Notifier.Notifier):
         filePath = Path(splitFile)
         if not filePath.is_absolute():
             filePath = Path(self._config["baseDir"]) / filePath
-        self._splitFile = str(filePath.resolve())
+        if splitFile:
+            self._splitFile = str(filePath.resolve())
+        else:
+            self._splitFile = ""
         self._dataCache.loadSaveData(self._splitFile)
         self._erroredComparisons = []
         self.subrunPath = copy.deepcopy(subrunPath)
