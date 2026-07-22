@@ -21,7 +21,7 @@ class SplitEditorP(Popup.Popup):
         self.editFrame.pack(fill="both")
 
     def close(self, _=None):
-        self.state.saveData.removeEdits()
+        self.saveData.removeEdits()
         super().close()
 
     def setReturn(self):
